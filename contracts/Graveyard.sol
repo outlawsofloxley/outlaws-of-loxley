@@ -50,7 +50,10 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
     error NotDead();
     error InsufficientPayment(uint256 required, uint256 sent);
     error TreasuryTransferFailed();
+    error RefundFailed();
     error ZeroTreasury();
+    error CostTooHigh(uint256 requested, uint256 cap);
+    error TierMultTooHigh(uint8 index, uint256 requested, uint256 cap);
 
     // ─── Constructor ─────────────────────────────────────────────────
 
@@ -75,7 +78,19 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
 
     // ─── Admin ───────────────────────────────────────────────────────
 
+    /// @notice Hard cap on the base resurrection cost. Stops a compromised
+    ///         owner key from setting costs the math overflows on, or pricing
+    ///         out every revive forever. ~1 ETH at $4k ETH is $4000, more
+    ///         than 100x the launch base.
+    uint256 public constant MAX_RESURRECTION_COST = 1 ether;
+
+    /// @notice Hard cap on each tier multiplier (scaled by 10, so 1000 means
+    ///         100x). Stops a compromised owner from making revives unaffordable
+    ///         or overflowing the cost formula.
+    uint256 public constant MAX_TIER_MULT = 1_000;
+
     function setResurrectionCost(uint256 newCost) external onlyOwner {
+        if (newCost > MAX_RESURRECTION_COST) revert CostTooHigh(newCost, MAX_RESURRECTION_COST);
         emit ResurrectionCostChanged(resurrectionCost, newCost);
         resurrectionCost = newCost;
     }
@@ -88,10 +103,16 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
 
     /**
      * @notice Update the per-tier multipliers. Values are scaled by 10 (e.g.
-     *         15 → 1.5× multiplier). Array order is [common, uncommon, rare,
-     *         legendary, epic, king].
+     *         15 means 1.5x multiplier). Array order is [common, uncommon,
+     *         rare, legendary, epic, king]. Each entry is capped at
+     *         MAX_TIER_MULT.
      */
     function setTierMults(uint256[6] calldata newMults) external onlyOwner {
+        for (uint8 i = 0; i < 6; i++) {
+            if (newMults[i] > MAX_TIER_MULT) {
+                revert TierMultTooHigh(i, newMults[i], MAX_TIER_MULT);
+            }
+        }
         tierMults = newMults;
         emit TierMultsChanged(newMults);
     }
@@ -170,15 +191,22 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
         // Reset consecutive-loss counter so revived brawler isn't one loss from death.
         duel.resetStreak(tokenId);
 
-        // Forward full fee to treasury (overpay allowed, goes to treasury).
-        // Skip if msg.value is 0 (founder free revive).
-        if (msg.value > 0) {
-            (bool ok,) = treasury.call{value: msg.value}("");
+        // Forward exactly `required` to treasury (matches Marketplace.buy
+        // refund symmetry, prevents fat-finger overpay losses). The leftover,
+        // if any, comes back to the caller. `required` may be 0 for a founder
+        // free revive, in which case we just refund whatever was sent.
+        if (required > 0) {
+            (bool ok,) = treasury.call{value: required}("");
             if (!ok) revert TreasuryTransferFailed();
+        }
+        uint256 refund = msg.value - required;
+        if (refund > 0) {
+            (bool ok,) = msg.sender.call{value: refund}("");
+            if (!ok) revert RefundFailed();
         }
 
         brawlers.resurrect(tokenId);
-        emit Resurrected(tokenId, msg.sender, msg.value);
+        emit Resurrected(tokenId, msg.sender, required);
     }
 
     // ─── Fallback: reject direct sends ───────────────────────────────

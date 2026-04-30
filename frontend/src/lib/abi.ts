@@ -78,6 +78,7 @@ export const DUEL_ABI = parseAbi([
   'function consecutiveLosses(uint256 tokenId) view returns (uint8)',
   'function usedNonces(uint256 nonce) view returns (bool)',
   'function hashDuelResult(DuelResult result) view returns (bytes32)',
+  'function domainSeparator() view returns (bytes32)',
   'function paused() view returns (bool)',
   'function brawlToken() view returns (address)',
   'function fightCost() view returns (uint256)',

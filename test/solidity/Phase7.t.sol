@@ -2,7 +2,6 @@
 pragma solidity 0.8.24;
 
 import {Test} from "forge-std/Test.sol";
-import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {Brawlers} from "../../contracts/Brawlers.sol";
 import {Duel} from "../../contracts/Duel.sol";
 import {Graveyard} from "../../contracts/Graveyard.sol";
@@ -18,7 +17,6 @@ import {MockUSDT} from "../../contracts/mocks/MockUSDT.sol";
  *         dev gets 10%).
  */
 contract Phase7Test is Test {
-    using MessageHashUtils for bytes32;
 
     Brawlers internal brawlers;
     Duel internal duel;
@@ -370,8 +368,9 @@ contract Phase7Test is Test {
     }
 
     function _sign(Duel.DuelResult memory r) internal view returns (bytes memory) {
-        bytes32 h = duel.hashDuelResult(r).toEthSignedMessageHash();
-        (uint8 v, bytes32 rs, bytes32 s) = vm.sign(signerPk, h);
+        // EIP-712: digest is already domain-separated, sign directly.
+        bytes32 digest = duel.hashDuelResult(r);
+        (uint8 v, bytes32 rs, bytes32 s) = vm.sign(signerPk, digest);
         return abi.encodePacked(rs, s, v);
     }
 }

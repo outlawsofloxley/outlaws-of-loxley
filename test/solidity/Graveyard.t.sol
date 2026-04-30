@@ -5,10 +5,8 @@ import {Test} from "forge-std/Test.sol";
 import {Brawlers} from "../../contracts/Brawlers.sol";
 import {Duel} from "../../contracts/Duel.sol";
 import {Graveyard} from "../../contracts/Graveyard.sol";
-import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract GraveyardTest is Test {
-    using MessageHashUtils for bytes32;
 
     Brawlers internal brawlers;
     Duel internal duel;
@@ -53,9 +51,9 @@ contract GraveyardTest is Test {
                 nonce: 10_000 + n,
                 expiry: block.timestamp + 1 hours
             });
-            bytes32 hash = duel.hashDuelResult(r);
-            bytes32 ethSigned = hash.toEthSignedMessageHash();
-            (uint8 v, bytes32 rs, bytes32 ss) = vm.sign(signerPk, ethSigned);
+            // EIP-712 digest, sign directly.
+            bytes32 digest = duel.hashDuelResult(r);
+            (uint8 v, bytes32 rs, bytes32 ss) = vm.sign(signerPk, digest);
             bytes memory sig = abi.encodePacked(rs, ss, v);
             vm.prank(alice);
             duel.submitDuel(r, sig);
@@ -122,15 +120,22 @@ contract GraveyardTest is Test {
         graveyard.resurrect{value: RESURRECT_COST - 1}(idA);
     }
 
-    function test_resurrect_overpay_allAmountToTreasury() public {
+    function test_resurrect_overpay_refundsExtra() public {
         uint256 idA = brawlers.mint(alice);
         uint256 idB = brawlers.mint(bob);
         _killBrawler(idA, idB);
-        uint256 overpay = graveyard.costFor(idA) * 2;
+        uint256 required = graveyard.costFor(idA);
+        uint256 overpay = required * 2;
         uint256 treasuryBefore = treasury.balance;
+        uint256 aliceBefore = alice.balance;
+        // Top up alice so the test isn't gated by her starting balance.
+        vm.deal(alice, aliceBefore + overpay);
+        aliceBefore = alice.balance;
         vm.prank(alice);
         graveyard.resurrect{value: overpay}(idA);
-        assertEq(treasury.balance, treasuryBefore + overpay);
+        // Treasury gets exactly `required`. Alice gets `overpay - required` back.
+        assertEq(treasury.balance, treasuryBefore + required, "treasury overpaid");
+        assertEq(alice.balance, aliceBefore - required, "alice not refunded");
     }
 
     function test_setResurrectionCost_byOwner() public {

@@ -40,6 +40,16 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
     ///         blast-radius; larger batches hit block gas limits on some
     ///         chains and slow indexers.
     uint256 public constant MAX_BATCH = 20;
+    /// @notice Hard cap on the per-mint ETH price. Stops a compromised owner
+    ///         key from re-pricing remaining supply at 100 ETH/mint. 1 ETH is
+    ///         well above the planned $60 top tier (~0.015 ETH).
+    uint256 public constant MAX_ETH_PRICE = 1 ether;
+    /// @notice Hard cap on stable-coin prices in 6dp units. $10,000 is well
+    ///         above any sane mint price.
+    uint256 public constant MAX_STABLE_PRICE = 10_000 * 10 ** 6;
+    /// @notice Hard cap on per-mint BRAWL airdrop. 1000 BRAWL per mint is 50x
+    ///         the launch default founder bonus.
+    uint256 public constant MAX_AIRDROP_PER_MINT = 1_000 * 10 ** 18;
 
     // ─── Immutable refs ──────────────────────────────────────────────
 
@@ -139,6 +149,8 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
     error InvalidCount(uint256 count);
     error InvalidShare(uint256 bps);
     error InvalidTiers();
+    error PriceTooHigh(uint256 requested, uint256 cap);
+    error AirdropTooHigh(uint256 requested, uint256 cap);
 
     // ─── Constructor ─────────────────────────────────────────────────
 
@@ -188,6 +200,9 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
         external
         onlyOwner
     {
+        if (_ethPrice > MAX_ETH_PRICE) revert PriceTooHigh(_ethPrice, MAX_ETH_PRICE);
+        if (_usdtPrice > MAX_STABLE_PRICE) revert PriceTooHigh(_usdtPrice, MAX_STABLE_PRICE);
+        if (_usdcPrice > MAX_STABLE_PRICE) revert PriceTooHigh(_usdcPrice, MAX_STABLE_PRICE);
         ethPrice = _ethPrice;
         usdtPrice = _usdtPrice;
         usdcPrice = _usdcPrice;
@@ -205,6 +220,13 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
         // Validate ascending order.
         for (uint256 i = 1; i < tiers.length; i++) {
             if (tiers[i].upToSold <= tiers[i - 1].upToSold) revert InvalidTiers();
+        }
+        // The final tier must cover the entire mint window so an off-by-one
+        // tier table can't silently fall back to the flat ethPrice/usdtPrice
+        // (which may be a stale testnet config). Empty array means "tiered
+        // pricing disabled, use flat" and stays allowed.
+        if (tiers.length > 0 && tiers[tiers.length - 1].upToSold < MAX_MINT) {
+            revert InvalidTiers();
         }
         delete _priceTiers;
         for (uint256 i = 0; i < tiers.length; i++) {
@@ -266,6 +288,9 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
     }
 
     function setAirdropPerMint(uint256 _airdrop) external onlyOwner {
+        if (_airdrop > MAX_AIRDROP_PER_MINT) {
+            revert AirdropTooHigh(_airdrop, MAX_AIRDROP_PER_MINT);
+        }
         airdropPerMint = _airdrop;
         emit AirdropChanged(_airdrop);
     }
@@ -292,16 +317,24 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
     }
 
     /// @notice Adjust the founder airdrop amount (BRAWL wei) given to the
-    ///         first FOUNDER_AIRDROP_CAP minters. Set 0 to disable.
+    ///         first FOUNDER_AIRDROP_CAP minters. Set 0 to disable. Capped at
+    ///         MAX_AIRDROP_PER_MINT to bound owner-key-compromise blast-radius.
     function setFounderAirdrop(uint256 _founderAirdropAmount) external onlyOwner {
+        if (_founderAirdropAmount > MAX_AIRDROP_PER_MINT) {
+            revert AirdropTooHigh(_founderAirdropAmount, MAX_AIRDROP_PER_MINT);
+        }
         founderAirdropAmount = _founderAirdropAmount;
         emit FounderAirdropChanged(_founderAirdropAmount);
     }
 
     /// @notice Set the BRAWL amount sent to lpTreasury per mint, paired with
     ///         the lpShareBps slice of ETH. Tune as price drifts so the LP
-    ///         add stays balanced. 0 disables BRAWL pairing entirely.
+    ///         add stays balanced. 0 disables BRAWL pairing entirely. Capped
+    ///         at MAX_AIRDROP_PER_MINT.
     function setLpBrawlPerMint(uint256 _amount) external onlyOwner {
+        if (_amount > MAX_AIRDROP_PER_MINT) {
+            revert AirdropTooHigh(_amount, MAX_AIRDROP_PER_MINT);
+        }
         lpBrawlPerMint = _amount;
         emit LpBrawlPerMintChanged(_amount);
     }
