@@ -1,0 +1,38 @@
+{
+  "name": "brawlers",
+  "version": "0.1.0",
+  "description": "Brawlers - a pixel fighter NFT game. Phase 1: local scaffolding.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
+    "format": "prettier --write 'src/**/*.ts' 'test/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts' 'test/**/*.ts'",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "hello": "tsx src/hello.ts",
+    "game": "tsx src/cli/main.ts"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.10",
+    "@typescript-eslint/eslint-plugin": "7.16.1",
+    "@typescript-eslint/parser": "7.16.1",
+    "eslint": "8.57.0",
+    "eslint-config-prettier": "9.1.0",
+    "prettier": "3.3.3",
+    "rimraf": "5.0.9",
+    "tsx": "4.16.2",
+    "typescript": "5.5.3",
+    "vitest": "2.0.3"
+  },
+  "dependencies": {
+    "dotenv": "16.4.5",
+    "ethers": "6.16.0"
+  }
+}

@@ -1,0 +1,6 @@
+node_modules/
+bots-state.db
+bots-state.db-shm
+bots-state.db-wal
+.env
+art/

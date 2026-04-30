@@ -1,0 +1,334 @@
+/**
+ * POST /api/run-duel
+ *
+ * Server-side duel orchestration:
+ *   1. Validate input (tokenA, tokenB distinct positive ints)
+ *   2. Read both brawlers + weapons from chain
+ *   3. Assemble local Brawler records
+ *   4. Generate a 256-bit seed, run the TS combat sim
+ *   5. Compute new ELOs
+ *   6. Build the DuelResult struct (nonce + 1h expiry)
+ *   7. Ask the Duel contract to hash it (view call, avoids abi-encoding bugs)
+ *   8. Sign that hash with BRAWLERS_SIGNER_KEY (server-only env var)
+ *   9. Return { result, signature, events, winnerId, rounds } to the client
+ *
+ * The client then submits (result, signature) to the Duel contract from the
+ * player's wallet.
+ *
+ * bigint -> string serialization: JSON can't carry bigint natively, so every
+ * 256-bit field in `result` is stringified. Client reconstructs BigInt() on
+ * receipt before passing to writeContract.
+ */
+import { NextResponse } from 'next/server';
+import { createPublicClient, defineChain, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { randomBytes } from 'node:crypto';
+import { BRAWLERS_ABI, DUEL_ABI } from '@/lib/abi';
+import { simulateFight } from '@/sim/combat';
+import { applyDuelResult, type Outcome } from '@/core/elo';
+import { findWeapon } from '@/core/weapons';
+import type { Brawler, CombatEvent, Weapon, WeaponType } from '@/core/types';
+
+// Force Node runtime — we use node:crypto for the nonce. Edge would fail here.
+export const runtime = 'nodejs';
+
+const DUEL_EXPIRY_SECONDS = 3600;
+const WEAPON_TYPE_MAP: readonly WeaponType[] = ['blade', 'blunt', 'ranged'];
+
+function randomBig256(): bigint {
+  const bytes = randomBytes(32);
+  let n = 0n;
+  for (const b of bytes) {
+    n = (n << 8n) | BigInt(b);
+  }
+  return n;
+}
+
+function buildChain(chainId: number, rpcUrl: string) {
+  return defineChain({
+    id: chainId,
+    name: chainId === 31337 ? 'Anvil Local' : `Chain ${chainId}`,
+    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+    rpcUrls: { default: { http: [rpcUrl] } },
+    testnet: chainId !== 1,
+  });
+}
+
+interface OnchainBrawlerView {
+  readonly strength: number;
+  readonly dexterity: number;
+  readonly constitution: number;
+  readonly intelligence: number;
+  readonly wisdom: number;
+  readonly charisma: number;
+  readonly weaponId: number;
+  readonly level: number;
+  readonly xp: number;
+  readonly elo: number;
+  readonly wins: number;
+  readonly losses: number;
+  readonly ties: number;
+  readonly isDead: boolean;
+  readonly name: string;
+}
+
+interface OnchainWeaponView {
+  readonly name: string;
+  readonly damageMin: number;
+  readonly damageMax: number;
+  readonly speed: number;
+  readonly weaponType: number;
+  readonly weight: number;
+}
+
+function assembleWeapon(w: OnchainWeaponView): Weapon {
+  const known = findWeapon(w.name);
+  if (known) return known;
+  const type = WEAPON_TYPE_MAP[w.weaponType] ?? 'blade';
+  return {
+    name: w.name,
+    damageMin: w.damageMin,
+    damageMax: w.damageMax,
+    speed: w.speed,
+    type,
+    rarity: 'common',
+    weight: w.weight,
+  };
+}
+
+function assembleBrawler(
+  tokenId: number,
+  b: OnchainBrawlerView,
+  weapon: Weapon,
+  createdAt: number,
+): Brawler {
+  return {
+    tokenId,
+    name: b.name,
+    stats: {
+      strength: b.strength,
+      dexterity: b.dexterity,
+      constitution: b.constitution,
+      intelligence: b.intelligence,
+      wisdom: b.wisdom,
+      charisma: b.charisma,
+    },
+    weapon,
+    level: b.level,
+    xp: b.xp,
+    elo: b.elo,
+    wins: b.wins,
+    losses: b.losses,
+    ties: b.ties,
+    status: b.isDead ? 'dead' : 'alive',
+    createdAt,
+  };
+}
+
+interface DuelResultStruct {
+  readonly tokenA: bigint;
+  readonly tokenB: bigint;
+  readonly winnerId: number;
+  readonly rounds: number;
+  readonly seed: bigint;
+  readonly newEloA: number;
+  readonly newEloB: number;
+  readonly nonce: bigint;
+  readonly expiry: bigint;
+}
+
+function serializeResult(r: DuelResultStruct) {
+  return {
+    tokenA: r.tokenA.toString(),
+    tokenB: r.tokenB.toString(),
+    winnerId: r.winnerId,
+    rounds: r.rounds,
+    seed: r.seed.toString(),
+    newEloA: r.newEloA,
+    newEloB: r.newEloB,
+    nonce: r.nonce.toString(),
+    expiry: r.expiry.toString(),
+  };
+}
+
+export interface RunDuelResponse {
+  result: ReturnType<typeof serializeResult>;
+  signature: `0x${string}`;
+  events: readonly CombatEvent[];
+  winnerId: number | null;
+  rounds: number;
+  newEloA: number;
+  newEloB: number;
+  deltaA: number;
+  deltaB: number;
+}
+
+export async function POST(request: Request) {
+  let body: { tokenA?: unknown; tokenB?: unknown };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Request body must be JSON' }, { status: 400 });
+  }
+
+  const tokenA = Number(body.tokenA);
+  const tokenB = Number(body.tokenB);
+  if (!Number.isInteger(tokenA) || tokenA < 1) {
+    return NextResponse.json({ error: 'tokenA must be a positive integer' }, { status: 400 });
+  }
+  if (!Number.isInteger(tokenB) || tokenB < 1) {
+    return NextResponse.json({ error: 'tokenB must be a positive integer' }, { status: 400 });
+  }
+  if (tokenA === tokenB) {
+    return NextResponse.json({ error: 'tokenA and tokenB must differ' }, { status: 400 });
+  }
+
+  const signerKeyRaw = process.env.BRAWLERS_SIGNER_KEY;
+  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL;
+  const chainIdStr = process.env.NEXT_PUBLIC_CHAIN_ID;
+  const brawlersAddr = process.env.NEXT_PUBLIC_BRAWLERS_ADDRESS;
+  const duelAddr = process.env.NEXT_PUBLIC_DUEL_ADDRESS;
+
+  const missing: string[] = [];
+  if (!signerKeyRaw) missing.push('BRAWLERS_SIGNER_KEY');
+  if (!rpcUrl) missing.push('NEXT_PUBLIC_RPC_URL');
+  if (!chainIdStr) missing.push('NEXT_PUBLIC_CHAIN_ID');
+  if (!brawlersAddr) missing.push('NEXT_PUBLIC_BRAWLERS_ADDRESS');
+  if (!duelAddr) missing.push('NEXT_PUBLIC_DUEL_ADDRESS');
+  if (missing.length > 0 || !signerKeyRaw || !rpcUrl || !chainIdStr || !brawlersAddr || !duelAddr) {
+    return NextResponse.json(
+      { error: `Server env missing: ${missing.join(', ')}` },
+      { status: 500 },
+    );
+  }
+
+  const chainId = Number.parseInt(chainIdStr, 10);
+  if (!Number.isInteger(chainId) || chainId <= 0) {
+    return NextResponse.json(
+      { error: `NEXT_PUBLIC_CHAIN_ID is not a positive integer: ${chainIdStr}` },
+      { status: 500 },
+    );
+  }
+
+  const chain = buildChain(chainId, rpcUrl);
+  const client = createPublicClient({ chain, transport: http(rpcUrl) });
+  const signerKeyPrefixed = (
+    signerKeyRaw.startsWith('0x') ? signerKeyRaw : `0x${signerKeyRaw}`
+  ) as `0x${string}`;
+  let signerAccount;
+  try {
+    signerAccount = privateKeyToAccount(signerKeyPrefixed);
+  } catch (e) {
+    return NextResponse.json(
+      { error: `BRAWLERS_SIGNER_KEY is invalid: ${e instanceof Error ? e.message : String(e)}` },
+      { status: 500 },
+    );
+  }
+
+  try {
+    const [rawA, rawWa, rawB, rawWb] = await Promise.all([
+      client.readContract({
+        abi: BRAWLERS_ABI,
+        address: brawlersAddr as `0x${string}`,
+        functionName: 'getBrawler',
+        args: [BigInt(tokenA)],
+      }),
+      client.readContract({
+        abi: BRAWLERS_ABI,
+        address: brawlersAddr as `0x${string}`,
+        functionName: 'getBrawlerWeapon',
+        args: [BigInt(tokenA)],
+      }),
+      client.readContract({
+        abi: BRAWLERS_ABI,
+        address: brawlersAddr as `0x${string}`,
+        functionName: 'getBrawler',
+        args: [BigInt(tokenB)],
+      }),
+      client.readContract({
+        abi: BRAWLERS_ABI,
+        address: brawlersAddr as `0x${string}`,
+        functionName: 'getBrawlerWeapon',
+        args: [BigInt(tokenB)],
+      }),
+    ]);
+
+    const onchainA = rawA as unknown as OnchainBrawlerView;
+    const onchainB = rawB as unknown as OnchainBrawlerView;
+    const onchainWA = rawWa as unknown as OnchainWeaponView;
+    const onchainWB = rawWb as unknown as OnchainWeaponView;
+
+    if (onchainA.isDead) {
+      return NextResponse.json(
+        { error: `Brawler #${tokenA} is in the graveyard` },
+        { status: 400 },
+      );
+    }
+    if (onchainB.isDead) {
+      return NextResponse.json(
+        { error: `Brawler #${tokenB} is in the graveyard` },
+        { status: 400 },
+      );
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const weaponA = assembleWeapon(onchainWA);
+    const weaponB = assembleWeapon(onchainWB);
+    const brawlerA = assembleBrawler(tokenA, onchainA, weaponA, now);
+    const brawlerB = assembleBrawler(tokenB, onchainB, weaponB, now);
+
+    const seed = randomBig256();
+    const fight = simulateFight(brawlerA, brawlerB, seed);
+
+    const outcomeForA: Outcome =
+      fight.winnerId === null ? 'tie' : fight.winnerId === tokenA ? 'win' : 'loss';
+    const gamesA = brawlerA.wins + brawlerA.losses + brawlerA.ties;
+    const gamesB = brawlerB.wins + brawlerB.losses + brawlerB.ties;
+    const elo = applyDuelResult(brawlerA.elo, brawlerB.elo, gamesA, gamesB, outcomeForA);
+
+    const result: DuelResultStruct = {
+      tokenA: BigInt(tokenA),
+      tokenB: BigInt(tokenB),
+      winnerId: fight.winnerId ?? 0,
+      rounds: fight.rounds,
+      seed: fight.seed,
+      newEloA: elo.newA,
+      newEloB: elo.newB,
+      nonce: randomBig256(),
+      expiry: BigInt(now + DUEL_EXPIRY_SECONDS),
+    };
+
+    // Ask the contract to hash — avoids re-implementing abi.encode here.
+    // viem's type narrowing for struct args on readContract resolves to `never`
+    // for this call; the runtime shape is correct (matches the DuelResult struct
+    // in DUEL_ABI). Cast to bypass the overly-strict compile-time check.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const hash = (await client.readContract({
+      abi: DUEL_ABI,
+      address: duelAddr as `0x${string}`,
+      functionName: 'hashDuelResult',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      args: [result] as any,
+    })) as `0x${string}`;
+
+    // EIP-191 signMessage over the raw hash bytes. Matches
+    // Duel.sol's MessageHashUtils.toEthSignedMessageHash recover path.
+    const signature = await signerAccount.signMessage({ message: { raw: hash } });
+
+    const response: RunDuelResponse = {
+      result: serializeResult(result),
+      signature,
+      events: fight.events,
+      winnerId: fight.winnerId,
+      rounds: fight.rounds,
+      newEloA: elo.newA,
+      newEloB: elo.newB,
+      deltaA: elo.deltaA,
+      deltaB: elo.deltaB,
+    };
+    return NextResponse.json(response);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: `run-duel failed: ${message}` }, { status: 500 });
+  }
+}

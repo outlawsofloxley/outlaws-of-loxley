@@ -1,0 +1,138 @@
+/**
+ * Wagmi configuration — this is where we wire together:
+ *   - The custom "Brawlers Local" chain (or whatever the user pointed us at)
+ *   - The transport (HTTP over the RPC URL)
+ *   - The connectors (injected / browser wallet only for local dev)
+ *
+ * We lazy-initialize the config because env vars might not be populated at
+ * module-load time during SSR (e.g. Next.js build phase without .env.local).
+ * Client components call `getWagmiConfig()` inside the provider which runs
+ * after the browser has mounted.
+ */
+import { createConfig, http, fallback } from 'wagmi';
+import { injected } from 'wagmi/connectors';
+import { defineChain, type Chain } from 'viem';
+import { requireEnv } from './env';
+
+/** Per-chain RPC pool. Used for fallback transport so a single rate-limited
+ *  endpoint doesn't break the dapp. The env-configured RPC is tried first,
+ *  then the rest in order. Base Sepolia's `sepolia.base.org` is notoriously
+ *  rate-limited; publicnode + blastapi are much more generous. */
+function rpcPoolFor(chainId: number): string[] {
+  if (chainId === 84532) {
+    return [
+      'https://base-sepolia-rpc.publicnode.com',
+      'https://base-sepolia.public.blastapi.io',
+      'https://sepolia.base.org',
+    ];
+  }
+  if (chainId === 8453) {
+    return [
+      'https://base-rpc.publicnode.com',
+      'https://base.blockpi.network/v1/rpc/public',
+      'https://mainnet.base.org',
+    ];
+  }
+  return [];
+}
+
+/** Native gas token metadata per chain. Exported so UI code can label prices. */
+export function nativeCurrencyFor(chainId: number): {
+  name: string;
+  symbol: string;
+  decimals: 18;
+} {
+  if (chainId === 97) return { name: 'Test BNB', symbol: 'tBNB', decimals: 18 };
+  if (chainId === 56) return { name: 'BNB', symbol: 'BNB', decimals: 18 };
+  // ETH-denominated chains: Ethereum mainnet/Sepolia, Base, Base Sepolia, Anvil, etc.
+  return { name: 'Ether', symbol: 'ETH', decimals: 18 };
+}
+
+export function nativeSymbol(chainId: number): string {
+  return nativeCurrencyFor(chainId).symbol;
+}
+
+function chainNameFor(chainId: number): string {
+  if (chainId === 31337) return 'Anvil Local';
+  if (chainId === 97) return 'BSC Testnet';
+  if (chainId === 56) return 'BNB Smart Chain';
+  if (chainId === 8453) return 'Base';
+  if (chainId === 84532) return 'Base Sepolia';
+  if (chainId === 1) return 'Ethereum';
+  return `Chain ${chainId}`;
+}
+
+/** Build a viem `Chain` from env config. Includes the full RPC pool so
+ *  wallets that auto-add the chain inherit the redundant endpoints. */
+function buildChain(chainId: number, rpcUrl: string): Chain {
+  const pool = [rpcUrl, ...rpcPoolFor(chainId)].filter(
+    (u, i, arr) => arr.indexOf(u) === i,
+  );
+  return defineChain({
+    id: chainId,
+    name: chainNameFor(chainId),
+    nativeCurrency: nativeCurrencyFor(chainId),
+    rpcUrls: {
+      default: { http: pool },
+    },
+    // Multicall3 lives at the canonical deterministic address on most public
+    // EVM chains (verified for Base, BSC Testnet, Ethereum, etc.), but Anvil
+    // doesn't always predeploy it. Registering it where it exists lets wagmi's
+    // useReadContracts batch N reads into one RPC hop; on chains where it's
+    // missing, wagmi returns "Cannot decode zero data" errors instead of
+    // falling back. So: enable everywhere EXCEPT Anvil.
+    contracts:
+      chainId === 31337
+        ? undefined
+        : {
+            multicall3: {
+              address: '0xcA11bde05977b3631167028862bE2a173976CA11',
+              blockCreated: 0,
+            },
+          },
+    // Anvil doesn't have a block explorer — leaving this unset is fine.
+    // Mark mainnets distinctly so wallets can render "testnet" badges.
+    testnet: chainId !== 1 && chainId !== 56 && chainId !== 8453,
+  });
+}
+
+// Cache the config so re-renders don't rebuild it. `let` + guard is fine here
+// because this module is a singleton per browser session.
+let cached: ReturnType<typeof createConfig> | null = null;
+
+export function getWagmiConfig() {
+  if (cached) {
+    return cached;
+  }
+
+  const { env } = requireEnv();
+  const chain = buildChain(env.chainId, env.rpcUrl);
+
+  cached = createConfig({
+    chains: [chain],
+    connectors: [
+      // EIP-1193 provider exposed on window.ethereum. Works for:
+      //   - Desktop browser extensions (MetaMask, Rabby, Frame, Brave Wallet).
+      //   - Mobile dapps opened inside a wallet's in-app browser (MetaMask
+      //     mobile has one — tap the hamburger → Browser → enter URL).
+      // For mobile Chrome/Safari users without window.ethereum, the
+      // ConnectButton renders an "Open in MetaMask" deeplink that bounces
+      // them into MM's in-app browser, where this same connector works.
+      injected({ shimDisconnect: true }),
+    ],
+    transports: {
+      // Fallback transport — viem rotates through these on RPC errors so a
+      // single rate-limited endpoint can't kill mints / reads. Per-call
+      // retry config keeps user-facing actions responsive.
+      [chain.id]: fallback(
+        [env.rpcUrl, ...rpcPoolFor(chain.id)]
+          .filter((u, i, arr) => arr.indexOf(u) === i)
+          .map((u) => http(u, { timeout: 5000, retryCount: 2 })),
+        { rank: false },
+      ),
+    },
+    ssr: false,
+  });
+
+  return cached;
+}

@@ -1,0 +1,310 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Pixel-art / retro-game aesthetic inspired by Fantums of Opera.
+ * Fonts loaded from Google Fonts via the <link> tags in layout.tsx for
+ * the fastest possible first paint (no @import FOUT).
+ */
+
+@layer base {
+  html,
+  body {
+    /* Prevent any rubber-banding scroll on body; the app owns scrolling. */
+    background-color: theme('colors.brawl-bg');
+    color: theme('colors.brawl-text');
+    font-family: theme('fontFamily.mono');
+    /* Crisper pixel rendering on high-DPI screens */
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* Hard-stop horizontal overflow on mobile — no page should scroll sideways. */
+    overflow-x: hidden;
+  }
+  body {
+    /* Honor iPhone safe-area insets (notch, home indicator). */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Pixel-art images should never be smoothed */
+  img.pixel,
+  canvas.pixel {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+  }
+}
+
+@layer components {
+  /*
+   * A bordered card that matches the Fantums "content panel" look: dark
+   * brick-tinted background with a subtle warm-brown border.
+   */
+  .brawl-card {
+    background-color: theme('colors.brawl-panel');
+    border: 1px solid theme('colors.brawl-border');
+    background-image: theme('backgroundImage.brawl-brick');
+    background-size: cover;
+  }
+
+  .brawl-card-hover:hover {
+    background-color: theme('colors.brawl-panel-hover');
+    border-color: theme('colors.brawl-orange');
+    transition: background-color 120ms ease, border-color 120ms ease;
+  }
+
+  /*
+   * Primary button — solid orange with no gradient, matching Fantums
+   * "FIND GOTHUMS" and similar big CTAs.
+   */
+  .brawl-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625rem 1.25rem;
+    /* 44px minimum tap target for iOS accessibility. */
+    min-height: 2.75rem;
+    font-family: theme('fontFamily.pixel');
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: theme('colors.brawl-text');
+    background-color: theme('colors.brawl-orange');
+    border: 2px solid theme('colors.brawl-orange');
+    cursor: pointer;
+    user-select: none;
+    /* Keep labels on a single line when space allows, but break when needed. */
+    white-space: nowrap;
+    transition: background-color 120ms ease, transform 80ms ease;
+  }
+  .brawl-btn:hover {
+    background-color: theme('colors.brawl-orange-hover');
+  }
+  .brawl-btn:active {
+    transform: translateY(1px);
+  }
+  .brawl-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .brawl-btn-secondary {
+    background-color: transparent;
+    color: theme('colors.brawl-text');
+    border: 2px solid theme('colors.brawl-border');
+  }
+  .brawl-btn-secondary:hover {
+    border-color: theme('colors.brawl-orange');
+    background-color: transparent;
+  }
+
+  .brawl-btn-danger {
+    background-color: theme('colors.brawl-red');
+    border-color: theme('colors.brawl-red');
+  }
+  .brawl-btn-danger:hover {
+    background-color: #d74e4e;
+  }
+
+  /*
+   * Pixel-font header (used for page titles, section titles).
+   * Wide letter-spacing & uppercase because that's Fantums' signature look.
+   */
+  .brawl-header {
+    font-family: theme('fontFamily.pixel');
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* Generic form input for dashboard + forms. 16px text so iOS Safari
+   * doesn't auto-zoom on focus. */
+  .brawl-input {
+    display: block;
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    font-family: theme('fontFamily.mono');
+    color: theme('colors.brawl-text');
+    background-color: theme('colors.brawl-bg');
+    border: 1px solid theme('colors.brawl-border');
+    outline: none;
+  }
+  .brawl-input:focus {
+    border-color: theme('colors.brawl-orange');
+  }
+}
+
+/* Duel animation keyframes */
+@layer utilities {
+  @keyframes damage-float {
+    0% {
+      opacity: 0;
+      transform: translate(0, 10px);
+    }
+    15% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(0, -40px);
+    }
+  }
+  .animate-damage-float {
+    animation: damage-float 1.2s ease-out forwards;
+  }
+
+  @keyframes hit-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(-6px);
+    }
+    40% {
+      transform: translateX(6px);
+    }
+    60% {
+      transform: translateX(-3px);
+    }
+    80% {
+      transform: translateX(3px);
+    }
+  }
+  .animate-hit-shake {
+    animation: hit-shake 0.4s ease-in-out;
+  }
+
+  @keyframes clash-spark {
+    0% {
+      opacity: 0;
+      transform: scale(0.4) rotate(0deg);
+    }
+    40% {
+      opacity: 1;
+      transform: scale(1.6) rotate(180deg);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(2.2) rotate(360deg);
+    }
+  }
+  .animate-clash-spark {
+    animation: clash-spark 0.5s ease-out forwards;
+  }
+
+  /* Thunder / disco / lightning / shake / blood — duel animation pizazz */
+
+  @keyframes disco-strobe {
+    0% { background: transparent; }
+    15% { background: rgba(255, 0, 150, 0.4); }
+    30% { background: rgba(0, 200, 255, 0.4); }
+    45% { background: rgba(255, 220, 0, 0.4); }
+    60% { background: rgba(120, 255, 0, 0.4); }
+    75% { background: rgba(180, 0, 255, 0.4); }
+    100% { background: transparent; }
+  }
+  .animate-disco-strobe {
+    animation: disco-strobe 0.75s ease-out forwards;
+  }
+
+  @keyframes lightning-strike {
+    0% { opacity: 0; }
+    10% { opacity: 1; filter: drop-shadow(0 0 8px #FFD84A); }
+    30% { opacity: 0.3; }
+    45% { opacity: 1; filter: drop-shadow(0 0 12px #FFF8C0); }
+    100% { opacity: 0; }
+  }
+  .animate-lightning-strike {
+    animation: lightning-strike 0.6s ease-out forwards;
+  }
+
+  @keyframes arena-shake {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-4px, 2px); }
+    20% { transform: translate(4px, -2px); }
+    30% { transform: translate(-3px, 3px); }
+    40% { transform: translate(3px, -1px); }
+    50% { transform: translate(-2px, 2px); }
+    60% { transform: translate(2px, -3px); }
+    70% { transform: translate(-2px, 1px); }
+    80% { transform: translate(2px, -2px); }
+    90% { transform: translate(-1px, 1px); }
+  }
+  .animate-arena-shake {
+    animation: arena-shake 0.4s ease-in-out;
+  }
+
+  @keyframes blood-splat {
+    0% { opacity: 0; transform: scale(0.5); }
+    20% { opacity: 1; transform: scale(1.2); }
+    60% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1); }
+  }
+  .animate-blood-splat {
+    animation: blood-splat 0.6s ease-out forwards;
+  }
+
+  @keyframes overlay-fade-in {
+    0% { opacity: 0; transform: translateY(8px) scale(0.96); }
+    60% { opacity: 1; transform: translateY(0) scale(1.02); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .animate-overlay-fade-in {
+    animation: overlay-fade-in 0.4s ease-out forwards;
+  }
+
+  /* Magical idle float for battle portraits */
+  @keyframes float-idle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+  }
+  .animate-float-idle {
+    animation: float-idle 2.6s ease-in-out infinite;
+  }
+
+  /* Death sequence — body slump, ghost rising, RIP banner drop. */
+  @keyframes death-slump {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  .animate-death-slump {
+    animation: death-slump 0.5s ease-in forwards;
+  }
+
+  @keyframes ghost-rise {
+    0% {
+      opacity: 0;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+    15% {
+      opacity: 0.9;
+      transform: translateY(-4px) scale(1.02);
+    }
+    60% {
+      opacity: 0.7;
+      transform: translateY(-40px) scale(1.05);
+      filter: blur(1px);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-80px) scale(1.1);
+      filter: blur(3px);
+    }
+  }
+  .animate-ghost-rise {
+    animation: ghost-rise 3s ease-out forwards;
+  }
+
+  @keyframes rip-banner {
+    0% { opacity: 0; transform: translateY(-20px) scale(0.6); }
+    40% { opacity: 1; transform: translateY(0) scale(1.15); }
+    70% { transform: translateY(0) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .animate-rip-banner {
+    animation: rip-banner 0.8s ease-out forwards;
+  }
+}

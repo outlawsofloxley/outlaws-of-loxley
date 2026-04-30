@@ -1,0 +1,20 @@
+{
+  "name": "baseicbrawlers-bots",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BASEic Brawlers community bots — welcome / raid / leaderboard. See ../README.md.",
+  "type": "module",
+  "scripts": {
+    "welcome": "node welcome-bot/index.js",
+    "raid": "node raid-bot/index.js",
+    "leaderboard": "node leaderboard-bot/index.js",
+    "all": "node run-all.js"
+  },
+  "dependencies": {
+    "grammy": "^1.24.0",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

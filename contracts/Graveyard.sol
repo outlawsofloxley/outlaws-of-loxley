@@ -1,0 +1,193 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Brawlers} from "./Brawlers.sol";
+import {Duel} from "./Duel.sol";
+
+/**
+ * @title Graveyard
+ * @notice Manages dead-brawler revival.
+ *
+ * @dev Only the Brawler's owner can revive it. Resurrection pays a fee
+ *      (default 0.01 ETH, configurable by owner) to the treasury address.
+ *      Dead brawlers have their loss streak reset to 0 on resurrection.
+ *
+ *      The Graveyard contract is authorized on Brawlers.setGraveyardContract()
+ *      and calls Brawlers.resurrect() after fee payment.
+ */
+contract Graveyard is Ownable, Pausable, ReentrancyGuard {
+    // ─── Storage ─────────────────────────────────────────────────────
+
+    Brawlers public immutable brawlers;
+    Duel public immutable duel;
+
+    /// @notice Base cost for common brawlers at 0 wins. Per-brawler cost
+    ///         scales by rarity + wins — see `costFor(tokenId)`.
+    uint256 public resurrectionCost;
+
+    /// @notice Tier multipliers scaled by 10. Applied in `costFor` as
+    ///         `cost = base × mult / 10 × (10 + wins) / 10`. Index 0..5 maps
+    ///         to Common..King. Default set in constructor to the 2026-04-24
+    ///         curve: [10, 15, 25, 40, 70, 150] (i.e. 1×/1.5×/2.5×/4×/7×/15×).
+    uint256[6] public tierMults;
+
+    /// @notice Address that receives resurrection fees.
+    address public treasury;
+
+    // ─── Events ──────────────────────────────────────────────────────
+
+    event Resurrected(uint256 indexed tokenId, address indexed by, uint256 paid);
+    event ResurrectionCostChanged(uint256 oldCost, uint256 newCost);
+    event TreasuryChanged(address indexed oldTreasury, address indexed newTreasury);
+    event TierMultsChanged(uint256[6] newMults);
+
+    // ─── Errors ──────────────────────────────────────────────────────
+
+    error NotOwner();
+    error NotDead();
+    error InsufficientPayment(uint256 required, uint256 sent);
+    error TreasuryTransferFailed();
+    error ZeroTreasury();
+
+    // ─── Constructor ─────────────────────────────────────────────────
+
+    constructor(
+        address initialOwner,
+        address _brawlers,
+        address _duel,
+        address _treasury,
+        uint256 _resurrectionCost
+    ) Ownable(initialOwner) {
+        require(_brawlers != address(0), "Graveyard: zero brawlers");
+        require(_duel != address(0), "Graveyard: zero duel");
+        if (_treasury == address(0)) revert ZeroTreasury();
+        brawlers = Brawlers(_brawlers);
+        duel = Duel(_duel);
+        treasury = _treasury;
+        resurrectionCost = _resurrectionCost;
+        // Default curve per 2026-04-24 spec: min $100 at Common+0wins; scales
+        // up by rarity and by wins. Values are multipliers × 10 (so 15 → 1.5×).
+        tierMults = [uint256(10), 15, 25, 40, 70, 150];
+    }
+
+    // ─── Admin ───────────────────────────────────────────────────────
+
+    function setResurrectionCost(uint256 newCost) external onlyOwner {
+        emit ResurrectionCostChanged(resurrectionCost, newCost);
+        resurrectionCost = newCost;
+    }
+
+    function setTreasury(address newTreasury) external onlyOwner {
+        if (newTreasury == address(0)) revert ZeroTreasury();
+        emit TreasuryChanged(treasury, newTreasury);
+        treasury = newTreasury;
+    }
+
+    /**
+     * @notice Update the per-tier multipliers. Values are scaled by 10 (e.g.
+     *         15 → 1.5× multiplier). Array order is [common, uncommon, rare,
+     *         legendary, epic, king].
+     */
+    function setTierMults(uint256[6] calldata newMults) external onlyOwner {
+        tierMults = newMults;
+        emit TierMultsChanged(newMults);
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
+    // ─── Views ───────────────────────────────────────────────────────
+
+    /**
+     * @notice Per-brawler resurrection cost. Formula:
+     *
+     *           cost = resurrectionCost × tierMult / 10 × (10 + wins) / 10
+     *
+     *         Where `tierMult` is the brawler's rarity tier multiplier
+     *         (scaled by 10 — e.g. 15 means 1.5×) and `wins` is its total
+     *         wins on-chain. Each win adds +10% on top of the tier cost.
+     *
+     *         Default tierMults: [10, 15, 25, 40, 70, 150] → with a base of
+     *         $100:
+     *           - Common @ 0 wins: $100
+     *           - Common @ 10 wins: $200
+     *           - Epic @ 0 wins: $700
+     *           - Epic @ 10 wins: $1400
+     *           - King @ 0 wins: $1500
+     */
+    /// @notice Token IDs 1..FOUNDER_FREE_RESURRECT_CAP get one free
+    ///         resurrection ever. Subsequent revives charge the normal
+    ///         `costFor(tokenId)`. Tracked via `hasUsedFreeResurrect`.
+    uint256 public constant FOUNDER_FREE_RESURRECT_CAP = 100;
+
+    /// @notice True after a founder brawler has used its one-time free
+    ///         resurrection. Once flipped, future resurrects pay full price.
+    mapping(uint256 => bool) public hasUsedFreeResurrect;
+
+    function costFor(uint256 tokenId) public view returns (uint256) {
+        // Founder freebie — first resurrect ever for tokenId 1..100 is free.
+        if (tokenId <= FOUNDER_FREE_RESURRECT_CAP && !hasUsedFreeResurrect[tokenId]) {
+            return 0;
+        }
+        uint8 tier = brawlers.rarityOf(tokenId);
+        uint256 mult = tierMults[tier];
+        uint32 wins = brawlers.getBrawler(tokenId).wins;
+        // cost = base × mult × (10 + wins) / 100
+        return (resurrectionCost * mult * (10 + wins)) / 100;
+    }
+
+    // ─── External: resurrect ─────────────────────────────────────────
+
+    /**
+     * @notice Revive a dead brawler. Caller must own it and pay
+     *         `costFor(tokenId)` — scaled by rarity (free for first
+     *         resurrect of token IDs 1..100).
+     * @param tokenId The dead brawler.
+     */
+    function resurrect(uint256 tokenId) external payable whenNotPaused nonReentrant {
+        if (brawlers.ownerOf(tokenId) != msg.sender) revert NotOwner();
+        if (brawlers.isAlive(tokenId)) revert NotDead();
+
+        uint256 required = costFor(tokenId);
+        if (msg.value < required) {
+            revert InsufficientPayment(required, msg.value);
+        }
+
+        // Mark founder's free-revive used BEFORE forwarding funds so the
+        // second revive pays normally even if the first was free.
+        if (tokenId <= FOUNDER_FREE_RESURRECT_CAP && !hasUsedFreeResurrect[tokenId]) {
+            hasUsedFreeResurrect[tokenId] = true;
+        }
+
+        // Reset consecutive-loss counter so revived brawler isn't one loss from death.
+        duel.resetStreak(tokenId);
+
+        // Forward full fee to treasury (overpay allowed — goes to treasury).
+        // Skip if msg.value is 0 (founder free revive).
+        if (msg.value > 0) {
+            (bool ok,) = treasury.call{value: msg.value}("");
+            if (!ok) revert TreasuryTransferFailed();
+        }
+
+        brawlers.resurrect(tokenId);
+        emit Resurrected(tokenId, msg.sender, msg.value);
+    }
+
+    // ─── Fallback: reject direct sends ───────────────────────────────
+
+    receive() external payable {
+        revert("Graveyard: use resurrect()");
+    }
+
+    fallback() external payable {
+        revert("Graveyard: invalid call");
+    }
+}
