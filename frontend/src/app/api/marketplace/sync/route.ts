@@ -11,14 +11,18 @@
  * Same throttle + RPC rotation pattern as the duel sync so we stay under
  * BSC public RPC rate limits and Hobby's 10s serverless budget.
  */
-import { createPublicClient, defineChain, http, parseAbiItem, type Log } from 'viem';
+import { createPublicClient, defineChain, http, parseAbi, parseAbiItem, type Log, type PublicClient } from 'viem';
 import {
   deleteListing,
   ensureMarketSchema,
+  getAllCachedTokenIds,
   getMarketSyncState,
+  getTrackedMarketplaceAddress,
   setMarketLastSyncedBlock,
+  setTrackedMarketplaceAddress,
   updateListingPrice,
   upsertListing,
+  wipeAllListings,
 } from '@/lib/marketDb';
 import { isDbConfigured } from '@/lib/duelDb';
 
@@ -37,6 +41,10 @@ const PRICE_UPDATED_EVENT = parseAbiItem(
 const SOLD_EVENT = parseAbiItem(
   'event Sold(uint256 indexed tokenId, address indexed seller, address indexed buyer, uint256 price, uint256 fee)',
 );
+
+/// Tiny ABI subset for the reconciliation pass. We don't want to import the
+/// full MARKETPLACE_ABI here because it's TS-typed for client components.
+const ISLISTED_ABI = parseAbi(['function isListed(uint256 tokenId) view returns (bool)']);
 
 type ListedLog = Log<bigint, number, false, typeof LISTED_EVENT>;
 type UnlistedLog = Log<bigint, number, false, typeof UNLISTED_EVENT>;
@@ -74,6 +82,39 @@ type EventRow =
   | { type: 'price-updated'; blockNumber: bigint; logIndex: number; tokenId: number; newPrice: bigint }
   | { type: 'sold'; blockNumber: bigint; logIndex: number; tokenId: number };
 
+/// Walk every cached row and confirm it's still listed on-chain. Drops any
+/// row whose token isListed = false. Catches ghosts left behind when an
+/// Unlisted/Sold event was missed during a cursor jump or RPC outage.
+async function reconcileCachedListings(
+  clients: PublicClient[],
+  marketAddr: `0x${string}`,
+  tokenIds: number[],
+): Promise<{ pruned: number; checked: number }> {
+  let pruned = 0;
+  for (const tokenId of tokenIds) {
+    let stillListed: boolean | null = null;
+    for (const c of clients) {
+      try {
+        stillListed = (await c.readContract({
+          abi: ISLISTED_ABI,
+          address: marketAddr,
+          functionName: 'isListed',
+          args: [BigInt(tokenId)],
+        })) as boolean;
+        break;
+      } catch {
+        continue;
+      }
+    }
+    // If every RPC failed, leave the row alone, retry on the next sync.
+    if (stillListed === false) {
+      await deleteListing(tokenId);
+      pruned++;
+    }
+  }
+  return { pruned, checked: tokenIds.length };
+}
+
 async function syncImpl(): Promise<Response> {
   if (!isDbConfigured()) {
     return Response.json({ ok: false, error: 'POSTGRES_URL not configured' }, { status: 503 });
@@ -89,29 +130,60 @@ async function syncImpl(): Promise<Response> {
 
   await ensureMarketSchema();
 
+  // Detect Marketplace contract swap (e.g. v4, v5 redeploy). Old listings
+  // would otherwise sit forever in the cache because the new contract emits
+  // no events for those tokenIds. Wipe and start fresh when we notice the
+  // tracked address differ from the configured one.
+  const tracked = await getTrackedMarketplaceAddress();
+  const configured = marketAddr.toLowerCase();
+  let wipedRows = 0;
+  if (tracked === null) {
+    await setTrackedMarketplaceAddress(configured);
+  } else if (tracked !== configured) {
+    wipedRows = await wipeAllListings();
+    await setTrackedMarketplaceAddress(configured);
+    await setMarketLastSyncedBlock(0n);
+    console.warn(
+      `[marketplace/sync] tracked addr ${tracked} != configured ${configured}, wiped ${wipedRows} stale rows`,
+    );
+  }
+
   const state = await getMarketSyncState();
   const now = new Date();
-  if (
-    state.updatedAt &&
-    (now.getTime() - state.updatedAt.getTime()) / 1000 < STALE_SECONDS
-  ) {
+  const throttled =
+    state.updatedAt !== null &&
+    (now.getTime() - state.updatedAt.getTime()) / 1000 < STALE_SECONDS &&
+    wipedRows === 0;
+
+  const rpcPool = chainId === 84532
+    ? [...BASE_SEPOLIA_RPC_POOL, rpcUrl].filter((u, i, arr) => arr.indexOf(u) === i)
+    : [rpcUrl];
+  const clients = rpcPool.map(
+    (u) =>
+      createPublicClient({
+        chain: chain(chainId, u),
+        transport: http(u, { timeout: RPC_TIMEOUT_MS }),
+      }) as PublicClient,
+  );
+
+  // Always reconcile the cache against on-chain state, even when chunk-level
+  // event sync is throttled. This catches ghost rows left over from missed
+  // Unlisted/Sold events (cursor jumps, RPC outages, contract redeploys
+  // without a wipe).
+  const cachedIds = await getAllCachedTokenIds();
+  const reconciliation = cachedIds.length > 0
+    ? await reconcileCachedListings(clients, marketAddr as `0x${string}`, cachedIds)
+    : { pruned: 0, checked: 0 };
+
+  if (throttled) {
     return Response.json({
       ok: true,
       skipped: true,
       reason: 'throttled',
       lastBlock: state.lastBlock?.toString() ?? null,
+      reconciliation,
     });
   }
-
-  const rpcPool = chainId === 84532
-    ? [...BASE_SEPOLIA_RPC_POOL, rpcUrl].filter((u, i, arr) => arr.indexOf(u) === i)
-    : [rpcUrl];
-  const clients = rpcPool.map((u) =>
-    createPublicClient({
-      chain: chain(chainId, u),
-      transport: http(u, { timeout: RPC_TIMEOUT_MS }),
-    }),
-  );
 
   let latest: bigint = 0n;
   for (const c of clients) {
@@ -306,6 +378,8 @@ async function syncImpl(): Promise<Response> {
     lastBlock: finalLastBlock.toString(),
     latestChainBlock: latest.toString(),
     fullyCaughtUp: finalLastBlock >= latest,
+    reconciliation,
+    wipedRows,
   });
 }
 

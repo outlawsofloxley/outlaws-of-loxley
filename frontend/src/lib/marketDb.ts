@@ -78,6 +78,32 @@ export async function setMarketLastSyncedBlock(block: bigint): Promise<void> {
   `;
 }
 
+/// Reads the marketplace contract address the cache was built against. Used
+/// to detect "operator swapped Marketplace contracts" and trigger a wipe.
+export async function getTrackedMarketplaceAddress(): Promise<string | null> {
+  const { rows } = await sql`SELECT value FROM market_sync_state WHERE key = 'marketplace_addr'`;
+  const first = rows[0] as { value?: string } | undefined;
+  return first?.value?.toLowerCase() ?? null;
+}
+
+export async function setTrackedMarketplaceAddress(addr: string): Promise<void> {
+  const value = addr.toLowerCase();
+  await sql`
+    INSERT INTO market_sync_state (key, value, updated_at)
+    VALUES ('marketplace_addr', ${value}, NOW())
+    ON CONFLICT (key) DO UPDATE
+      SET value = EXCLUDED.value,
+          updated_at = EXCLUDED.updated_at
+  `;
+}
+
+/// Drop every cached listing. Used when the configured Marketplace contract
+/// changes so old-deploy ghosts don't leak into the new UI.
+export async function wipeAllListings(): Promise<number> {
+  const result = await sql`DELETE FROM market_listings`;
+  return result.rowCount ?? 0;
+}
+
 export async function upsertListing(ev: {
   tokenId: number;
   seller: string;
@@ -128,4 +154,13 @@ export async function queryListings(opts: { limit: number }): Promise<ListingRow
     LIMIT ${limit}
   `;
   return rows;
+}
+
+/// Return every cached tokenId. Used by the sync reconciliation pass to
+/// verify each row still exists on-chain.
+export async function getAllCachedTokenIds(): Promise<number[]> {
+  const { rows } = await sql<{ token_id: number }>`
+    SELECT token_id FROM market_listings
+  `;
+  return rows.map((r) => r.token_id);
 }
