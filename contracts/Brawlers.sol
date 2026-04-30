@@ -182,6 +182,8 @@ contract Brawlers is ERC721, Ownable, Pausable {
     error InvalidTokenId(uint256 tokenId);
     error InvalidTier(uint8 tier);
     error KingAlreadyMinted();
+    error AlreadySet();
+    error ZeroAddress();
 
     // ─── Modifiers ───────────────────────────────────────────────────
 
@@ -216,23 +218,36 @@ contract Brawlers is ERC721, Ownable, Pausable {
 
     // ─── External: admin ─────────────────────────────────────────────
 
+    /// @notice Wire the Duel contract. One-time-set so a compromised owner
+    ///         key can't repoint to a malicious Duel that flips every
+    ///         brawler's wins/losses. Once set the address is frozen.
     function setDuelContract(address _duelContract) external onlyOwner {
-        emit DuelContractSet(duelContract, _duelContract);
+        if (duelContract != address(0)) revert AlreadySet();
+        if (_duelContract == address(0)) revert ZeroAddress();
+        emit DuelContractSet(address(0), _duelContract);
         duelContract = _duelContract;
     }
 
+    /// @notice Wire the Graveyard contract. One-time-set, see setDuelContract
+    ///         for the reasoning.
     function setGraveyardContract(address _graveyardContract) external onlyOwner {
-        emit GraveyardContractSet(graveyardContract, _graveyardContract);
+        if (graveyardContract != address(0)) revert AlreadySet();
+        if (_graveyardContract == address(0)) revert ZeroAddress();
+        emit GraveyardContractSet(address(0), _graveyardContract);
         graveyardContract = _graveyardContract;
     }
 
     /**
-     * @notice Authorize a MintDrop contract to call mint(). Set once post-deploy
-     *         so the initial sale goes through MintDrop's payment paths instead
-     *         of anonymous free mints.
+     * @notice Authorize a MintDrop contract to call mint(). One-time-set:
+     *         once a MintDrop is wired the address is frozen, so a stolen
+     *         owner key can't repoint to a malicious minter that drains the
+     *         remaining supply. The initial sale goes through MintDrop's
+     *         payment paths instead of anonymous free mints.
      */
     function setMintDrop(address _mintDrop) external onlyOwner {
-        emit MintDropContractSet(mintDropContract, _mintDrop);
+        if (mintDropContract != address(0)) revert AlreadySet();
+        if (_mintDrop == address(0)) revert ZeroAddress();
+        emit MintDropContractSet(address(0), _mintDrop);
         mintDropContract = _mintDrop;
     }
 

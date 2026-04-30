@@ -7,7 +7,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {Brawlers} from "./Brawlers.sol";
 
 /**
@@ -32,10 +32,26 @@ import {Brawlers} from "./Brawlers.sol";
  *      Death logic: 3 consecutive losses kill a brawler. Streak counter
  *      lives here (duel-specific state) rather than on Brawlers.
  */
-contract Duel is Ownable, Pausable, ReentrancyGuard {
+contract Duel is Ownable, Pausable, ReentrancyGuard, EIP712 {
     using ECDSA for bytes32;
-    using MessageHashUtils for bytes32;
     using SafeERC20 for IERC20;
+
+    // ─── EIP-712 ─────────────────────────────────────────────────────
+
+    /// @notice EIP-712 domain name. Combined with version, chainid, and
+    ///         verifyingContract, the domain separator binds every signature
+    ///         to THIS contract on THIS chain. Stops cross-chain (Sepolia
+    ///         vs mainnet) and cross-deploy (v1 vs v2) signature replay.
+    string private constant EIP712_NAME = "BASEicBrawlersDuel";
+    string private constant EIP712_VERSION = "1";
+
+    /// @notice Typehash for the DuelResult struct. Must match the off-chain
+    ///         signer's typed-data definition exactly. Order, names, and
+    ///         types are all part of the hash, change any of them and old
+    ///         signatures stop verifying.
+    bytes32 private constant DUEL_RESULT_TYPEHASH = keccak256(
+        "DuelResult(uint256 tokenA,uint256 tokenB,uint32 winnerId,uint16 rounds,uint256 seed,uint32 newEloA,uint32 newEloB,uint256 nonce,uint256 expiry)"
+    );
 
     // ─── Constants ───────────────────────────────────────────────────
 
@@ -44,6 +60,13 @@ contract Duel is Ownable, Pausable, ReentrancyGuard {
     /// @notice Max devShareBps value. 10000 = 100%. Capped at 20% to prevent
     ///         the owner from accidentally setting a confiscatory rate.
     uint16 public constant MAX_DEV_BPS = 2000;
+    /// @notice Hard cap on per-fighter stake. Stops a compromised owner key
+    ///         from setting a stake nobody can afford. 10,000 BRAWL is 10% of
+    ///         the entire fixed supply, well above any sane fight cost.
+    uint256 public constant MAX_FIGHT_COST = 10_000 * 10 ** 18;
+    /// @notice Hard cap on the founder discount in basis points. 10000 = 100%
+    ///         (free fights for founders). The default is 2500 = 25%.
+    uint256 public constant MAX_FOUNDER_DISCOUNT_BPS = 10_000;
 
     // ─── Types ───────────────────────────────────────────────────────
 
@@ -127,6 +150,8 @@ contract Duel is Ownable, Pausable, ReentrancyGuard {
     error NotGraveyard();
     error DevShareTooHigh(uint16 requested);
     error ZeroDevTreasury();
+    error FightCostTooHigh(uint256 requested);
+    error FounderDiscountTooHigh(uint256 requested);
 
     // ─── Constructor ─────────────────────────────────────────────────
 
@@ -148,7 +173,7 @@ contract Duel is Ownable, Pausable, ReentrancyGuard {
         address _devTreasury,
         uint256 _fightCost,
         uint16 _devShareBps
-    ) Ownable(initialOwner) {
+    ) Ownable(initialOwner) EIP712(EIP712_NAME, EIP712_VERSION) {
         require(_brawlers != address(0), "Duel: zero brawlers");
         if (_trustedSigner == address(0)) revert SignerMustBeNonZero();
         if (_devTreasury == address(0)) revert ZeroDevTreasury();
@@ -195,6 +220,7 @@ contract Duel is Ownable, Pausable, ReentrancyGuard {
     {
         if (_devShareBps > MAX_DEV_BPS) revert DevShareTooHigh(_devShareBps);
         if (_devTreasury == address(0)) revert ZeroDevTreasury();
+        if (_fightCost > MAX_FIGHT_COST) revert FightCostTooHigh(_fightCost);
         fightCost = _fightCost;
         devShareBps = _devShareBps;
         devTreasury = _devTreasury;
@@ -281,7 +307,7 @@ contract Duel is Ownable, Pausable, ReentrancyGuard {
     /// @notice Update the founder fight discount. Owner-only.
     /// @param newBps New discount in basis points (0..10000).
     function setFounderDiscountBps(uint256 newBps) external onlyOwner {
-        require(newBps <= 10000, "Duel: discount > 100%");
+        if (newBps > MAX_FOUNDER_DISCOUNT_BPS) revert FounderDiscountTooHigh(newBps);
         founderDiscountBps = newBps;
         emit FounderDiscountChanged(newBps);
     }
@@ -370,9 +396,11 @@ contract Duel is Ownable, Pausable, ReentrancyGuard {
         if (block.timestamp > result.expiry) revert Expired();
         if (usedNonces[result.nonce]) revert NonceAlreadyUsed();
 
-        // Signature verification (keep temporaries in this frame only)
-        bytes32 messageHash = hashDuelResult(result);
-        address recovered = messageHash.toEthSignedMessageHash().recover(signature);
+        // Signature verification. hashDuelResult already returns the final
+        // EIP-712 digest (domain-separated by chainid + address(this)), so we
+        // recover directly without an extra EIP-191 wrap.
+        bytes32 digest = hashDuelResult(result);
+        address recovered = ECDSA.recover(digest, signature);
         if (recovered != trustedSigner) revert InvalidSignature();
 
         // Liveness
@@ -433,19 +461,42 @@ contract Duel is Ownable, Pausable, ReentrancyGuard {
     // ─── External: helper for off-chain signing ──────────────────────
 
     /**
-     * @notice Compute the canonical hash of a DuelResult, as signed by backend.
-     * @dev Off-chain workflow to produce signatures that verify here:
-     *      1. Compute hash = keccak256(abi.encode(tokenA, tokenB, winnerId,
-     *         rounds, seed, newEloA, newEloB, nonce, expiry)).
-     *      2. Wrap: ethHash = keccak256("\x19Ethereum Signed Message:\n32" || hash).
-     *      3. Sign ethHash with trustedSigner's private key.
-     *      4. Submit (result, signature) to submitDuel.
+     * @notice Compute the EIP-712 digest of a DuelResult, as signed by the
+     *         trusted backend. Includes the domain separator (chainid +
+     *         address(this) + name + version), so a signature for the Sepolia
+     *         Duel cannot be replayed on the mainnet Duel and vice versa.
      *
-     *      ethers.js: signer.signMessage(ethers.getBytes(hash)) does step 2+3.
+     * @dev Off-chain workflow (ethers v6):
+     *
+     *      const domain = {
+     *        name: "BASEicBrawlersDuel",
+     *        version: "1",
+     *        chainId,                    // current chain
+     *        verifyingContract: duelAddr // this contract's address
+     *      };
+     *      const types = {
+     *        DuelResult: [
+     *          { name: "tokenA",   type: "uint256" },
+     *          { name: "tokenB",   type: "uint256" },
+     *          { name: "winnerId", type: "uint32"  },
+     *          { name: "rounds",   type: "uint16"  },
+     *          { name: "seed",     type: "uint256" },
+     *          { name: "newEloA",  type: "uint32"  },
+     *          { name: "newEloB",  type: "uint32"  },
+     *          { name: "nonce",    type: "uint256" },
+     *          { name: "expiry",   type: "uint256" },
+     *        ],
+     *      };
+     *      const sig = await signer.signTypedData(domain, types, result);
+     *
+     *      Submit (result, sig) to submitDuel. The contract recovers via
+     *      ECDSA.recover(hashDuelResult(result), sig) and asserts it equals
+     *      trustedSigner.
      */
-    function hashDuelResult(DuelResult calldata r) public pure returns (bytes32) {
-        return keccak256(
+    function hashDuelResult(DuelResult calldata r) public view returns (bytes32) {
+        bytes32 structHash = keccak256(
             abi.encode(
+                DUEL_RESULT_TYPEHASH,
                 r.tokenA,
                 r.tokenB,
                 r.winnerId,
@@ -457,5 +508,12 @@ contract Duel is Ownable, Pausable, ReentrancyGuard {
                 r.expiry
             )
         );
+        return _hashTypedDataV4(structHash);
+    }
+
+    /// @notice EIP-712 domain separator for the Duel contract. Public so the
+    ///         dashboard can verify the signing config matches at a glance.
+    function domainSeparator() external view returns (bytes32) {
+        return _domainSeparatorV4();
     }
 }

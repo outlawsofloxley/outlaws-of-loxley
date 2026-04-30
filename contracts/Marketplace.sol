@@ -182,13 +182,17 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable, IERC721Receiver {
         uint256 sellerProceeds = l.price - fee;
         uint256 refund = msg.value - l.price;
 
-        // Transfer the NFT. safeTransferFrom catches contract-to-contract
-        // receiver issues (non-receivers revert via onERC721Received).
-        brawlers.safeTransferFrom(l.seller, msg.sender, tokenId);
-
+        // Pay everyone first so by the time the buyer's onERC721Received
+        // hook fires, every state change has settled. Removes the inconsistent
+        // window where an external observer could see an empty listing AND
+        // the NFT already owned by the buyer while funds are still in flight.
         if (sellerProceeds > 0) _safeTransfer(payable(l.seller), sellerProceeds);
         if (fee > 0) _safeTransfer(payable(feeTreasury), fee);
         if (refund > 0) _safeTransfer(payable(msg.sender), refund);
+
+        // Then transfer the NFT. safeTransferFrom catches contract-to-contract
+        // receiver issues (non-receivers revert via onERC721Received).
+        brawlers.safeTransferFrom(l.seller, msg.sender, tokenId);
 
         emit Sold(tokenId, l.seller, msg.sender, l.price, fee);
     }

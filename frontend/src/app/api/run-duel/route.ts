@@ -23,7 +23,7 @@ import { NextResponse } from 'next/server';
 import { createPublicClient, defineChain, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { randomBytes } from 'node:crypto';
-import { BRAWLERS_ABI, DUEL_ABI } from '@/lib/abi';
+import { BRAWLERS_ABI } from '@/lib/abi';
 import { simulateFight } from '@/sim/combat';
 import { applyDuelResult, type Outcome } from '@/core/elo';
 import { findWeapon } from '@/core/weapons';
@@ -32,7 +32,10 @@ import type { Brawler, CombatEvent, Weapon, WeaponType } from '@/core/types';
 // Force Node runtime, we use node:crypto for the nonce. Edge would fail here.
 export const runtime = 'nodejs';
 
-const DUEL_EXPIRY_SECONDS = 3600;
+// Tight expiry window: 10 minutes is enough for a wallet to confirm + broadcast
+// + mine without leaving signed payloads sitting in mempools or attacker
+// inboxes for long. Was 3600 (1h) pre-audit, dropped per the H-1 EIP-712 fix.
+const DUEL_EXPIRY_SECONDS = 600;
 const WEAPON_TYPE_MAP: readonly WeaponType[] = ['blade', 'blunt', 'ranged'];
 
 function randomBig256(): bigint {
@@ -298,22 +301,40 @@ export async function POST(request: Request) {
       expiry: BigInt(now + DUEL_EXPIRY_SECONDS),
     };
 
-    // Ask the contract to hash, avoids re-implementing abi.encode here.
-    // viem's type narrowing for struct args on readContract resolves to `never`
-    // for this call; the runtime shape is correct (matches the DuelResult struct
-    // in DUEL_ABI). Cast to bypass the overly-strict compile-time check.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const hash = (await client.readContract({
-      abi: DUEL_ABI,
-      address: duelAddr as `0x${string}`,
-      functionName: 'hashDuelResult',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      args: [result] as any,
-    })) as `0x${string}`;
-
-    // EIP-191 signMessage over the raw hash bytes. Matches
-    // Duel.sol's MessageHashUtils.toEthSignedMessageHash recover path.
-    const signature = await signerAccount.signMessage({ message: { raw: hash } });
+    // EIP-712 typed-data signing. The domain ties this signature to:
+    //   - the specific Duel contract (verifyingContract)
+    //   - the specific chain (chainId)
+    //   - the contract's name + version
+    // so a Sepolia signature cannot be replayed on mainnet (or any other chain)
+    // even if the same trustedSigner key is used in both environments.
+    //
+    // Domain MUST match Duel.sol's EIP712 constructor:
+    //   EIP712(EIP712_NAME = "BASEicBrawlersDuel", EIP712_VERSION = "1")
+    // and the verifyingContract MUST be the address of the Duel contract this
+    // signature will be submitted to.
+    const signature = await signerAccount.signTypedData({
+      domain: {
+        name: 'BASEicBrawlersDuel',
+        version: '1',
+        chainId,
+        verifyingContract: duelAddr as `0x${string}`,
+      },
+      types: {
+        DuelResult: [
+          { name: 'tokenA', type: 'uint256' },
+          { name: 'tokenB', type: 'uint256' },
+          { name: 'winnerId', type: 'uint32' },
+          { name: 'rounds', type: 'uint16' },
+          { name: 'seed', type: 'uint256' },
+          { name: 'newEloA', type: 'uint32' },
+          { name: 'newEloB', type: 'uint32' },
+          { name: 'nonce', type: 'uint256' },
+          { name: 'expiry', type: 'uint256' },
+        ],
+      },
+      primaryType: 'DuelResult',
+      message: result,
+    });
 
     const response: RunDuelResponse = {
       result: serializeResult(result),

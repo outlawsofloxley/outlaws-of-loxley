@@ -4,10 +4,8 @@ pragma solidity 0.8.24;
 import {Test} from "forge-std/Test.sol";
 import {Brawlers} from "../../contracts/Brawlers.sol";
 import {Duel} from "../../contracts/Duel.sol";
-import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract DuelTest is Test {
-    using MessageHashUtils for bytes32;
 
     Brawlers internal brawlers;
     Duel internal duel;
@@ -43,9 +41,10 @@ contract DuelTest is Test {
     }
 
     function _signResult(Duel.DuelResult memory r) internal view returns (bytes memory) {
-        bytes32 hash = duel.hashDuelResult(r);
-        bytes32 ethSigned = hash.toEthSignedMessageHash();
-        (uint8 v, bytes32 rs, bytes32 ss) = vm.sign(signerPk, ethSigned);
+        // EIP-712: hashDuelResult already returns the final domain-separated
+        // digest, sign that directly with vm.sign (no extra eth-prefix wrap).
+        bytes32 digest = duel.hashDuelResult(r);
+        (uint8 v, bytes32 rs, bytes32 ss) = vm.sign(signerPk, digest);
         return abi.encodePacked(rs, ss, v);
     }
 
@@ -111,9 +110,8 @@ contract DuelTest is Test {
         Duel.DuelResult memory r = _buildResult(idA, idB, uint32(idA), 1);
         // Sign with a different key
         uint256 wrongPk = 0xBADF00D;
-        bytes32 hash = duel.hashDuelResult(r);
-        bytes32 ethSigned = hash.toEthSignedMessageHash();
-        (uint8 v, bytes32 rs, bytes32 ss) = vm.sign(wrongPk, ethSigned);
+        bytes32 digest = duel.hashDuelResult(r);
+        (uint8 v, bytes32 rs, bytes32 ss) = vm.sign(wrongPk, digest);
         bytes memory sig = abi.encodePacked(rs, ss, v);
         vm.prank(alice);
         vm.expectRevert(Duel.InvalidSignature.selector);
@@ -180,18 +178,22 @@ contract DuelTest is Test {
 
     function test_submitDuel_deadBrawler_reverts() public {
         (uint256 idA, uint256 idB) = _mintPair();
-        // Kill A via mock duel contract path
-        vm.prank(owner);
-        brawlers.setDuelContract(address(this));
-        brawlers.applyDuelResult(idA, idB, 990, 1010, uint32(idB), true, false);
-        vm.prank(owner);
-        brawlers.setDuelContract(address(duel));
+        // Kill A by losing 3 duels through the real Duel pipeline, this is
+        // the only path now that brawlers.setDuelContract is one-time-set.
+        for (uint256 n = 1; n <= 3; n++) {
+            Duel.DuelResult memory r = _buildResult(idA, idB, uint32(idB), n);
+            bytes memory sig = _signResult(r);
+            vm.prank(alice);
+            duel.submitDuel(r, sig);
+        }
+        assertFalse(brawlers.isAlive(idA), "A should be dead after 3 losses");
 
-        Duel.DuelResult memory r = _buildResult(idA, idB, uint32(idB), 1);
-        bytes memory sig = _signResult(r);
+        // A 4th duel for A must now revert because A is no longer alive.
+        Duel.DuelResult memory r4 = _buildResult(idA, idB, uint32(idB), 4);
+        bytes memory sig4 = _signResult(r4);
         vm.prank(alice);
         vm.expectRevert();
-        duel.submitDuel(r, sig);
+        duel.submitDuel(r4, sig4);
     }
 
     // ─── Death tracking ──────────────────────────────────────────────
