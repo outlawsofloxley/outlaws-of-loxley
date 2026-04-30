@@ -1,18 +1,18 @@
 /**
- * Brawler pixel-art generator — chunky fighter (pass 3, faithful to reference).
+ * Brawler pixel-art generator, chunky fighter (pass 3, faithful to reference).
  *
  * References:
- *   - `C:\tools\brawlers\ss\v1imge.jpg` — primary. Short squat fighters with
+ *   - `C:\tools\brawlers\ss\v1imge.jpg`, primary. Short squat fighters with
  *     wide torso, short bent arms, weapon at head level, chunky shoes.
- *   - `C:\tools\brawlers\ss\preview*.webp` — FUMS, for accessory variety ideas.
+ *   - `C:\tools\brawlers\ss\preview*.webp`, FUMS, for accessory variety ideas.
  *
  * Grid: 24 × 32.
  *
  * Body proportions (reference faithful):
  *   Rows 0-3:   weapon airspace / hair tall bits
- *   Rows 4-11:  head (8 wide × 8 tall, cols 8-15) — prominent, ~25% of height
+ *   Rows 4-11:  head (8 wide × 8 tall, cols 8-15), prominent, ~25% of height
  *   Row  12:    neck (2 wide, cols 11-12)
- *   Rows 13-21: torso — WIDER than head (cols 7-16 = 10 wide × 9 tall)
+ *   Rows 13-21: torso, WIDER than head (cols 7-16 = 10 wide × 9 tall)
  *   Row  22:    belt / waist
  *   Rows 23-28: legs (6 tall, two 2-wide legs with 2px gap)
  *   Rows 29-30: shoes (3 wide each, flat, wider than legs)
@@ -20,7 +20,7 @@
  * Arms: SHORT and BENT. Right arm raises to head level holding weapon.
  * Left arm bent at side holding optional off-hand item at waist.
  *
- * Weapons held near head level — small, readable. Tip extends 4-6 rows
+ * Weapons held near head level, small, readable. Tip extends 4-6 rows
  * above the hand, not dramatically overhead.
  *
  * All variation axes preserved: gender, species, skin, hair style/color,
@@ -37,7 +37,7 @@ export interface BrawlerArtOpts {
   weaponName: string;
   rarity?: RarityTier | undefined;
   isDead?: boolean | undefined;
-  /** Optional override — render the background as if this rarity, while
+  /** Optional override, render the background as if this rarity, while
    * the brawler itself uses the main `rarity`. Used by /sample10 to swap
    * epic chief's brawler render to match rare chief while keeping the
    * 6-cross epic bg. */
@@ -91,12 +91,12 @@ const LEG_BOTTOM = 28;
 // Shoes: 3 wide each, rows 29-30.
 const SHOE_Y = 29;
 
-// Right arm (viewer's left) — raised, bent at elbow.
+// Right arm (viewer's left), raised, bent at elbow.
 // Shoulder at col 7, row 13. Elbow at col 5, row 11. Hand at col 5, row 9.
 // Weapon grip at (5, 9); tip extends up to row 3-5.
 const R_HAND = { x: 5, y: 9 };
 
-// Left arm (viewer's right) — lowered, slightly bent.
+// Left arm (viewer's right), lowered, slightly bent.
 // Shoulder at col 16, row 13. Hand at col 18, row 18.
 const L_HAND = { x: 18, y: 18 };
 
@@ -127,7 +127,7 @@ interface SkinPalette {
   line: string;
 }
 
-// Tuned from reference — warm tans, peaches, browns, some deeper tones.
+// Tuned from reference, warm tans, peaches, browns, some deeper tones.
 const SKIN_PALETTES: readonly SkinPalette[] = [
   { base: '#E8B088', shade: '#B8785A', line: '#3A1E10' }, // light tan
   { base: '#E8A070', shade: '#B4703A', line: '#3A1A08' }, // peach
@@ -151,16 +151,16 @@ const HAIR_COLORS: readonly string[] = [
   '#808080', // grey
 ];
 
-// Lighter purple base per D's 2026-04-25 feedback — pops the bright
+// Lighter purple base per D's 2026-04-25 feedback, pops the bright
 // character colors. Slight saturation shifts per rarity but the hue stays
 // consistent for collection cohesion.
 const RARITY_BG: Record<RarityTier, string> = {
-  common: '#4A2C7A',     // mid-purple
+  common: '#4A2C7A', // mid-purple
   uncommon: '#502E84',
-  rare: '#56308C',       // royal plum, lighter
-  legendary: '#5C3494',  // brighter
-  epic: '#6A3AA8',       // amethyst
-  king: '#56308C',       // royal plum (king carries gold accents inline)
+  rare: '#56308C', // royal plum, lighter
+  legendary: '#5C3494', // brighter
+  epic: '#6A3AA8', // amethyst
+  king: '#56308C', // royal plum (king carries gold accents inline)
 };
 
 const RARITY_AURA: Record<RarityTier, string | null> = {
@@ -215,7 +215,7 @@ const OUTFIT_PALETTES: Record<RarityTier, readonly OutfitPalette[]> = {
   king: [{ primary: '#8A1040', shadow: '#500820', accent: '#FFD84A' }],
 };
 
-// Pants — dark navies / browns / blacks, matching the reference.
+// Pants, dark navies / browns / blacks, matching the reference.
 const PANTS_PALETTES: readonly { primary: string; shadow: string }[] = [
   { primary: '#1A2A50', shadow: '#0E1830' }, // navy (most common in reference)
   { primary: '#2A1F18', shadow: '#141008' }, // dark brown
@@ -236,18 +236,18 @@ const PUPIL_COLORS: readonly string[] = [
 ];
 
 /**
- * Pupil pool used when the skin is dark — bright contrasting colors so the
+ * Pupil pool used when the skin is dark, bright contrasting colors so the
  * face reads even at thumbnail size. White makes any character pop on a
  * dark background; the colored options give variety.
  */
 const BRIGHT_PUPIL_COLORS: readonly string[] = [
-  '#FFFFFF',  // white — highest contrast
-  '#FFD84A',  // gold
-  '#6AE0FF',  // cyan
-  '#F0F0F0',  // off-white
+  '#FFFFFF', // white, highest contrast
+  '#FFD84A', // gold
+  '#6AE0FF', // cyan
+  '#F0F0F0', // off-white
 ];
 
-/** Crude brightness check on a hex color — used to detect dark skin. */
+/** Crude brightness check on a hex color, used to detect dark skin. */
 function isDarkSkin(hex: string): boolean {
   // Strip leading '#'.
   const h = hex.startsWith('#') ? hex.slice(1) : hex;
@@ -255,7 +255,7 @@ function isDarkSkin(hex: string): boolean {
   const r = parseInt(h.slice(0, 2), 16);
   const g = parseInt(h.slice(2, 4), 16);
   const b = parseInt(h.slice(4, 6), 16);
-  // Threshold tuned against SKIN_PALETTES — anything below ~330 sum is
+  // Threshold tuned against SKIN_PALETTES, anything below ~330 sum is
   // dark enough that a dark pupil disappears into the face.
   return r + g + b < 330;
 }
@@ -266,10 +266,10 @@ type Gender = 'm' | 'f';
 type Species = 'normal' | 'zombie' | 'vampire' | 'ghost' | 'robot';
 
 /**
- * Fighter archetypes — each picks a cohesive bundle of outfit/hat/hair/
+ * Fighter archetypes, each picks a cohesive bundle of outfit/hat/hair/
  * accessory/palette so the rendered character reads as a recognizable
  * trope instead of a random mashup. D's 2026-04-25 ask: "model on actual
- * brawlers — pirates, ninjas, street fighters, jail thugs, wrestlers, boxers".
+ * brawlers, pirates, ninjas, street fighters, jail thugs, wrestlers, boxers".
  */
 export type Archetype =
   | 'brawler'    // default street fighter, tank top, bandana, mohawk-ready
@@ -280,9 +280,9 @@ export type Archetype =
   | 'boxer'      // red/blue/black tank, buzz cut, headband
   | 'cowboy'     // tunic + cowboy hat + beard
   | 'knight'     // chainmail + helmet or crown
-  | 'punjab'     // Punjabi warrior — turban + big beard, white/orange tunic
-  | 'samurai'    // Japanese warrior — hachimaki + dark tunic + red sash
-  | 'mafia'      // gangster — fedora + pinstripe suit
+  | 'punjab'     // Punjabi warrior, turban + big beard, white/orange tunic
+  | 'samurai'    // Japanese warrior, hachimaki + dark tunic + red sash
+  | 'mafia'      // gangster, fedora + pinstripe suit
   | 'viking'     // horned helmet + fur tunic + long hair
   | 'spartan'    // Corinthian helmet with red crest + bronze armor
   | 'berserker'  // shirtless + war paint + wild hair
@@ -312,15 +312,15 @@ type HatKind =
   | 'kingcrown'
   | 'helmet'
   | 'cowboy'
-  | 'turban'        // Punjabi turban — big wrapped fabric, jewel center
-  | 'topknot'       // samurai topknot — small bun on top of bald-ish head
-  | 'hachimaki'     // samurai headband — thin cloth with center accent
+  | 'turban'        // Punjabi turban, big wrapped fabric, jewel center
+  | 'topknot'       // samurai topknot, small bun on top of bald-ish head
+  | 'hachimaki'     // samurai headband, thin cloth with center accent
   | 'piratehat'     // tricorn pirate hat with skull dot
-  | 'fedora'        // mafia fedora — wide brim, white band
+  | 'fedora'        // mafia fedora, wide brim, white band
   | 'horned'        // viking horned helmet
   | 'spartanhelmet' // Corinthian helmet with red mohawk crest (legacy)
   | 'feather'       // Indian chief feather headband
-  | 'furhat';       // Mongol papakha — round fur cap
+  | 'furhat';       // Mongol papakha, round fur cap
 type OutfitKind = 'tunic' | 'tee' | 'striped' | 'tank' | 'suit' | 'chainmail' | 'shirtless' | 'tribal';
 type Aura = 'none' | 'spark' | 'fire' | 'halo';
 type Scene =
@@ -407,13 +407,13 @@ const ARCHETYPE_SPECS: Record<Archetype, ArchetypeSpec> = {
   },
   pirate: {
     outfits: ['striped', 'tunic'],
-    hats: ['piratehat'],          // ALWAYS the tricorn — pirate signature
+    hats: ['piratehat'], // ALWAYS the tricorn, pirate signature
     hairs: ['long', 'messy', 'ponytail'],
     facialHairChance: 0.75,
-    // Earring only — eyepatch was covering the centered NARROW_EYES so the
+    // Earring only, eyepatch was covering the centered NARROW_EYES so the
     // visible eye sat off to viewer's right. Both eyes now visible, centered.
     forceAccessory: ['earring'],
-    forceFaceMark: 'none',        // no white scar/mark on cheek — D's 2026-04-26 callout
+    forceFaceMark: 'none', // no white scar/mark on cheek, D's 2026-04-26 callout
     palettePool: [
       { primary: '#9A3030', shadow: '#5A1818', accent: '#FFFFFF' }, // red + white stripes
       { primary: '#2A4A80', shadow: '#14243A', accent: '#FFFFFF' }, // blue + white stripes
@@ -421,7 +421,7 @@ const ARCHETYPE_SPECS: Record<Archetype, ArchetypeSpec> = {
     ],
   },
   ninja: {
-    outfits: ['tunic'],            // tunic only — no suit/tie
+    outfits: ['tunic'], // tunic only, no suit/tie
     hats: ['bandana', 'none'],
     hairs: ['short', 'none'],
     facialHairChance: 0,
@@ -456,11 +456,11 @@ const ARCHETYPE_SPECS: Record<Archetype, ArchetypeSpec> = {
     ],
   },
   boxer: {
-    outfits: ['shirtless'],        // shirtless with trunks + champion belt
+    outfits: ['shirtless'], // shirtless with trunks + champion belt
     hats: ['bandana', 'none'],
     hairs: ['buzz', 'short'],
     facialHairChance: 0.15,
-    forceHairColor: '#FF6A1A',     // fluro orange — D's 2026-04-27 callout
+    forceHairColor: '#FF6A1A', // fluro orange, D's 2026-04-27 callout
     palettePool: [
       { primary: '#C13E3E', shadow: '#7A1818', accent: '#FFD84A' }, // red trunks
       { primary: '#1E3A70', shadow: '#0E1E3C', accent: '#FFD84A' }, // blue trunks
@@ -469,7 +469,7 @@ const ARCHETYPE_SPECS: Record<Archetype, ArchetypeSpec> = {
   },
   cowboy: {
     outfits: ['tunic', 'suit'],
-    hats: ['cowboy'],              // ALWAYS cowboy hat — already locked
+    hats: ['cowboy'], // ALWAYS cowboy hat, already locked
     hairs: ['messy', 'short', 'long'],
     facialHairChance: 0.75,
   },
@@ -494,8 +494,8 @@ const ARCHETYPE_SPECS: Record<Archetype, ArchetypeSpec> = {
   punjab: {
     outfits: ['tunic', 'suit'],
     hats: ['turban'],
-    hairs: ['none'],            // hair is hidden by the turban
-    facialHairChance: 0.85,     // big beards are part of the look
+    hairs: ['none'], // hair is hidden by the turban
+    facialHairChance: 0.85, // big beards are part of the look
     palettePool: [
       { primary: '#E04A28', shadow: '#8A2810', accent: '#FFD84A' }, // saffron orange
       { primary: '#1A6A3A', shadow: '#0E3A1E', accent: '#FFD84A' }, // dark green
@@ -505,7 +505,7 @@ const ARCHETYPE_SPECS: Record<Archetype, ArchetypeSpec> = {
   },
   samurai: {
     outfits: ['tunic'],
-    hats: ['hachimaki'],         // ALWAYS Japan headband — no more topknot
+    hats: ['hachimaki'], // ALWAYS Japan headband, no more topknot
     hairs: ['none'],
     facialHairChance: 0.25,
     forceFaceMark: 'none',
@@ -518,9 +518,9 @@ const ARCHETYPE_SPECS: Record<Archetype, ArchetypeSpec> = {
   },
   mafia: {
     outfits: ['suit'],
-    hats: ['fedora'],            // ALWAYS fedora — gangster signature
-    hairs: ['none'],             // hidden by fedora
-    facialHairChance: 0.4,       // Don Corleone moustache vibe
+    hats: ['fedora'], // ALWAYS fedora, gangster signature
+    hairs: ['none'], // hidden by fedora
+    facialHairChance: 0.4, // Don Corleone moustache vibe
     palettePool: [
       { primary: '#1A1A1A', shadow: '#000000', accent: '#FFFFFF' }, // black pinstripe
       { primary: '#2A2A3A', shadow: '#14141E', accent: '#FFFFFF' }, // dark navy
@@ -529,9 +529,9 @@ const ARCHETYPE_SPECS: Record<Archetype, ArchetypeSpec> = {
   },
   viking: {
     outfits: ['tunic', 'tank'],
-    hats: ['horned'],            // ALWAYS horned helmet
-    hairs: ['none'],             // hidden by helmet
-    facialHairChance: 0.85,      // big-bearded vikings — but only moustache/goatee per D
+    hats: ['horned'], // ALWAYS horned helmet
+    hairs: ['none'], // hidden by helmet
+    facialHairChance: 0.85, // big-bearded vikings, but only moustache/goatee per D
     palettePool: [
       { primary: '#5A4030', shadow: '#3A2818', accent: '#A07040' }, // brown leather + tan trim
       { primary: '#4A3020', shadow: '#28180E', accent: '#7A5030' }, // tan furs
@@ -539,7 +539,7 @@ const ARCHETYPE_SPECS: Record<Archetype, ArchetypeSpec> = {
     ],
   },
   spartan: {
-    // 2026-04-26: archetype repurposed as "Indian chief warrior" per D —
+    // 2026-04-26: archetype repurposed as "Indian chief warrior" per D, 
     // feather headband, bare chest with 6-pack, loincloth. Earthy palette.
     // Kept the 'spartan' identifier so existing /sample10 + matchmaking
     // wiring don't churn; UI labels surface "Chief".
@@ -557,11 +557,11 @@ const ARCHETYPE_SPECS: Record<Archetype, ArchetypeSpec> = {
     ],
   },
   berserker: {
-    outfits: ['shirtless'],      // bare chest like boxer but wilder
-    hats: ['none'],              // wild hair, no hat
+    outfits: ['shirtless'], // bare chest like boxer but wilder
+    hats: ['none'], // wild hair, no hat
     hairs: ['long', 'messy', 'mohawk'],
-    facialHairChance: 0,         // war paint owns the face — no facial hair
-    forceFaceMark: 'warpaint',   // red cheek stripes
+    facialHairChance: 0, // war paint owns the face, no facial hair
+    forceFaceMark: 'warpaint', // red cheek stripes
     palettePool: [
       { primary: '#5A2020', shadow: '#2A1010', accent: '#FFD84A' }, // blood-red trunks
       { primary: '#3A2A1A', shadow: '#1A140A', accent: '#C13E3E' }, // brown leather trunks
@@ -570,9 +570,9 @@ const ARCHETYPE_SPECS: Record<Archetype, ArchetypeSpec> = {
   },
   mongol: {
     outfits: ['tunic'],
-    hats: ['furhat'],            // ALWAYS papakha
+    hats: ['furhat'], // ALWAYS papakha
     hairs: ['none'],
-    facialHairChance: 0.7,       // wispy moustache classic Mongol look
+    facialHairChance: 0.7, // wispy moustache classic Mongol look
     palettePool: [
       { primary: '#7A4828', shadow: '#3A2810', accent: '#C13E3E' }, // tan + red sash
       { primary: '#5A3A20', shadow: '#2A1810', accent: '#FFD84A' }, // brown + gold
@@ -631,7 +631,7 @@ function rollFeatures(tokenId: number, rarity: RarityTier): Features {
   const archetype = pickArchetype(rng, rarity);
   const spec = ARCHETYPE_SPECS[archetype];
 
-  // Skin selection — most archetypes pick freely from the full palette so
+  // Skin selection, most archetypes pick freely from the full palette so
   // the collection has full diversity. Punjabi/samurai are biased to skin
   // tones that match the archetype. King is pinned for collection consistency.
   const skin: SkinPalette = (() => {
@@ -660,7 +660,7 @@ function rollFeatures(tokenId: number, rarity: RarityTier): Features {
   // Hat colors:
   //   - turban: bright wrap palette (white/saffron/gold/green/maroon)
   //   - piratehat: always black (classic tricorn)
-  //   - fedora: neutral dark (black/dark grey/dark brown) — mafia clean look
+  //   - fedora: neutral dark (black/dark grey/dark brown), mafia clean look
   //   - furhat: brown/black fur (Mongol papakha)
   //   - horned + spartanhelmet: hardcoded metals inside drawHat (no color
   //     pick used)
@@ -702,17 +702,17 @@ function rollFeatures(tokenId: number, rarity: RarityTier): Features {
   const hair = pick(rng, hairPool);
   const hairColor = spec.forceHairColor ?? pick(rng, HAIR_COLORS);
 
-  // Expressions — clean set only. 'angry' dropped 2026-04-26 — its brow row
+  // Expressions, clean set only. 'angry' dropped 2026-04-26, its brow row
   // at HEAD_TOP+3 was the main source of the "bandit mask stripe" across
   // the upper face at thumbnail size. 'wide' and 'oneeyed' were already
   // dropped earlier as the "eyes go everywhere" culprits.
   const expression = pick(rng, ['neutral', 'focused', 'squint', 'grin'] as const);
-  // Pupil — always dark. White sclera around the pupil (drawn in drawFace)
+  // Pupil, always dark. White sclera around the pupil (drawn in drawFace)
   // provides contrast against any skin tone, replacing the previous
   // brightPupil hack which gave dark-skinned characters glowing white eyes.
   const pupilColor = pick(rng, PUPIL_COLORS);
 
-  // Facial hair — men only, archetype-biased. Beard + bigbeard removed
+  // Facial hair, men only, archetype-biased. Beard + bigbeard removed
   // 2026-04-25 (D's "stuffed the mouths on" feedback). Just two clean
   // options: tiny moustache above the lip, or chin goatee in hair color.
   const facialHair: FacialHair = (() => {
@@ -722,7 +722,7 @@ function rollFeatures(tokenId: number, rarity: RarityTier): Features {
   })();
 
   // Accessory: archetype-forced or rolled. Eyepatch removed from the random
-  // pool 2026-04-29 — it was rolling on non-pirates (boxers, cowboys,
+  // pool 2026-04-29, it was rolling on non-pirates (boxers, cowboys,
   // mafia, kings, samurai, vikings) and read as "the face is munted" since
   // it covers a full eye + adds a strap pixel on a non-themed character.
   // Pirates already get earring via forceAccessory; the eyepatch case in
@@ -742,17 +742,17 @@ function rollFeatures(tokenId: number, rarity: RarityTier): Features {
       ? pick(rng, ['scar', 'freckles', 'bandage'] as const)
       : 'none';
 
-  // Off-hand items add clutter and never outlined cleanly — removed per feedback.
+  // Off-hand items add clutter and never outlined cleanly, removed per feedback.
   const offHand: OffHand = 'none';
 
   // Aura: only king gets a halo. Spark/fire were messy flames above the hair.
   const aura: Aura = rarity === 'king' ? 'halo' : 'none';
 
-  // Background scenes — only the safe minimalist ones, only on rare+. Stars
+  // Background scenes, only the safe minimalist ones, only on rare+. Stars
   // sit in the corners (cols 1-3 + 19-22, rows 1-10), moon is upper-right
-  // (cols 17-21, rows 1-5), sun is upper-left (cols 1-4, rows 1-4) — all
+  // (cols 17-21, rows 1-5), sun is upper-left (cols 1-4, rows 1-4), all
   // away from the body silhouette and weapon arc.
-  // Each rarity gets a signature background. The pop scales with tier —
+  // Each rarity gets a signature background. The pop scales with tier, 
   // common is plain solid, uncommon adds a couple of sparkles, rare adds
   // a facet pattern, legendary adds gold accents, epic gets the most
   // dense + bright bg short of king. King stays at diamondblue (10/10).
@@ -765,7 +765,7 @@ function rollFeatures(tokenId: number, rarity: RarityTier): Features {
     return 'commonbg';
   })();
 
-  // Pet companion at the floor next to the legs. Bumped 2026-04-26 — at
+  // Pet companion at the floor next to the legs. Bumped 2026-04-26, at
   // the old rates pets barely showed up in 20-card samples. Now rare gets
   // 50%, legendary 70%, epic 90% so they're a clear "rarity perk".
   const pet: Pet = (() => {
@@ -777,16 +777,16 @@ function rollFeatures(tokenId: number, rarity: RarityTier): Features {
     return 'none';
   })();
 
-  // Perimeter sparkles were random colored dots everywhere — removed.
+  // Perimeter sparkles were random colored dots everywhere, removed.
   const sparkle = false;
 
   // Pirate signature: hook for a left hand. Forced for the archetype.
   const hook = archetype === 'pirate';
   const glove = archetype === 'boxer';
 
-  // Bling reverted 2026-04-25 for the regular collection — D didn't like
+  // Bling reverted 2026-04-25 for the regular collection, D didn't like
   // the chest gem / sparkles / glittery shirt on every brawler. King keeps
-  // full bling (level 3) per the 2026-04-26 callout — this is the dev's
+  // full bling (level 3) per the 2026-04-26 callout, this is the dev's
   // 1-of-1, "has to be the best".
   const blingLevel: 0 | 1 | 2 | 3 = rarity === 'king' ? 3 : 0;
 
@@ -856,7 +856,7 @@ function drawHead(cells: Cell[], f: Features): void {
   }
 
   // Side shading on the right edge ONLY (subtle form, not full chiaroscuro).
-  // Removed the jaw/chin shade line 2026-04-26 — it stacked with the mouth
+  // Removed the jaw/chin shade line 2026-04-26, it stacked with the mouth
   // and facial hair to create a 3-row dark band on the lower face that
   // D called out as "munted".
   for (let y = HEAD_TOP + 1; y <= HEAD_BOTTOM - 1; y++) {
@@ -870,12 +870,12 @@ function drawHead(cells: Cell[], f: Features): void {
   put(cells, HEAD_LEFT + 1, HEAD_BOTTOM, line);
   put(cells, HEAD_RIGHT - 1, HEAD_BOTTOM, line);
 
-  // Neck — 2 wide in skin shade, connects head to torso
+  // Neck, 2 wide in skin shade, connects head to torso
   put(cells, CX, NECK_Y, shade);
   put(cells, CX + 1, NECK_Y, shade);
 }
 
-// 2026-04-29: D's call — eyes and mouth on the SAME grid position for
+// 2026-04-29: D's call, eyes and mouth on the SAME grid position for
 // every brawler, full stop. The per-(archetype, rarity) tweaks
 // (RAISE_MOUTH / MOUTH_OFFSETS / NARROW_EYES) added too many edge cases
 // without pulling their weight. Faces now have one eye row and one mouth
@@ -886,7 +886,7 @@ function drawHead(cells: Cell[], f: Features): void {
 //   eyeXs   = HEAD_LEFT + 2 = col 10  AND  HEAD_RIGHT - 3 = col 12
 //   mouthY  = HEAD_TOP + 6 = row 10  (one row up from chin so it always reads)
 //
-// Empty sentinels kept so call sites stay simple — if we ever need to
+// Empty sentinels kept so call sites stay simple, if we ever need to
 // re-introduce a tweak it'd go in here.
 const RAISE_MOUTH: ReadonlySet<string> = new Set();
 const MOUTH_OFFSETS: ReadonlyMap<string, number> = new Map();
@@ -906,7 +906,7 @@ function drawFace(cells: Cell[], f: Features): void {
   const lEyeX = narrow ? CX : HEAD_LEFT + 2;       // 11 narrow, 10 default
   const rEyeX = narrow ? CX + 1 : HEAD_RIGHT - 3;  // 12 either way
 
-  // Eyes — each eye is 2 pixels: white sclera on the OUTER side, dark pupil
+  // Eyes, each eye is 2 pixels: white sclera on the OUTER side, dark pupil
   // on the inner side. The white anchors the eye against any skin tone or
   // background so it doesn't vanish at thumbnail size.
   const drawEye = (pupilX: number, scleraOffset: -1 | 1) => {
@@ -922,7 +922,7 @@ function drawFace(cells: Cell[], f: Features): void {
       drawEye(rEyeX, +1); // sclera at col 13, pupil at col 12
       break;
     case 'squint':
-      // Closed eyes — sclera + dark eyelid line on top. Without the white
+      // Closed eyes, sclera + dark eyelid line on top. Without the white
       // sclera underneath, dark-skinned brawlers' squint pixels matched the
       // skin tone exactly and the face read as eyeless. Drawing the eye
       // first then stamping line over the pupil keeps the eye SHAPE while
@@ -939,7 +939,7 @@ function drawFace(cells: Cell[], f: Features): void {
   // are visually consistent across all archetypes.
   const mouthY = HEAD_TOP + 6 + mouthDy;
 
-  // Moustache sits on the upper-lip row, mouth on the lip row below — both
+  // Moustache sits on the upper-lip row, mouth on the lip row below, both
   // ALWAYS rendered together. The previous "moustache stands in for the
   // mouth" behaviour read as "no mouth = munted" once D ran the contact
   // sheet on 2026-04-29. Drawing them stacked makes the lower face read
@@ -951,7 +951,7 @@ function drawFace(cells: Cell[], f: Features): void {
     put(cells, CX + 1, mouthY - 1, line);
   }
 
-  // Mouth — always drawn. Pirate gets an X-mouth ("dead-eye" /
+  // Mouth, always drawn. Pirate gets an X-mouth ("dead-eye" /
   // X-marks-the-spot) in place of the standard line. Goatee sits below
   // the mouth on the neck row in drawFace's goatee branch.
   if (X_MOUTH.has(cellKey)) {
@@ -989,7 +989,7 @@ function drawFace(cells: Cell[], f: Features): void {
     put(cells, CX + 1, NECK_Y, beard);
   }
 
-  // Punjab bindi — red dot in the center of the forehead, between the
+  // Punjab bindi, red dot in the center of the forehead, between the
   // turban (rows 1-4) and the eyes (row 8). 2-pixel wide so it reads at
   // thumbnail size. Per D's 2026-04-27 ask.
   if (f.archetype === 'punjab') {
@@ -1146,7 +1146,7 @@ function drawHat(cells: Cell[], f: Features): void {
       for (let x = HEAD_LEFT - 2; x <= HEAD_RIGHT + 2; x++) put(cells, x, HEAD_TOP - 1, f.hatColor);
       return;
     case 'turban': {
-      // Punjabi turban — 3 rows of wrapped fabric across the head, slight
+      // Punjabi turban, 3 rows of wrapped fabric across the head, slight
       // dome shape, jewel/accent at the center crease.
       // Use the outfit's primary color tone for cohesion if the hat color
       // is too neutral.
@@ -1162,7 +1162,7 @@ function drawHat(cells: Cell[], f: Features): void {
         put(cells, x, HEAD_TOP - 1, tColor);
         put(cells, x, HEAD_TOP, tColor); // covers hairline
       }
-      // Crease — a 2-px horizontal accent strip mid-turban
+      // Crease, a 2-px horizontal accent strip mid-turban
       for (let x = HEAD_LEFT + 1; x <= HEAD_RIGHT - 1; x++) {
         put(cells, x, HEAD_TOP - 1, accent === '#FFFFFF' ? tColor : accent);
       }
@@ -1172,14 +1172,14 @@ function drawHat(cells: Cell[], f: Features): void {
       return;
     }
     case 'topknot': {
-      // Samurai topknot — bald-ish head with a small tied bun on top.
+      // Samurai topknot, bald-ish head with a small tied bun on top.
       // Dark hair line + small black bun at center top.
       const hair = '#1A1A1A';
       // Thin hair strip across top of head
       for (let x = HEAD_LEFT + 1; x <= HEAD_RIGHT - 1; x++) {
         put(cells, x, HEAD_TOP, hair);
       }
-      // Topknot — 2x2 bun at center, sitting one row above the head.
+      // Topknot, 2x2 bun at center, sitting one row above the head.
       put(cells, CX, HEAD_TOP - 2, hair);
       put(cells, CX + 1, HEAD_TOP - 2, hair);
       put(cells, CX, HEAD_TOP - 1, hair);
@@ -1187,7 +1187,7 @@ function drawHat(cells: Cell[], f: Features): void {
       return;
     }
     case 'hachimaki': {
-      // Samurai headband — single row of cloth across the forehead with a
+      // Samurai headband, single row of cloth across the forehead with a
       // contrasting center dot (kanji/sun emblem).
       for (let x = HEAD_LEFT; x <= HEAD_RIGHT; x++) {
         put(cells, x, HEAD_TOP + 1, '#E6E6E6');
@@ -1204,7 +1204,7 @@ function drawHat(cells: Cell[], f: Features): void {
       return;
     }
     case 'piratehat': {
-      // Tricorn — flat triangular hat with a wide brim and a small
+      // Tricorn, flat triangular hat with a wide brim and a small
       // skull-and-crossbones dot. Black with a single white skull pixel
       // for the classic pirate silhouette.
       const c = f.hatColor;
@@ -1215,7 +1215,7 @@ function drawHat(cells: Cell[], f: Features): void {
       for (let x = HEAD_LEFT + 1; x <= HEAD_RIGHT - 1; x++) {
         put(cells, x, HEAD_TOP - 2, c);
       }
-      // Wide brim — extends past the head on both sides
+      // Wide brim, extends past the head on both sides
       for (let x = HEAD_LEFT - 2; x <= HEAD_RIGHT + 2; x++) {
         put(cells, x, HEAD_TOP - 1, c);
       }
@@ -1225,7 +1225,7 @@ function drawHat(cells: Cell[], f: Features): void {
       return;
     }
     case 'fedora': {
-      // Mafia fedora — small creased crown + wide flat brim + white band.
+      // Mafia fedora, small creased crown + wide flat brim + white band.
       const c = f.hatColor;
       // Crown top (3-wide, narrowest)
       for (let x = HEAD_LEFT + 2; x <= HEAD_RIGHT - 2; x++) {
@@ -1235,18 +1235,18 @@ function drawHat(cells: Cell[], f: Features): void {
       for (let x = HEAD_LEFT + 1; x <= HEAD_RIGHT - 1; x++) {
         put(cells, x, HEAD_TOP - 2, c);
       }
-      // Hat band — single white row inside the crown
+      // Hat band, single white row inside the crown
       for (let x = HEAD_LEFT + 1; x <= HEAD_RIGHT - 1; x++) {
         put(cells, x, HEAD_TOP - 1, '#FFFFFF');
       }
-      // Wide brim — extends 1 col past the head on each side
+      // Wide brim, extends 1 col past the head on each side
       for (let x = HEAD_LEFT - 1; x <= HEAD_RIGHT + 1; x++) {
         put(cells, x, HEAD_TOP, c);
       }
       return;
     }
     case 'horned': {
-      // Viking horned helmet — 2 sharp horns + metal cap with nasal bar.
+      // Viking horned helmet, 2 sharp horns + metal cap with nasal bar.
       const metal = '#7A7A7A';
       const metalDark = '#3A3A3A';
       const horn = '#E4D4A8';
@@ -1306,9 +1306,9 @@ function drawHat(cells: Cell[], f: Features): void {
       return;
     }
     case 'feather': {
-      // Indian chief feather headband — band color now matches the feathers
+      // Indian chief feather headband, band color now matches the feathers
       // (red shafts + white tips) per D's 2026-04-26 ask. Symmetric around CX.
-      const band = '#C13E3E';        // red — matches feather shaft
+      const band = '#C13E3E';        // red, matches feather shaft
       const bandDark = '#7A1818';    // deep red shadow on the edges
       const beadColor = '#FFD84A';   // yellow bead in the band center
       const featherR = '#C13E3E';
@@ -1323,26 +1323,26 @@ function drawHat(cells: Cell[], f: Features): void {
       put(cells, HEAD_RIGHT, HEAD_TOP, bandDark);
       // Bead in the center of the band
       put(cells, CX, HEAD_TOP, beadColor);
-      // Center feather — 4 rows tall, white tip + alternating red/yellow body
+      // Center feather, 4 rows tall, white tip + alternating red/yellow body
       put(cells, CX, HEAD_TOP - 4, featherTip);
       put(cells, CX, HEAD_TOP - 3, featherR);
       put(cells, CX, HEAD_TOP - 2, featherY);
       put(cells, CX, HEAD_TOP - 1, featherR);
-      // Left feather — 3 rows tall, white tip + red body
+      // Left feather, 3 rows tall, white tip + red body
       put(cells, HEAD_LEFT + 1, HEAD_TOP - 3, featherTip);
       put(cells, HEAD_LEFT + 1, HEAD_TOP - 2, featherR);
       put(cells, HEAD_LEFT + 1, HEAD_TOP - 1, featherR);
-      // Right feather — 3 rows tall, white tip + red body
+      // Right feather, 3 rows tall, white tip + red body
       put(cells, HEAD_RIGHT - 1, HEAD_TOP - 3, featherTip);
       put(cells, HEAD_RIGHT - 1, HEAD_TOP - 2, featherR);
       put(cells, HEAD_RIGHT - 1, HEAD_TOP - 1, featherR);
       return;
     }
     case 'furhat': {
-      // Mongol papakha — round fur cap with subtle fur-tuft texture.
+      // Mongol papakha, round fur cap with subtle fur-tuft texture.
       const c = f.hatColor;
       const dark = '#1A1010';
-      // Top dome (narrowest — fur is rounded)
+      // Top dome (narrowest, fur is rounded)
       for (let x = HEAD_LEFT + 2; x <= HEAD_RIGHT - 2; x++) {
         put(cells, x, HEAD_TOP - 3, c);
       }
@@ -1350,11 +1350,11 @@ function drawHat(cells: Cell[], f: Features): void {
       for (let x = HEAD_LEFT + 1; x <= HEAD_RIGHT - 1; x++) {
         put(cells, x, HEAD_TOP - 2, c);
       }
-      // Bottom band (full width — sits flat on the head)
+      // Bottom band (full width, sits flat on the head)
       for (let x = HEAD_LEFT; x <= HEAD_RIGHT; x++) {
         put(cells, x, HEAD_TOP - 1, c);
       }
-      // Fur texture — a few darker tufts scattered (deterministic positions)
+      // Fur texture, a few darker tufts scattered (deterministic positions)
       put(cells, HEAD_LEFT + 2, HEAD_TOP - 2, dark);
       put(cells, HEAD_RIGHT - 2, HEAD_TOP - 3, dark);
       put(cells, HEAD_LEFT + 4, HEAD_TOP - 1, dark);
@@ -1425,7 +1425,7 @@ function drawTorso(cells: Cell[], f: Features): void {
         put(cells, CX + dx, TORSO_TOP + 1, '#FFFFFF');
         put(cells, CX + dx, TORSO_TOP + 2, '#FFFFFF');
       }
-      // Tie — accent color (red / gold)
+      // Tie, accent color (red / gold)
       put(cells, CX, TORSO_TOP + 1, o.accent);
       put(cells, CX, TORSO_TOP + 2, o.accent);
       for (let y = TORSO_TOP + 3; y <= TORSO_BOTTOM - 2; y++) {
@@ -1438,7 +1438,7 @@ function drawTorso(cells: Cell[], f: Features): void {
       break;
     }
     case 'chainmail': {
-      // Restrained chainmail — small dots at every 3rd cell only, on the
+      // Restrained chainmail, small dots at every 3rd cell only, on the
       // chest area only (not over the belt). Lighter pattern reads as
       // armor texture without devolving into a checker grid.
       for (let y = TORSO_TOP + 1; y <= TORSO_BOTTOM - 2; y += 2) {
@@ -1453,7 +1453,7 @@ function drawTorso(cells: Cell[], f: Features): void {
       break;
     }
     case 'shirtless': {
-      // Bare-chest boxer build — paint the upper torso in skin, mark
+      // Bare-chest boxer build, paint the upper torso in skin, mark
       // pectoral cleavage + side shading for muscle definition, then put
       // trunks across the bottom + a champion belt at the waist.
       const skin = f.skin.base;
@@ -1474,7 +1474,7 @@ function drawTorso(cells: Cell[], f: Features): void {
         put(cells, TORSO_LEFT, y, shade);
         put(cells, TORSO_RIGHT, y, shade);
       }
-      // Abs hint — two horizontal shade rows lower
+      // Abs hint, two horizontal shade rows lower
       for (let x = TORSO_LEFT + 2; x <= TORSO_RIGHT - 2; x++) {
         put(cells, x, TORSO_BOTTOM - 4, shade);
       }
@@ -1484,7 +1484,7 @@ function drawTorso(cells: Cell[], f: Features): void {
           put(cells, x, y, o.primary);
         }
       }
-      // Champion belt — gold band with center buckle
+      // Champion belt, gold band with center buckle
       for (let x = TORSO_LEFT; x <= TORSO_RIGHT; x++) {
         put(cells, x, BELT_Y, '#FFD84A');
       }
@@ -1493,7 +1493,7 @@ function drawTorso(cells: Cell[], f: Features): void {
       break;
     }
     case 'tribal': {
-      // Indian chief — bare chest with pec definition + 6-pack abs +
+      // Indian chief, bare chest with pec definition + 6-pack abs +
       // brown loincloth (no champion belt, no trunks).
       const skin = f.skin.base;
       const shade = f.skin.shade;
@@ -1503,7 +1503,7 @@ function drawTorso(cells: Cell[], f: Features): void {
           put(cells, x, y, skin);
         }
       }
-      // Pectoral cleavage — 2-col vertical line at center, top of chest
+      // Pectoral cleavage, 2-col vertical line at center, top of chest
       put(cells, CX, TORSO_TOP + 1, shade);
       put(cells, CX + 1, TORSO_TOP + 1, shade);
       put(cells, CX, TORSO_TOP + 2, shade);
@@ -1524,7 +1524,7 @@ function drawTorso(cells: Cell[], f: Features): void {
         put(cells, x, TORSO_TOP + 4, shade);
         put(cells, x, TORSO_TOP + 6, shade);
       }
-      // Loincloth — brown wrap covering the bottom (replaces trunks)
+      // Loincloth, brown wrap covering the bottom (replaces trunks)
       for (let y = TORSO_BOTTOM - 2; y <= TORSO_BOTTOM; y++) {
         for (let x = TORSO_LEFT; x <= TORSO_RIGHT; x++) {
           put(cells, x, y, o.primary);
@@ -1546,7 +1546,7 @@ function drawArms(cells: Cell[], f: Features): void {
   const skin = f.skin.base;
   const shade = f.skin.shade;
 
-  // Right arm (viewer's left) — RAISED, bent. Shoulder (7,13), upper arm up
+  // Right arm (viewer's left), RAISED, bent. Shoulder (7,13), upper arm up
   // along cols 6-7 rows 11-12, forearm up-left cols 5-6 rows 9-10, fist at (5,9).
   put(cells, 6, 12, o.primary); // shoulder joint
   put(cells, 7, 12, o.shadow);
@@ -1558,14 +1558,14 @@ function drawArms(cells: Cell[], f: Features): void {
   put(cells, 5, 9, skin);
   put(cells, 6, 9, shade);
 
-  // Left arm (viewer's right) — LOWERED, slight bend.
+  // Left arm (viewer's right), LOWERED, slight bend.
   // Shoulder (16, 13), upper arm (17, 14-15), forearm (17-18, 16-17), hand at (18, 18).
   put(cells, 17, 14, o.primary);
   put(cells, 17, 15, o.primary);
   put(cells, 17, 16, o.shadow);
   put(cells, 18, 17, o.primary);
   if (f.hook) {
-    // Pirate hook — silver J-shape that extends down + curves outward, so
+    // Pirate hook, silver J-shape that extends down + curves outward, so
     // the "hook" silhouette reads at a glance instead of looking like a
     // 2x2 silver stub. Wrist attaches at (17,18); shaft drops two rows;
     // claw curls back up to the right.
@@ -1578,7 +1578,7 @@ function drawArms(cells: Cell[], f: Features): void {
     put(cells, 19, 20, silver); // hook claw curling outward
     put(cells, 19, 19, dark);   // negative space inside the hook curl
   } else if (f.glove) {
-    // Boxer's left-hand boxing glove — 2×2 red mitt above a 2-pixel white
+    // Boxer's left-hand boxing glove, 2×2 red mitt above a 2-pixel white
     // wrist cuff. Replaces the skin hand entirely. Per D's 2026-04-27.
     const red = '#D80000';
     const white = '#FFFFFF';
@@ -1614,7 +1614,7 @@ function drawLegs(cells: Cell[], f: Features): void {
     put(cells, LEG_RIGHT_B + 1, y, line);
   }
 
-  // Shoes — 3 wide, 2 tall, flat, slightly wider than legs.
+  // Shoes, 3 wide, 2 tall, flat, slightly wider than legs.
   const s = f.shoeColor;
   for (let dx = -1; dx <= 1; dx++) {
     put(cells, LEG_LEFT_A + dx, SHOE_Y, s);
@@ -1689,13 +1689,13 @@ function drawFaceMark(cells: Cell[], f: Features): void {
       put(cells, CX + 2, eyeY, line);
       return;
     case 'warpaint': {
-      // Vertical red cheek stripes — berserker face. Both stripes pinned
+      // Vertical red cheek stripes, berserker face. Both stripes pinned
       // to the head edges (cols 8 + 15) per D's 2026-04-26 follow-up, so
       // the left stripe stops clipping into the left sclera at col 9.
       const c = '#C13E3E';
       for (let y = HEAD_TOP + 3; y <= HEAD_TOP + 5; y++) {
-        put(cells, HEAD_LEFT, y, c);   // col 8 — head's left edge
-        put(cells, HEAD_RIGHT, y, c);  // col 15 — head's right edge
+        put(cells, HEAD_LEFT, y, c);   // col 8, head's left edge
+        put(cells, HEAD_RIGHT, y, c);  // col 15, head's right edge
       }
       return;
     }
@@ -1706,7 +1706,7 @@ function drawFaceMark(cells: Cell[], f: Features): void {
       put(cells, CX, HEAD_TOP + 2, '#C13E3E');
       return;
     case 'mask': {
-      // Ninja mask — solid black bar across the eye row with white slits
+      // Ninja mask, solid black bar across the eye row with white slits
       // exactly where the pupils sit. Drawn AFTER the face so it paints
       // over the pupils cleanly. Trim ends by one col so the mask reads
       // as a wrap instead of spilling past the head corners.
@@ -1715,7 +1715,7 @@ function drawFaceMark(cells: Cell[], f: Features): void {
         put(cells, x, maskY, '#0A0A0A');
         put(cells, x, maskY + 1, '#0A0A0A');
       }
-      // Eye slits — white dots right where the pupils would be.
+      // Eye slits, white dots right where the pupils would be.
       put(cells, HEAD_LEFT + 2, maskY, '#FFFFFF');
       put(cells, HEAD_RIGHT - 3, maskY, '#FFFFFF');
       return;
@@ -1756,7 +1756,7 @@ function drawSpeciesExtras(cells: Cell[], f: Features): void {
   }
 }
 
-// ─── Weapons — held in the RAISED right hand near head level ───────────
+// ─── Weapons, held in the RAISED right hand near head level ───────────
 // Anchor is R_HAND = (5, 9). `grip` is the pixel in the sprite that lines
 // up with the brawler's fist. Tip extends upward from there.
 
@@ -1766,8 +1766,8 @@ interface WeaponSprite {
   grip: { x: number; y: number };
 }
 
-// Weapons redesigned 2026-04-26 v2 — even taller, held above the head.
-// Most melee blades now span 9-10 rows (hand at row 9 up to row 0/1 — the
+// Weapons redesigned 2026-04-26 v2, even taller, held above the head.
+// Most melee blades now span 9-10 rows (hand at row 9 up to row 0/1, the
 // top of the cell). Inspired by Fantums art: dramatic silhouettes that
 // dominate the right edge of the cell.
 //
@@ -1777,7 +1777,7 @@ interface WeaponSprite {
 // r=red metal, R=red shadow
 const WEAPONS: Record<string, WeaponSprite> = {
   knife: {
-    // Long dagger — 10 rows tall, pointed white tip, gold cross-guard.
+    // Long dagger, 10 rows tall, pointed white tip, gold cross-guard.
     sprite: [
       '.S.',
       '.S.',
@@ -1794,7 +1794,7 @@ const WEAPONS: Record<string, WeaponSprite> = {
     grip: { x: 1, y: 9 },
   },
   'baseball bat': {
-    // Tall tapered bat — fat at the top, narrower at the handle.
+    // Tall tapered bat, fat at the top, narrower at the handle.
     sprite: [
       'bb',
       'bb',
@@ -1827,7 +1827,7 @@ const WEAPONS: Record<string, WeaponSprite> = {
     grip: { x: 1, y: 8 },
   },
   machete: {
-    // 9-row wide cleaver blade — sweep at the top, full width down to hilt.
+    // 9-row wide cleaver blade, sweep at the top, full width down to hilt.
     sprite: [
       '.ss',
       'sss',
@@ -1843,7 +1843,7 @@ const WEAPONS: Record<string, WeaponSprite> = {
     grip: { x: 1, y: 8 },
   },
   pistol: {
-    // Compact pistol — barrel, slide, grip.
+    // Compact pistol, barrel, slide, grip.
     sprite: [
       'mmmm',
       'MMMm',
@@ -1868,7 +1868,7 @@ const WEAPONS: Record<string, WeaponSprite> = {
     grip: { x: 3, y: 5 },
   },
   sledgehammer: {
-    // 9-row hammer — 4-wide head + clear shaft + handle.
+    // 9-row hammer, 4-wide head + clear shaft + handle.
     sprite: [
       'mMMm',
       'MMMM',
@@ -1884,7 +1884,7 @@ const WEAPONS: Record<string, WeaponSprite> = {
     grip: { x: 1, y: 8 },
   },
   'flaming sword': {
-    // 10-row blade — flame tower 3 rows tall on top.
+    // 10-row blade, flame tower 3 rows tall on top.
     sprite: [
       '.f.',
       'fFf',
@@ -1944,7 +1944,7 @@ const WEAPONS: Record<string, WeaponSprite> = {
     grip: { x: 4, y: 6 },
   },
   kingsblade: {
-    // 10-row regal blade — bumped to 5-wide for the king-only "huge weapon"
+    // 10-row regal blade, bumped to 5-wide for the king-only "huge weapon"
     // ask. Wider blade with double highlight rails, gold cross-guard with
     // ruby pommel finial. Grip stays centered so it lines up with R_HAND.
     sprite: [
@@ -1994,7 +1994,7 @@ function drawWeapon(cells: Cell[], weaponName: string): void {
   }
 }
 
-// ─── Off-hand items — held in the left hand at waist level ────────────
+// ─── Off-hand items, held in the left hand at waist level ────────────
 
 function drawOffHand(cells: Cell[], f: Features): void {
   if (f.offHand === 'none') return;
@@ -2053,7 +2053,7 @@ function drawOffHand(cells: Cell[], f: Features): void {
 
 // ─── Scenes / aura / spark ─────────────────────────────────────────────
 
-// Bright "+" cross — 5 pixels (top, left, center, right, bottom). Used as
+// Bright "+" cross, 5 pixels (top, left, center, right, bottom). Used as
 // the rarity-tier accent on the upgraded backgrounds (rare → king).
 function drawPlus(cells: Cell[], cx: number, cy: number, color: string): void {
   put(cells, cx, cy - 1, color);
@@ -2068,7 +2068,7 @@ function drawScene(cells: Cell[], scene: Scene): void {
     case 'none':
       return;
     case 'diamondblue': {
-      // King — diamond blue facet base + 4 yellow corner crosses + 2
+      // King, diamond blue facet base + 4 yellow corner crosses + 2
       // bright orange mid-side crosses (the orange anchors the regal
       // pop above all other tiers).
       const base = '#3FA5E0';
@@ -2087,7 +2087,7 @@ function drawScene(cells: Cell[], scene: Scene): void {
       return;
     }
     case 'commonbg': {
-      // Common — solid muted slate. No facets, no sparkles. Plainest tier.
+      // Common, solid muted slate. No facets, no sparkles. Plainest tier.
       const base = '#3A3A45';
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
@@ -2097,7 +2097,7 @@ function drawScene(cells: Cell[], scene: Scene): void {
       return;
     }
     case 'uncommonbg': {
-      // Uncommon — solid forest green with 2 small white sparkles in the
+      // Uncommon, solid forest green with 2 small white sparkles in the
       // opposite corners. First hint of "bling".
       const base = '#1A6A3A';
       for (let y = 0; y < H; y++) {
@@ -2110,7 +2110,7 @@ function drawScene(cells: Cell[], scene: Scene): void {
       return;
     }
     case 'rarebg': {
-      // Rare — blue with a light facet pattern + 2 yellow crosses
+      // Rare, blue with a light facet pattern + 2 yellow crosses
       // (top-right + bottom-left corners only).
       const base = '#3A5AAA';
       const mid = '#5A7ACA';
@@ -2124,7 +2124,7 @@ function drawScene(cells: Cell[], scene: Scene): void {
       return;
     }
     case 'legendarybg': {
-      // Legendary — royal purple with denser facets + 4 yellow crosses
+      // Legendary, royal purple with denser facets + 4 yellow crosses
       // (one in each corner).
       const base = '#5A2A9A';
       const mid = '#8A4ACA';
@@ -2140,7 +2140,7 @@ function drawScene(cells: Cell[], scene: Scene): void {
       return;
     }
     case 'epicbg': {
-      // Epic — radiant orange/gold with dense facet pattern + 6 yellow
+      // Epic, radiant orange/gold with dense facet pattern + 6 yellow
       // crosses (4 corners + 2 mid-sides). One step under king in pop.
       const base = '#B85A1A';
       const mid = '#E08A2A';
@@ -2303,7 +2303,7 @@ function drawBling(cells: Cell[], f: Features): void {
   const lvl = f.blingLevel;
   if (lvl === 0) return;
 
-  // ── Chest gem — 5-pixel cross of cyan/white centered on the chest.
+  // ── Chest gem, 5-pixel cross of cyan/white centered on the chest.
   // Sits high enough to clear the belt area on every outfit.
   const gemCx = CX;
   const gemCy = TORSO_TOP + 3;
@@ -2313,7 +2313,7 @@ function drawBling(cells: Cell[], f: Features): void {
   put(cells, gemCx - 1, gemCy, '#FFFFFF');      // sparkle left
   put(cells, gemCx + 1, gemCy, '#FFFFFF');      // sparkle right
 
-  // ── Corner sparkles (legendary+) — 4 small star-bursts in the corners
+  // ── Corner sparkles (legendary+), 4 small star-bursts in the corners
   // away from the body silhouette.
   if (lvl >= 2) {
     const corners: Array<[number, number]> = [
@@ -2331,7 +2331,7 @@ function drawBling(cells: Cell[], f: Features): void {
     }
   }
 
-  // ── Glittery shirt (epic + king) — scattered bright dots on the torso
+  // ── Glittery shirt (epic + king), scattered bright dots on the torso
   // in a fixed pattern derived from the gem position. Avoids overdrawing
   // the gem itself.
   if (lvl >= 3) {
@@ -2360,7 +2360,7 @@ function drawBling(cells: Cell[], f: Features): void {
 function drawPet(cells: Cell[], pet: Pet, _blingLevel: number): void {
   if (pet === 'none') return;
 
-  // Detailed pets 2026-04-26 v2 — 6w × 6h, side-profile sitting position
+  // Detailed pets 2026-04-26 v2, 6w × 6h, side-profile sitting position
   // modeled on the Fantums-style dog reference. Eyes, muzzle, legs, tail
   // markings all visible. Sits at the brawler's feet on the right.
   const px = 16;
@@ -2372,33 +2372,33 @@ function drawPet(cells: Cell[], pet: Pet, _blingLevel: number): void {
     const white = '#F0F0F0';
     const dark = '#3A2A1A';
     const eye = '#FFD84A';     // bright eye on the dark face so it reads
-    // Row 0 — pointy ears
+    // Row 0, pointy ears
     put(cells, px + 1, py, black);
     put(cells, px + 3, py, black);
-    // Row 1 — top of head
+    // Row 1, top of head
     put(cells, px + 1, py + 1, black);
     put(cells, px + 2, py + 1, black);
     put(cells, px + 3, py + 1, black);
     put(cells, px + 4, py + 1, black);
-    // Row 2 — face: eye + cheek
+    // Row 2, face: eye + cheek
     put(cells, px + 1, py + 2, black);
     put(cells, px + 2, py + 2, eye);   // bright eye
     put(cells, px + 3, py + 2, black);
     put(cells, px + 4, py + 2, black);
-    // Row 3 — muzzle (white) + back
+    // Row 3, muzzle (white) + back
     put(cells, px, py + 3, white);     // muzzle nose tip
     put(cells, px + 1, py + 3, white);
     put(cells, px + 2, py + 3, black);
     put(cells, px + 3, py + 3, black);
     put(cells, px + 4, py + 3, black);
     put(cells, px + 5, py + 3, black); // back
-    // Row 4 — chest white + body + tail nub
+    // Row 4, chest white + body + tail nub
     put(cells, px + 1, py + 4, white);
     put(cells, px + 2, py + 4, white);
     put(cells, px + 3, py + 4, black);
     put(cells, px + 4, py + 4, black);
     put(cells, px + 5, py + 4, black); // tail
-    // Row 5 — 4 legs visible
+    // Row 5, 4 legs visible
     put(cells, px + 1, py + 5, dark);
     put(cells, px + 2, py + 5, dark);
     put(cells, px + 4, py + 5, dark);
@@ -2413,38 +2413,38 @@ function drawPet(cells: Cell[], pet: Pet, _blingLevel: number): void {
     const white = '#F0F0F0';
     const pink = '#FF8AC0';
     const eye = '#FFD84A';
-    // Row 0 — very pointed ears (apart)
+    // Row 0, very pointed ears (apart)
     put(cells, px, py, body);
     put(cells, px + 1, py, body);
     put(cells, px + 3, py, body);
     put(cells, px + 4, py, body);
-    // Row 1 — top of head
+    // Row 1, top of head
     put(cells, px, py + 1, body);
     put(cells, px + 1, py + 1, body);
     put(cells, px + 2, py + 1, body);
     put(cells, px + 3, py + 1, body);
     put(cells, px + 4, py + 1, body);
-    // Row 2 — face: eyes + nose
+    // Row 2, face: eyes + nose
     put(cells, px, py + 2, body);
     put(cells, px + 1, py + 2, eye);    // left eye
     put(cells, px + 2, py + 2, pink);   // pink nose
     put(cells, px + 3, py + 2, eye);    // right eye
     put(cells, px + 4, py + 2, body);
-    // Row 3 — chin/muzzle + back + tail rising
+    // Row 3, chin/muzzle + back + tail rising
     put(cells, px, py + 3, body);
     put(cells, px + 1, py + 3, white);  // white muzzle
     put(cells, px + 2, py + 3, white);
     put(cells, px + 3, py + 3, body);
     put(cells, px + 4, py + 3, body);
     put(cells, px + 5, py + 3, body);   // tail starts
-    // Row 4 — chest + body + tail curling
+    // Row 4, chest + body + tail curling
     put(cells, px, py + 4, body);
     put(cells, px + 1, py + 4, white);  // white chest
     put(cells, px + 2, py + 4, body);
     put(cells, px + 3, py + 4, body);
     put(cells, px + 4, py + 4, body);
     put(cells, px + 5, py + 4, body);   // tail curling up-right
-    // Row 5 — 4 legs visible + tail tip
+    // Row 5, 4 legs visible + tail tip
     put(cells, px, py + 5, dark);
     put(cells, px + 1, py + 5, dark);
     put(cells, px + 3, py + 5, dark);
@@ -2457,7 +2457,7 @@ function drawPet(cells: Cell[], pet: Pet, _blingLevel: number): void {
 //
 // Walks the cell map and paints a 1-pixel dark outline around every
 // body/clothing/hair pixel that borders empty space. Gives the fighter
-// a clean, readable silhouette against any background — the reference
+// a clean, readable silhouette against any background, the reference
 // art has this crisp edge.
 
 function addSilhouetteOutline(cells: Cell[], f: Features): void {
@@ -2467,7 +2467,7 @@ function addSilhouetteOutline(cells: Cell[], f: Features): void {
   const occupied = new Set<string>();
   for (const c of cells) occupied.add(`${c.x},${c.y}`);
   // Add an outline pixel anywhere an empty neighbor touches an occupied
-  // non-outline interior cell — but only on the body/torso/head region
+  // non-outline interior cell, but only on the body/torso/head region
   // to avoid outlining scene decorations.
   const outlines: Cell[] = [];
   // Extended up to row 0 so the tall weapon tips (knife/sword/kingsblade
@@ -2504,7 +2504,7 @@ export function renderBrawlerArt(opts: BrawlerArtOpts): string {
   const bgCells: Cell[] = [];
   const cells: Cell[] = [];
 
-  // bgRarity override — render the bg as if this rarity, otherwise use
+  // bgRarity override, render the bg as if this rarity, otherwise use
   // the scene that rolled with the brawler.
   const bgScene = bgRarity ? sceneForRarity(bgRarity) : working.scene;
   drawScene(bgCells, bgScene);
@@ -2548,12 +2548,12 @@ export function renderBrawlerArt(opts: BrawlerArtOpts): string {
   // Full-body silhouette outline for crisp definition against any background.
   addSilhouetteOutline(cells, working);
 
-  // Bling — chest gem, corner sparkles, glittery shirt overlay (rare+).
+  // Bling, chest gem, corner sparkles, glittery shirt overlay (rare+).
   // Drawn AFTER the outline so corner sparkles stay as clean dots instead
   // of getting outlined into 5-pixel stars.
   drawBling(cells, working);
 
-  // Per-(archetype, rarity) horizontal shift — moves the whole brawler
+  // Per-(archetype, rarity) horizontal shift, moves the whole brawler
   // (weapon + body + silhouette + pet + bling) right so the corner crosses
   // on the bg are not buried under the weapon's silhouette outline. 2px
   // was too far per D's 2026-04-27 follow-up; pulled back to 1px.
@@ -2578,7 +2578,7 @@ export function renderBrawlerArt(opts: BrawlerArtOpts): string {
     .map((c) => `<rect x="${c.x}" y="${c.y}" width="1" height="1" fill="${c.color}"/>`)
     .join('');
 
-  // Dead overlay — bright red diagonal X across the body, with a few drips
+  // Dead overlay, bright red diagonal X across the body, with a few drips
   // on the lower portion to read as "blood". Drawn over the character so
   // the X clearly marks them as out of action.
   const deadOverlay = isDead ? buildBloodCrossOverlay() : '';
@@ -2620,7 +2620,7 @@ function buildBloodCrossOverlay(): string {
     rects.push({ x, y, color: red });
     rects.push({ x: x + 1, y, color: red });
   }
-  // Blood drips at the bottom — a few short vertical streaks.
+  // Blood drips at the bottom, a few short vertical streaks.
   const drips: Array<[number, number]> = [
     [6, 26], [6, 27],
     [11, 28], [11, 29], [11, 30],

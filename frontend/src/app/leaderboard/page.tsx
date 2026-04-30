@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Leaderboard — every alive brawler ranked by Rating (Elo). Dead brawlers are
+ * Leaderboard, every alive brawler ranked by Rating (Elo). Dead brawlers are
  * hidden by default but available via the filter. The King (tokenId 501)
  * is called out with a crown if present.
  */
@@ -47,7 +47,7 @@ export default function LeaderboardPage() {
         <div>
           <h1 className="brawl-header text-2xl md:text-3xl text-brawl-text mb-2">Leaderboard</h1>
           <p className="text-sm text-brawl-text-dim">
-            Only brawlers who&rsquo;ve stepped into the arena. Ranked by Rating — win against
+            Only brawlers who&rsquo;ve stepped into the arena. Ranked by Rating, win against
             higher-rated opponents to climb faster. (The full roster with filters lives on{' '}
             <Link href="/browse" className="text-brawl-orange hover:underline">
               /browse

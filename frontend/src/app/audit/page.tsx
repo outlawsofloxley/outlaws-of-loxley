@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * /audit — internal art + rarity audit page.
+ * /audit, internal art + rarity audit page.
  *
  * Two modes:
  *  1. "Live": renders every minted brawler on chain, grouped by rarity,
@@ -12,7 +12,7 @@
  *     cards) so the art can be verified without waiting for a full mint.
  *     This doesn't touch the chain at all.
  *
- * Accessible at /audit. Not linked in the nav on purpose — internal tool.
+ * Accessible at /audit. Not linked in the nav on purpose, internal tool.
  */
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -266,7 +266,7 @@ function LiveGrid() {
                 <Link
                   key={b.tokenId}
                   href={`/brawler/${b.tokenId}`}
-                  title={`#${b.tokenId} — ${b.name} — ${b.weapon.name}`}
+                  title={`#${b.tokenId}, ${b.name}, ${b.weapon.name}`}
                   className="block"
                 >
                   <div className="w-full aspect-square bg-brawl-bg hover:ring-2 hover:ring-brawl-orange transition-all">

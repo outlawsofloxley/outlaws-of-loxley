@@ -2,7 +2,7 @@
  * High-level Brawlers contract operations.
  *
  * All functions take an OnchainClient (so tests can inject a mock) and return
- * domain types — never raw ethers results. This file is the boundary between
+ * domain types, never raw ethers results. This file is the boundary between
  * "ethers types" and "our types".
  */
 import type {

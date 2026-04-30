@@ -88,11 +88,11 @@ describe('brawler', () => {
         const w = rollWeapon(BigInt(i));
         counts.set(w.name, (counts.get(w.name) ?? 0) + 1);
       }
-      // Knife is 18% — expect between 15% and 21%
+      // Knife is 18%, expect between 15% and 21%
       const knives = counts.get('Knife') ?? 0;
       expect(knives / trials).toBeGreaterThan(0.15);
       expect(knives / trials).toBeLessThan(0.21);
-      // Rail Gun is 1% — expect between 0.5% and 1.5%
+      // Rail Gun is 1%, expect between 0.5% and 1.5%
       const railGuns = counts.get('Rail Gun') ?? 0;
       expect(railGuns / trials).toBeGreaterThan(0.005);
       expect(railGuns / trials).toBeLessThan(0.015);

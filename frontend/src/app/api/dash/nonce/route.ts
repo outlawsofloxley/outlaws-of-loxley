@@ -1,5 +1,5 @@
 /**
- * GET /api/dash/nonce — issue a single-use login nonce.
+ * GET /api/dash/nonce, issue a single-use login nonce.
  *
  * The client then has the user sign a message containing the nonce + expiry
  * and posts the signature to /api/dash/login. Server verifies signature,
@@ -42,7 +42,7 @@ export async function GET() {
   }
 
   await ensureDashSchema();
-  // Housekeeping — cheap, keeps the table small.
+  // Housekeeping, cheap, keeps the table small.
   await purgeExpiredNonces().catch(() => {});
 
   const nonce = generateNonce();

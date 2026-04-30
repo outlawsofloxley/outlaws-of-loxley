@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * DuelAnimation — visual combat replay for the /duel page.
+ * DuelAnimation, visual combat replay for the /duel page.
  *
  * Drives off the CombatEvent list returned by /api/run-duel:
  *   - round_start      → reset `attacker` / `defender` pointers
@@ -9,7 +9,7 @@
  *                        clash spark flashes, defender shakes
  *   - fight_end        → freeze the final state
  *
- * HP bars animate via CSS width transitions on the actual bar div — every
+ * HP bars animate via CSS width transitions on the actual bar div, every
  * event step mutates `hpA`/`hpB`, React re-renders, Tailwind transitions
  * the `width` change. Damage numbers are absolutely-positioned spans with
  * `animate-damage-float` that get a unique key per hit so each mount
@@ -23,7 +23,7 @@ import { startingHp } from '@/core/stats';
 import type { CombatEvent } from '@/core/types';
 import { rarityFromWeight, type RarityTier } from '@/lib/rarity';
 
-// Rarity-colored glow for the battle-portrait uplift — bigger, brighter
+// Rarity-colored glow for the battle-portrait uplift, bigger, brighter
 // drop-shadow on rarer fighters so Epic/King look legitimately magical.
 const RARITY_GLOW: Record<RarityTier, string> = {
   common: '0 0 6px rgba(154, 154, 154, 0.5)',
@@ -56,7 +56,7 @@ const EVENT_INTERVAL_MS = 1200;
 const LUNGE_MS = 550;
 const FINAL_FREEZE_MS = 1500;
 
-// Map weapon name → unicode glyph. Keep the mapping loose — anything not
+// Map weapon name → unicode glyph. Keep the mapping loose, anything not
 // matched falls back to the generic "⚔" crossed swords.
 function weaponGlyph(weaponName: string): string {
   const n = weaponName.toLowerCase();
@@ -89,7 +89,7 @@ export interface DuelAnimationProps {
   onFinished?: () => void;
   /** If true, the animation is rendered in its "complete" state immediately. */
   skipAnimation?: boolean;
-  /** If true, the animation is paused with an overlay — used to hold until the wallet tx is signed. */
+  /** If true, the animation is paused with an overlay, used to hold until the wallet tx is signed. */
   gated?: boolean;
   /** Message shown on the gated overlay. */
   gatedMessage?: string;
@@ -97,7 +97,7 @@ export interface DuelAnimationProps {
    * Optional explicit tap handler for the gated overlay. When provided, the
    * overlay renders a big primary button the user taps to open their wallet.
    * Necessary on mobile where wagmi's `writeContract` can't open a native
-   * wallet-app deep-link from inside a `useEffect` — the call must be made
+   * wallet-app deep-link from inside a `useEffect`, the call must be made
    * directly within a user-gesture callback.
    */
   gatedAction?: {
@@ -107,7 +107,7 @@ export interface DuelAnimationProps {
   } | null;
   /**
    * Rendered as an absolute-positioned panel over the arena once the fight
-   * is finished. Arena stays visible behind it — fighters frozen in their
+   * is finished. Arena stays visible behind it, fighters frozen in their
    * final positions, HP bars at their ending values, scene backdrop intact.
    */
   finishedOverlay?: React.ReactNode;
@@ -171,7 +171,7 @@ export function DuelAnimation({
   const [discoKey, setDiscoKey] = useState<number | null>(null);
   const [bloodSide, setBloodSide] = useState<'a' | 'b' | null>(null);
 
-  // Death-sequence state — when a side is going to die from this fight,
+  // Death-sequence state, when a side is going to die from this fight,
   // after the fight_end freeze we play a ~5s body-slump → ghost-peel →
   // RIP-banner sequence before firing onFinished (which reveals the
   // outcome overlay on top of the arena).
@@ -188,7 +188,7 @@ export function DuelAnimation({
   // timeout the moment `ended` flips, and onFinished never fires.
   const finalizedRef = useRef(false);
 
-  // Finalize when all events are shown — either via animation or skip.
+  // Finalize when all events are shown, either via animation or skip.
   // A final-freeze beat lets the last hit / KO read before the overlay lands.
   // If a side will die from this fight we extend with a 5-second death
   // sequence (body slump → ghost rise → RIP banner).
@@ -232,7 +232,7 @@ export function DuelAnimation({
     }, 5000);
   }, [shownCount, events, skipAnimation, willDie]);
 
-  // Intro sequence — 3 visible strikes (feint A, feint B, big clash) before
+  // Intro sequence, 3 visible strikes (feint A, feint B, big clash) before
   // the real sim events kick in. Runs after the gate lifts.
   useEffect(() => {
     if (gated) return;
@@ -242,7 +242,7 @@ export function DuelAnimation({
     const timer = setTimeout(() => {
       switch (step.kind) {
         case 'staredown': {
-          // No attack — just a charged "VS" beat. Trigger a subtle disco
+          // No attack, just a charged "VS" beat. Trigger a subtle disco
           // so the arena feels alive during the beat of silence.
           setDiscoKey(Date.now());
           break;
@@ -337,7 +337,7 @@ export function DuelAnimation({
     switch (ev.type) {
       case 'round_start': {
         setCurrentRound(ev.round);
-        // Disco strobe on every round start — quick RGB pulse.
+        // Disco strobe on every round start, quick RGB pulse.
         setDiscoKey(Date.now() + ev.round);
         const s = sideOf(ev.attackerId);
         if (s) {
@@ -431,7 +431,7 @@ export function DuelAnimation({
         (shakeActive ? 'animate-arena-shake' : '')
       }
     >
-      {/* Disco strobe — pulses rainbow bg briefly at round starts. */}
+      {/* Disco strobe, pulses rainbow bg briefly at round starts. */}
       {discoKey !== null && (
         <div
           key={`disco-${discoKey}`}
@@ -440,7 +440,7 @@ export function DuelAnimation({
         />
       )}
 
-      {/* Thunder flash — white overlay on every hit, brighter on crits. */}
+      {/* Thunder flash, white overlay on every hit, brighter on crits. */}
       {flashActive && (
         <div
           className="pointer-events-none absolute inset-0 bg-white/70"
@@ -448,7 +448,7 @@ export function DuelAnimation({
         />
       )}
 
-      {/* Lightning bolt — SVG zigzag drawn across the frame on crits / KOs. */}
+      {/* Lightning bolt, SVG zigzag drawn across the frame on crits / KOs. */}
       {lightningKey !== null && (
         <svg
           key={`lightning-${lightningKey}`}
@@ -474,7 +474,7 @@ export function DuelAnimation({
         </svg>
       )}
 
-      {/* Gated overlay — held until the wallet tx is signed. When a
+      {/* Gated overlay, held until the wallet tx is signed. When a
           `gatedAction` is provided, renders an explicit tap button that
           fires the tx within a user-gesture context (required for mobile
           wallet-app deep-links to work). */}
@@ -501,7 +501,7 @@ export function DuelAnimation({
                   {gatedAction.label}
                 </button>
                 <div className="text-sm text-brawl-text-faint font-mono mt-2 leading-relaxed">
-                  Tap to open MetaMask. Your wallet app will take over —
+                  Tap to open MetaMask. Your wallet app will take over, 
                   confirm the stake there and you&rsquo;ll come back here
                   for the fight.
                 </div>
@@ -509,7 +509,7 @@ export function DuelAnimation({
             ) : (
               <div className="text-sm text-brawl-text-faint font-mono">
                 The fight starts the instant your tx is signed. If you don&rsquo;t
-                see a popup, check the MetaMask icon in your browser toolbar —
+                see a popup, check the MetaMask icon in your browser toolbar, 
                 it may have opened behind the window.
               </div>
             )}
@@ -519,7 +519,7 @@ export function DuelAnimation({
 
       <div className="relative z-10 flex items-center justify-between text-xs brawl-header mb-3 flex-wrap gap-2">
         <span className="text-brawl-text-faint">
-          Round <span className="text-brawl-orange">{currentRound || '—'}</span>
+          Round <span className="text-brawl-orange">{currentRound || ', '}</span>
         </span>
         {ended && (
           <span
@@ -580,7 +580,7 @@ export function DuelAnimation({
         />
       </div>
 
-      {/* Outcome overlay — arena stays visible behind, semi-translucent dark
+      {/* Outcome overlay, arena stays visible behind, semi-translucent dark
           backing with winner + deltas + action buttons on top. */}
       {ended && finishedOverlay && (
         <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none animate-overlay-fade-in">
@@ -685,7 +685,7 @@ function FighterLane({
             {glyph}
           </span>
         </div>
-        {/* Blood splatter — scattered red droplets on hit side for ~600ms. */}
+        {/* Blood splatter, scattered red droplets on hit side for ~600ms. */}
         {bloody && (
           <svg
             viewBox="0 0 32 32"
@@ -731,7 +731,7 @@ function FighterLane({
           </div>
         )}
 
-        {/* Death sequence — body slumps + ghost rises out of the portrait.
+        {/* Death sequence, body slumps + ghost rises out of the portrait.
             Triggered by `dying`; stays until the animation completes. */}
         {dying && (
           <>
@@ -739,7 +739,7 @@ function FighterLane({
                 already shows isDead styling because hp===0). We just add
                 a dark veil + blood pool to sell it. */}
             <div className="absolute inset-0 pointer-events-none animate-death-slump bg-gradient-to-b from-transparent via-transparent to-black/70" />
-            {/* Ghost — translucent duplicate of the brawler rising upward. */}
+            {/* Ghost, translucent duplicate of the brawler rising upward. */}
             <div className="absolute inset-0 pointer-events-none animate-ghost-rise">
               <div className="w-full h-full opacity-70 mix-blend-screen">
                 <PixelAvatar
@@ -754,7 +754,7 @@ function FighterLane({
           </>
         )}
 
-        {/* RIP banner — drops in at the end of the ghost animation. */}
+        {/* RIP banner, drops in at the end of the ghost animation. */}
         {rip && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-rip-banner">
             <div className="bg-brawl-bg/90 border-2 border-brawl-red px-3 py-2 text-center">

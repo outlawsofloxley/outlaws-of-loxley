@@ -132,7 +132,7 @@ contract BrawlersTest is Test {
     function test_mint_rolls_first_last_name() public {
         uint256 id = brawlers.mint(alice);
         string memory name = brawlers.getBrawler(id).name;
-        // Name should be "First Last" — has a space and is non-empty.
+        // Name should be "First Last", has a space and is non-empty.
         bytes memory nb = bytes(name);
         assertGt(nb.length, 2, "name too short");
         bool hasSpace = false;

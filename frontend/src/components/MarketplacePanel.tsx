@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * MarketplacePanel — handles list / update / cancel / buy interactions on
+ * MarketplacePanel, handles list / update / cancel / buy interactions on
  * the brawler detail page. Reads live listing state from the Marketplace
  * contract and renders the right action for whoever's viewing.
  */
@@ -57,7 +57,7 @@ export function MarketplacePanel({ tokenId, owner, onChange }: MarketplacePanelP
 
       {isConnected && !rightChain && (
         <p className="text-xs text-brawl-red">
-          Wrong chain — switch to the configured testnet to trade.
+          Wrong chain, switch to the configured testnet to trade.
         </p>
       )}
 
@@ -460,7 +460,7 @@ function UnlistedOwnerView({
           <span className="text-brawl-green">
             {formatEther(sellerGets)} {symbol}
           </span>
-          , fee is{' '}
+         , fee is{' '}
           <span className="text-brawl-text-dim">
             {formatEther(feeAmount)} {symbol}
           </span>

@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * useAllBrawlers — fetch every brawler from chain.
+ * useAllBrawlers, fetch every brawler from chain.
  *
  * Strategy:
  *   1. Read `nextTokenId()` from the Brawlers contract.
@@ -76,7 +76,7 @@ export function useAllBrawlers(): UseAllBrawlersResult {
     return ids;
   }, [nextTokenIdRaw, kingMintedData]);
 
-  // Step 2: build multicall list — 3 reads per token (brawler, weapon, owner).
+  // Step 2: build multicall list, 3 reads per token (brawler, weapon, owner).
   const contracts = useMemo(() => {
     return tokenIds.flatMap((id) => {
       const args = [BigInt(id)] as const;

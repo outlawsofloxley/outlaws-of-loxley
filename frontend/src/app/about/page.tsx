@@ -1,9 +1,9 @@
 'use client';
 
 /**
- * /about — How to Play / About page.
+ * /about. How to Play / About page.
  *
- * Public-facing onboarding for friends. Covers wallet setup (Base), faucet
+ * Public-facing onboarding for mates. Covers wallet setup (Base), faucet
  * links for Sepolia testing, minting, matchmaking, BRAWL stakes, rarity
  * tiers, the resurrection curve, leaderboard/history, and the King.
  */
@@ -23,7 +23,7 @@ export default function AboutPage() {
           We don&rsquo;t do photorealistic. We don&rsquo;t do AI-slop. We do{' '}
           <strong className="text-brawl-text">crayon-simple, deterministic
           pixel art</strong> rolled fresh on every mint by a 32×24 procedural
-          generator — same seed in, same warrior out. <strong>2000</strong>{' '}
+          generator. Same seed in, same warrior out. <strong>2000</strong>{' '}
           fighters in the drop, one 1-of-1 King reserved for the dev. Mint, stake
           BRAWL, brawl other players for a 90 / 10 pot split, climb the
           leaderboard, dodge the graveyard. Fully on-chain on{' '}
@@ -32,8 +32,8 @@ export default function AboutPage() {
           nobody can pre-compute their roll. That&rsquo;s the whole pitch.
         </p>
         <div className="mt-3 text-sm text-brawl-text-faint italic">
-          BASEic by name, brutal by nature. The art is simple on purpose —
-          the brawls aren&rsquo;t.
+          BASEic by name, brutal by nature. The art is simple on purpose. The
+          brawls aren&rsquo;t.
         </div>
       </header>
 
@@ -51,7 +51,7 @@ export default function AboutPage() {
           <ol className="mt-2 list-decimal pl-5 space-y-1 text-xs">
             <li>Install the <strong>MetaMask</strong> app from the App Store / Play Store</li>
             <li>
-              Tap the big orange <strong>Connect Wallet</strong> button on this page — on
+              Tap the big orange <strong>Connect Wallet</strong> button on this page. On
               mobile it becomes <strong>Open in MetaMask</strong> and deep-links to the
               app automatically
             </li>
@@ -60,7 +60,7 @@ export default function AboutPage() {
               approve the connection
             </li>
             <li>
-              You now have a full dapp experience — mint, duel, trade, everything works
+              You now have a full dapp experience: mint, duel, trade, everything works
               the same as desktop
             </li>
           </ol>
@@ -75,7 +75,7 @@ export default function AboutPage() {
             <li>Block explorer: <Mono>https://basescan.org</Mono></li>
           </ul>
           <p className="mt-3 text-sm text-brawl-text-dim">
-            Or click <strong>Connect</strong> at the top-right — MetaMask will
+            Or click <strong>Connect</strong> at the top-right. MetaMask will
             prompt you to add the chain automatically the first time.
           </p>
         </Callout>
@@ -102,8 +102,8 @@ export default function AboutPage() {
             className="text-brawl-orange hover:underline"
           >
             bridge.base.org
-          </a>{' '}
-          — bridge ETH from Ethereum mainnet for a few dollars in gas, takes
+          </a>
+          . Bridge ETH from Ethereum mainnet for a few dollars in gas, takes
           a couple of minutes. Coinbase users can also withdraw ETH directly
           to Base from the Coinbase app for free.
         </p>
@@ -119,8 +119,8 @@ export default function AboutPage() {
               className="text-brawl-orange hover:underline"
             >
               Alchemy Base Sepolia faucet
-            </a>{' '}
-            — 0.5 Sepolia ETH per day, no signup needed for low amounts.
+            </a>
+            : 0.5 Sepolia ETH per day, no signup needed for low amounts.
           </li>
           <li>
             <a
@@ -130,8 +130,8 @@ export default function AboutPage() {
               className="text-brawl-orange hover:underline"
             >
               Coinbase Base Sepolia faucet
-            </a>{' '}
-            — easy if you already have a Coinbase account.
+            </a>
+            : easy if you already have a Coinbase account.
           </li>
         </ul>
         <p className="text-sm text-brawl-text-dim">
@@ -147,35 +147,35 @@ export default function AboutPage() {
           <Link href="/mint" className="text-brawl-orange hover:underline">
             /mint
           </Link>{' '}
-          and pick how many you want (1, 2, 5, 10, or 20 at a time — up to 20
-          per transaction). Each mint costs <strong>~$30</strong> — payable in{' '}
+          and pick how many you want (1, 2, 5, 10, or 20 at a time, up to 20
+          per transaction). Each mint costs <strong>~$30</strong>, payable in{' '}
           <Mono>ETH</Mono>, <Mono>USDC</Mono>, or <Mono>USDT</Mono> on Base.
           Every <Mono>$30</Mono> mint splits transparently:
           <strong> $20 to the dev wallet</strong> (covers ops + treasury) and
           <strong> $10 + matching BRAWL to the BRAWL/ETH liquidity pool</strong>
-          {' '}— so the LP grows organically as more people mint.
+         , so the LP grows as more people mint.
         </p>
         <p>
           Every brawler is randomly generated with a name, stats, a weapon, and
           BASEic pixel art. The rarity and weapon you get are pre-shuffled at
           deploy time using <strong>Chainlink VRF</strong> so the order is
-          provably random — nobody can pre-compute which mint pulls a King.
+          provably random. Nobody can pre-compute which mint pulls a King.
         </p>
         <Callout>
-          <strong className="text-brawl-yellow">★ FOUNDER 50</strong> (token IDs 1–50) — gold founder badge on
+          <strong className="text-brawl-yellow">★ FOUNDER 50</strong> (token IDs 1–50), gold founder badge on
           your card forever. Top of the trophy case. Plus all FOUNDER 100 perks
           below.
           <div className="mt-2"><strong className="text-brawl-cyan">★ FOUNDER 100</strong> (token IDs 1–100):
             <ul className="mt-1 list-disc pl-5 space-y-1 text-xs">
               <li>Bonus <Mono>20 BRAWL</Mono> airdropped to your wallet (enough for 2 fights)</li>
               <li><strong>50% discount</strong> on every duel stake (5 BRAWL/fight instead of 10)</li>
-              <li><strong>First resurrection FREE</strong> — your first death doesn&rsquo;t cost ETH</li>
+              <li><strong>First resurrection FREE</strong>. Your first death doesn&rsquo;t cost ETH.</li>
               <li>Cyan founder badge on every card</li>
             </ul>
           </div>
         </Callout>
         <Callout>
-          <strong>Bulk-mint discount</strong> — buy in volume, get bonus brawlers free:
+          <strong>Bulk-mint discount</strong>. Buy in volume, get bonus brawlers free:
           <ul className="mt-2 list-disc pl-5 space-y-1 text-xs">
             <li>Mint <strong>5</strong> → get <strong>1 bonus</strong> = 6 brawlers for the price of 5</li>
             <li>Mint <strong>10</strong> → get <strong>3 bonus</strong> = 13 brawlers for the price of 10</li>
@@ -183,37 +183,37 @@ export default function AboutPage() {
           </ul>
         </Callout>
         <Callout>
-          <strong className="text-brawl-orange">⚀ Lottery</strong> — every paid mint has a{' '}
+          <strong className="text-brawl-orange">⚀ Lottery</strong>. Every paid mint has a{' '}
           <strong>1-in-2000 chance</strong> of dropping a free bonus brawler in
           the same tx. The kind of luck you can&rsquo;t buy.
         </Callout>
         <Callout>
-          <strong>Rarity distribution</strong> — 2000 brawlers in the drop +
+          <strong>Rarity distribution</strong>. 2000 brawlers in the drop plus
           1 King:
           <ul className="mt-2 list-disc pl-5 space-y-1 text-xs">
             <li>
-              <span className="text-rarity-common">Common</span> — 1240 brawlers
+              <span className="text-rarity-common">Common</span>: 1240 brawlers
               (Knife, Baseball Bat, Crowbar)
             </li>
             <li>
-              <span className="text-rarity-uncommon">Uncommon</span> — 500
+              <span className="text-rarity-uncommon">Uncommon</span>: 500
               brawlers (Machete, Pistol)
             </li>
             <li>
-              <span className="text-rarity-rare">Rare</span> — 200 brawlers
+              <span className="text-rarity-rare">Rare</span>: 200 brawlers
               (Shotgun, Sledgehammer)
             </li>
             <li>
-              <span className="text-rarity-epic">Legendary</span> — 40 brawlers
+              <span className="text-rarity-epic">Legendary</span>: 40 brawlers
               (Flaming Sword, Electric Axe)
             </li>
             <li>
-              <span className="text-brawl-yellow">Epic</span> — 20 brawlers
-              (Bazooka, Rail Gun) — rarest in the drop
+              <span className="text-brawl-yellow">Epic</span>: 20 brawlers
+              (Bazooka, Rail Gun), rarest in the drop
             </li>
             <li>
-              <span className="text-brawl-orange">The King</span> — 1/1
-              (Kingsblade, tokenId 2001) — dev wallet only
+              <span className="text-brawl-orange">The King</span>: 1/1
+              (Kingsblade, tokenId 2001), dev wallet only
             </li>
           </ul>
         </Callout>
@@ -227,25 +227,25 @@ export default function AboutPage() {
         </p>
         <ul className="list-disc pl-5 space-y-1 text-sm">
           <li>
-            <strong>Strength (STR)</strong> — damage bonus + minimum damage floor
+            <strong>Strength (STR)</strong>: damage bonus and minimum damage floor.
           </li>
           <li>
-            <strong>Dexterity (DEX)</strong> — to-hit chance, armor class,
-            initiative order
+            <strong>Dexterity (DEX)</strong>: to-hit chance, armour class,
+            initiative order.
           </li>
           <li>
-            <strong>Constitution (CON)</strong> — starting HP and armor class
+            <strong>Constitution (CON)</strong>: starting HP and armour class.
           </li>
           <li>
-            <strong>Intelligence (INT) / Wisdom (WIS) / Charisma (CHA)</strong>{' '}
-            — reserved for future content (spellcasting, crits, taunts etc).
+            <strong>Intelligence (INT) / Wisdom (WIS) / Charisma (CHA)</strong>:
+            reserved for future content (spellcasting, crits, taunts etc).
             Safe to dump for now.
           </li>
         </ul>
         <p>
-          Combat is turn-based with simultaneous-damage: each round, whoever has
+          Combat is turn-based with simultaneous damage. Each round, whoever has
           higher DEX attacks first. Hits land when <Mono>d20 + DEX</Mono> &ge;
-          defender&rsquo;s armor class. Crits happen on 20s. First to zero HP
+          defender&rsquo;s armour class. Crits happen on 20s. First to zero HP
           loses. If both go to zero in the same round, it&rsquo;s a tie and the
           pot splits.
         </p>
@@ -259,14 +259,14 @@ export default function AboutPage() {
             /duel
           </Link>{' '}
           and we&rsquo;ll auto-match you against a brawler near your Rating. If
-          you own multiple brawlers, pick your fighter; otherwise we lock in
+          you own multiple brawlers, pick your fighter. Otherwise we lock in
           your only alive one. Don&rsquo;t like the match? Hit{' '}
-          <em>Reroll opponent</em> — we&rsquo;ll find someone else.
+          <em>Reroll opponent</em> and we&rsquo;ll find someone else.
         </p>
         <Callout>
-          <strong>The stake</strong> — Each duel costs{' '}
+          <strong>The stake</strong>: each duel costs{' '}
           <span className="text-brawl-orange">10 BRAWL</span> from each side
-          (Founder 100 brawlers pay just <span className="text-brawl-cyan">5 BRAWL</span> — half off forever).
+          (Founder 100 brawlers pay just <span className="text-brawl-cyan">5 BRAWL</span>, half off forever).
           Winner takes 90% of the pot, 10% goes to the dev treasury. On a tie,
           the winner-share splits 50/50. You need both fighters to have the BRAWL
           and to have approved the Duel contract once (one-click button handles
@@ -275,9 +275,9 @@ export default function AboutPage() {
         <p>
           When you click <strong>Fight</strong>, the server simulates the duel,
           signs the result, and your wallet pops up to confirm. Once you sign,
-          the animation plays — intro stare-down, three feint strikes, then the
+          the animation plays: intro stare-down, three feint strikes, then the
           real combat rolled from chain data. Stays on screen when it ends with
-          the outcome + your new balance + buttons.
+          the outcome, your new balance, and buttons.
         </p>
       </Section>
 
@@ -285,8 +285,8 @@ export default function AboutPage() {
       <Section title="6. Rating + leaderboard">
         <p>
           Every brawler starts at <Mono>Rating 1000</Mono>. Rating moves after
-          every duel using the classic Elo formula — win against someone higher
-          rated and you climb fast; lose to someone lower rated and you drop
+          every duel using the classic Elo formula. Win against someone higher
+          rated and you climb fast. Lose to someone lower rated and you drop
           hard. The{' '}
           <Link href="/leaderboard" className="text-brawl-orange hover:underline">
             /leaderboard
@@ -329,14 +329,14 @@ export default function AboutPage() {
           </ul>
         </Callout>
         <p>
-          The fight win streak resets on resurrection — so a dead brawler
+          The fight win streak resets on resurrection, so a dead brawler
           re-enters the arena at their existing Rating but with their three
           losses still on record. They just can&rsquo;t die again immediately.
         </p>
       </Section>
 
       {/* ─── House fighters ─────────────────────────────────── */}
-      <Section title="8. House fighters — always a match ready">
+      <Section title="8. House fighters: always a match ready">
         <p>
           A handful of brawlers owned by the dev wallet sit permanently in the
           arena as <strong>HOUSE</strong> fighters. They show up tagged with
@@ -348,7 +348,7 @@ export default function AboutPage() {
           Behind the scenes, a keeper service auto-resurrects any dead HOUSE
           brawler within seconds of their third loss (using the dev wallet&rsquo;s
           ETH for the resurrection cost) so the pool never thins out. Their
-          stats and Rating work exactly like every other brawler — no secret
+          stats and Rating work exactly like every other brawler. No secret
           buffs.
         </p>
       </Section>
@@ -360,43 +360,42 @@ export default function AboutPage() {
           <Link href="/market" className="text-brawl-orange hover:underline">
             /market
           </Link>
-          {' '}page. Payments are in <Mono>ETH</Mono> on Base — NOT BRAWL.
+          {' '}page. Payments are in <Mono>ETH</Mono> on Base, NOT BRAWL.
           BRAWL stays reserved for duel stakes + open-market DEX trading.
         </p>
         <Callout>
           <strong>How selling works</strong>
           <ol className="mt-2 list-decimal pl-5 space-y-1 text-xs">
-            <li>Go to your brawler&rsquo;s detail page</li>
-            <li>In the Marketplace panel, enter a price in ETH</li>
+            <li>Go to your brawler&rsquo;s detail page.</li>
+            <li>In the Marketplace panel, enter a price in ETH.</li>
             <li>
-              First time: click <strong>Approve & List</strong> — two wallet
+              First time: click <strong>Approve & List</strong>. Two wallet
               popups (approve the marketplace to transfer the NFT, then list
               the price). Subsequent listings only need one popup.
             </li>
             <li>
-              You keep the NFT in your wallet the whole time — listing is
+              You keep the NFT in your wallet the whole time. Listing is
               approval-based, no escrow. Transfer it elsewhere and the listing
               auto-invalidates at buy time.
             </li>
             <li>
               When someone buys, <strong>5%</strong> of the sale goes to the
-              dev treasury, <strong>95%</strong> to you. NFT transfers to the
+              dev treasury and <strong>95%</strong> to you. NFT transfers to the
               buyer, ETH lands in your wallet.
             </li>
           </ol>
         </Callout>
         <p>
           Seller actions on an active listing: <em>Update price</em> or{' '}
-          <em>Cancel</em>. Cancel is always available — even if the
-          marketplace is paused by the dev for an emergency — so nothing gets
-          stuck.
+          <em>Cancel</em>. Cancel is always available even if the marketplace
+          is paused by the dev for an emergency, so nothing gets stuck.
         </p>
       </Section>
 
       {/* ─── The King ─────────────────────────────────── */}
       <Section title="10. The King (1/1, tokenId #2001)">
         <p>
-          There&rsquo;s one 1-of-1 brawler — <strong>The King Brawler</strong>.
+          There&rsquo;s one 1-of-1 brawler, <strong>The King Brawler</strong>.
           All stats at 18, starting Rating 2000, level 10, wields the Kingsblade
           (50-100 damage, speed 10), sits on a diamond-blue background. Only
           mintable by the dev wallet, only ever exists once, sits above all
@@ -409,7 +408,7 @@ export default function AboutPage() {
       </Section>
 
       {/* ─── Trust signals ──────────────────────────────────────────── */}
-      <Section title="11. Trust signals — what we ship to prove this isn't a rug">
+      <Section title="11. Trust signals: what we ship to prove this isn't a rug">
         <p>
           BASEic Brawlers is a one-shot, fixed-supply project. We ship the
           guarantees that let you sleep easy:
@@ -417,18 +416,18 @@ export default function AboutPage() {
         <Callout>
           <strong>BRAWL ownership renounced after launch settles.</strong>{' '}
           The BRAWL ERC-20 launches with anti-sniper limits (1% max wallet,
-          0.5% max tx) so bots can&rsquo;t snipe block 0. After ~48h once the
-          launch settles, the dev calls <Mono>renounceOwnership()</Mono> on
-          the BRAWL contract — at that point nobody can change the whitelist,
+          0.5% max tx) so bots can&rsquo;t snipe block 0. After about 48 hours
+          once the launch settles, the dev calls <Mono>renounceOwnership()</Mono>
+          on the BRAWL contract. From that point nobody can change the whitelist,
           blacklist, or limits ever again. The token becomes a true fixed-supply
           ERC-20 with zero admin functions. <em>You can verify this on-chain.</em>
         </Callout>
         <Callout>
           <strong>LP locked for 6 months on Unicrypt at launch.</strong>{' '}
           When the BRAWL/ETH liquidity pool is seeded on Aerodrome, the LP
-          token is immediately deposited into Unicrypt&rsquo;s standard lock
-          contract for 6 months. Dev cannot pull liquidity during the lock.
-          Lock URL is published at launch — anyone can independently verify.
+          token is deposited into Unicrypt&rsquo;s standard lock contract for
+          6 months. Dev cannot pull liquidity during the lock. The lock URL is
+          published at launch, anyone can independently verify.
         </Callout>
         <Callout>
           <strong>Game contracts stay dev-controlled (intentionally).</strong>{' '}
@@ -436,16 +435,16 @@ export default function AboutPage() {
           by the dev wallet so we can tune <em>game</em> parameters (fight
           cost, mint price, fees) as the meta evolves. None of these contracts
           can mint BRAWL, drain LP, or take user funds beyond the documented
-          flows. Game tuning ≠ rug capability.
+          flows. Game tuning is not the same as rug capability.
         </Callout>
         <Callout>
           <strong>No team allocation, no presale, no VC round.</strong>{' '}
           100k BRAWL supply, fully transparent allocation:
           <ul className="mt-1 list-disc pl-5 space-y-1 text-xs">
-            <li><strong>Initial LP seed</strong> — 2,500 BRAWL + ~$500 ETH (dev funds)</li>
-            <li><strong>Auto-paired BRAWL</strong> — 50k locked in MintDrop, drips into LP as people mint</li>
-            <li><strong>Founder airdrops</strong> — 2,000 BRAWL to first 100 minters</li>
-            <li><strong>Dev / treasury / season prizes</strong> — 45,500 BRAWL on dev wallet (no vesting contract; trust-based reserve for future seasons + partnerships)</li>
+            <li><strong>Initial LP seed</strong>: 2,500 BRAWL + ~$500 ETH (dev funds).</li>
+            <li><strong>Auto-paired BRAWL</strong>: 50k locked in MintDrop, drips into LP as people mint.</li>
+            <li><strong>Founder airdrops</strong>: 2,000 BRAWL to first 100 minters.</li>
+            <li><strong>Dev / treasury / season prizes</strong>: 45,500 BRAWL on dev wallet (no vesting contract, trust-based reserve for future seasons and partnerships).</li>
           </ul>
         </Callout>
       </Section>
@@ -454,14 +453,14 @@ export default function AboutPage() {
       <Section title="12. Tips">
         <ul className="list-disc pl-5 space-y-2 text-sm">
           <li>
-            <strong>Farm easy wins early</strong> — match into the same Rating
+            <strong>Farm easy wins early</strong>. Match into the same Rating
             band. Don&rsquo;t pick fights above you until your BRAWL stack is
             deep enough to absorb a few losses.
           </li>
           <li>
-            <strong>Watch the combat log</strong> — Reflect on why you lost. Was
+            <strong>Watch the combat log</strong>. Work out why you lost. Was
             it bad rolls, or was your opponent just statistically better? If
-            your Dex is low, you attack last — that&rsquo;s a structural
+            your Dex is low, you attack last. That&rsquo;s a structural
             problem, not bad luck.
           </li>
           <li>
@@ -470,7 +469,7 @@ export default function AboutPage() {
             dueling a brawler who&rsquo;s on a two-loss streak.
           </li>
           <li>
-            <strong>Batch mint</strong> — 20 mints in one tx only costs one gas
+            <strong>Batch mint</strong>. 20 mints in one tx only costs one gas
             fee. If you&rsquo;re going to spend money anyway, go big.
           </li>
         </ul>
@@ -480,7 +479,7 @@ export default function AboutPage() {
       <Section title="13. FAQ">
         <FAQ
           q="What happens if I lose my wallet?"
-          a="Your brawlers are ERC-721 NFTs tied to the address. Lose the keys, lose the brawlers. Standard self-custody rules — write your seed down, store it offline, never paste it anywhere."
+          a="Your brawlers are ERC-721 NFTs tied to the address. Lose the keys, lose the brawlers. Standard self-custody rules: write your seed down, store it offline, never paste it anywhere."
         />
         <FAQ
           q="Can I transfer a brawler to a friend?"
@@ -488,11 +487,11 @@ export default function AboutPage() {
         />
         <FAQ
           q="Can I sell them?"
-          a="Yes — both on the in-app /market (5% dev fee, ETH-denominated) and on OpenSea (token metadata at /api/token/[id] is OpenSea-spec compliant)."
+          a="Yes, both on the in-app /market (5% dev fee, ETH-denominated) and on OpenSea (token metadata at /api/token/[id] is OpenSea-spec compliant)."
         />
         <FAQ
           q="Is this safe?"
-          a="Contracts are open-source. Mint randomness uses Chainlink VRF so the rarity shuffle is provably random. Treasury is a single EOA in v1 (will migrate to a Safe multisig before any contract upgrades). Don't paste seed phrases anywhere — this site never needs them."
+          a="Contracts are open-source. Mint randomness uses Chainlink VRF so the rarity shuffle is provably random. Treasury is a single EOA in v1 (will migrate to a Safe multisig before any contract upgrades). Don't paste seed phrases anywhere. This site never needs them."
         />
         <FAQ
           q="Why does my first duel need two wallet popups?"
@@ -500,15 +499,15 @@ export default function AboutPage() {
         />
         <FAQ
           q="Why Base?"
-          a="Cheap gas (a duel costs cents), fast finality (~2s blocks), Coinbase distribution funnel, and a growing onchain culture. BASEic Brawlers is a wordplay on basic + Base — the art is intentionally crayon-simple, the chain is Base, the vibe is unashamed."
+          a="Cheap gas (a duel costs cents), fast finality (~2s blocks), Coinbase distribution funnel, and a growing onchain culture. BASEic Brawlers is a wordplay on basic + Base. The art is intentionally crayon-simple, the chain is Base, the vibe is unashamed."
         />
         <FAQ
           q="Why does the art look so basic?"
-          a="On purpose. We're not chasing AI-generated photorealism. Every brawler is rolled by a 32×24 procedural pixel-art generator — same seed in, same warrior out, no off-chain assets, no cloud. Crayon-simple, deterministic, basically Base."
+          a="On purpose. We're not chasing AI-generated photorealism. Every brawler is rolled by a 32×24 procedural pixel-art generator: same seed in, same warrior out, no off-chain assets, no cloud. Crayon-simple, deterministic, basically Base."
         />
         <FAQ
           q="Who built this?"
-          a="D, solo, with an AI pair programmer. Spiritual successor to Fantums of Opera (RIP). Source will be open once we're past this friends test."
+          a="D, solo, with an AI pair programmer. Spiritual successor to Fantums of Opera (RIP). Source will be open once we're past this mates' test."
         />
       </Section>
 

@@ -3,7 +3,7 @@
  *
  * Reads DuelCompleted events from the Postgres cache (populated by
  * /api/history/sync). Triggers a fire-and-forget sync on every call so
- * the cache stays fresh without any cron setup — if the last sync was
+ * the cache stays fresh without any cron setup, if the last sync was
  * >25s ago the sync route will actually do work; otherwise it returns
  * instantly. Either way, this handler answers from what's already in
  * the DB so the user doesn't wait on the chain.
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
     );
   }
 
-  // Kick off a background sync. We don't await — the response returns with
+  // Kick off a background sync. We don't await, the response returns with
   // whatever's in cache right now; the next caller sees the fresher data.
   const syncUrl = new URL('/api/history/sync', url.origin);
   // Avoid awaiting; swallow errors silently.

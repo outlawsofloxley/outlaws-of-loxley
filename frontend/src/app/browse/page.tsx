@@ -21,7 +21,7 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 ];
 
 function sortBrawlers(list: readonly Brawler[], key: SortKey): Brawler[] {
-  // Shallow copy first — the input array is readonly.
+  // Shallow copy first, the input array is readonly.
   const arr = [...list];
   switch (key) {
     case 'id-asc':
@@ -152,10 +152,10 @@ export default function BrowsePage() {
           <div className="flex gap-2 text-sm text-brawl-text-faint">
             <p>Common causes:</p>
             <ul className="list-disc pl-4 space-y-1">
-              <li>Anvil not running — start it in a terminal with <code>anvil</code></li>
-              <li>Contracts not deployed — run the deploy script</li>
+              <li>Anvil not running, start it in a terminal with <code>anvil</code></li>
+              <li>Contracts not deployed, run the deploy script</li>
               <li>
-                Address mismatch — check your <code>.env.local</code> against the deployer&rsquo;s
+                Address mismatch, check your <code>.env.local</code> against the deployer&rsquo;s
                 output
               </li>
             </ul>
@@ -166,7 +166,7 @@ export default function BrowsePage() {
         </div>
       )}
 
-      {/* Loading state — skeleton grid */}
+      {/* Loading state, skeleton grid */}
       {isLoading && !error && <BrawlerCardSkeletonGrid count={12} />}
 
       {/* Empty state */}

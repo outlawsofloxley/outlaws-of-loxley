@@ -97,7 +97,7 @@ export async function POST(req: Request) {
   const message = buildLoginMessage(nonce, consumed.expiresAt);
 
   // viem's verifyMessage handles both EOA personal_sign and EIP-1271
-  // smart-contract wallets — no need to recoverMessageAddress manually.
+  // smart-contract wallets, no need to recoverMessageAddress manually.
   let valid = false;
   try {
     valid = await verifyMessage({

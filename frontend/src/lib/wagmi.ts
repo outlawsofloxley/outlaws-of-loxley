@@ -1,5 +1,5 @@
 /**
- * Wagmi configuration — this is where we wire together:
+ * Wagmi configuration, this is where we wire together:
  *   - The custom "Brawlers Local" chain (or whatever the user pointed us at)
  *   - The transport (HTTP over the RPC URL)
  *   - The connectors (injected / browser wallet only for local dev)
@@ -90,7 +90,7 @@ function buildChain(chainId: number, rpcUrl: string): Chain {
               blockCreated: 0,
             },
           },
-    // Anvil doesn't have a block explorer — leaving this unset is fine.
+    // Anvil doesn't have a block explorer, leaving this unset is fine.
     // Mark mainnets distinctly so wallets can render "testnet" badges.
     testnet: chainId !== 1 && chainId !== 56 && chainId !== 8453,
   });
@@ -114,14 +114,14 @@ export function getWagmiConfig() {
       // EIP-1193 provider exposed on window.ethereum. Works for:
       //   - Desktop browser extensions (MetaMask, Rabby, Frame, Brave Wallet).
       //   - Mobile dapps opened inside a wallet's in-app browser (MetaMask
-      //     mobile has one — tap the hamburger → Browser → enter URL).
+      //     mobile has one, tap the hamburger → Browser → enter URL).
       // For mobile Chrome/Safari users without window.ethereum, the
       // ConnectButton renders an "Open in MetaMask" deeplink that bounces
       // them into MM's in-app browser, where this same connector works.
       injected({ shimDisconnect: true }),
     ],
     transports: {
-      // Fallback transport — viem rotates through these on RPC errors so a
+      // Fallback transport, viem rotates through these on RPC errors so a
       // single rate-limited endpoint can't kill mints / reads. Per-call
       // retry config keeps user-facing actions responsive.
       [chain.id]: fallback(

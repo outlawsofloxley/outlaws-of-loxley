@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * useListing — on-chain listing state for a single tokenId.
+ * useListing, on-chain listing state for a single tokenId.
  *
  * Reads `listingOf(tokenId)` and `isApprovedForMarketplace(tokenId, owner)`
  * from the Marketplace contract. Used on the brawler detail page to render

@@ -6,7 +6,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title BRAWL
- * @notice The $BRAWL utility token — stake to duel, earn by winning.
+ * @notice The $BRAWL utility token, stake to duel, earn by winning.
  *         Fair-launch hardened with anti-sniper / anti-bot / max-wallet
  *         limits during the first window after trading is enabled.
  *
@@ -20,11 +20,11 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  *
  * @dev Fixed supply, no mint after construction. Fixed-supply minted to the
  *      initial holder; ownership held by `initialOwner` for limit-management
- *      only (cannot mint, cannot pause transfers globally — owner can only
+ *      only (cannot mint, cannot pause transfers globally, owner can only
  *      flip launch flags + manage the whitelist/blacklist).
  *
  *      Anti-sniping arsenal:
- *        1. `tradingEnabled` defaults false — no DEX trading until owner
+ *        1. `tradingEnabled` defaults false, no DEX trading until owner
  *           calls enableTrading(). Whitelisted addresses (LP router, game
  *           contracts) can move tokens for setup.
  *        2. Anti-bot: in the first ANTI_BOT_BLOCKS after trading enables,
@@ -102,14 +102,14 @@ contract BRAWL is ERC20, Ownable {
 
         _mint(initialHolder, FIXED_SUPPLY);
 
-        // Conservative starting limits — owner can tune before enabling
+        // Conservative starting limits, owner can tune before enabling
         // trading. 1% wallet cap, 0.5% tx cap is the standard fair-launch
         // setting (limits big-bag accumulation in the first hours).
         maxWallet = FIXED_SUPPLY / 100; // 1,000 BRAWL
         maxTx = FIXED_SUPPLY / 200; // 500 BRAWL
         limitsActive = true;
 
-        // Default whitelist — needed so initial setup transfers (seeding
+        // Default whitelist, needed so initial setup transfers (seeding
         // LP, MintDrop airdrop pool, etc) work pre-launch.
         whitelisted[initialOwner] = true;
         whitelisted[initialHolder] = true;
@@ -176,7 +176,7 @@ contract BRAWL is ERC20, Ownable {
     /// @dev OZ ERC-20 calls _update for every transfer/mint/burn. We layer
     ///      blacklist + trading-enabled + anti-bot + limits on top.
     function _update(address from, address to, uint256 value) internal override {
-        // Mint or burn — skip restrictions.
+        // Mint or burn, skip restrictions.
         if (from == address(0) || to == address(0)) {
             super._update(from, to, value);
             return;
@@ -189,12 +189,12 @@ contract BRAWL is ERC20, Ownable {
         bool fromWl = whitelisted[from];
         bool toWl = whitelisted[to];
 
-        // Trading paused — only whitelisted setup transfers allowed.
+        // Trading paused, only whitelisted setup transfers allowed.
         if (!tradingEnabled && !fromWl && !toWl) {
             revert TradingNotEnabled();
         }
 
-        // Anti-bot window — auto-blacklist contract receivers in the first
+        // Anti-bot window, auto-blacklist contract receivers in the first
         // ANTI_BOT_BLOCKS after trading enabled. Catches sniper bots that
         // atomic-call the LP pair in block 0.
         //
@@ -213,7 +213,7 @@ contract BRAWL is ERC20, Ownable {
             revert SniperBlocked(to);
         }
 
-        // Launch-window limits — caps per-tx and per-wallet to slow whale
+        // Launch-window limits, caps per-tx and per-wallet to slow whale
         // accumulation in the first hours/days after launch.
         if (limitsActive && !fromWl && !toWl) {
             if (value > maxTx) revert MaxTxExceeded(value, maxTx);

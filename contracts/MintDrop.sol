@@ -18,8 +18,8 @@ import {Brawlers} from "./Brawlers.sol";
  *        1. Deploy Brawlers, Duel, Graveyard.
  *        2. Deploy BRAWL ERC-20 (100,000 minted to deployer EOA).
  *        3. Deploy MintDrop with references to Brawlers, BRAWL, USDT, USDC.
- *        4. Brawlers.setMintDrop(mintDrop) — grants exclusive mint rights.
- *        5. BRAWL.transfer(mintDrop, 25_000e18) — fund the airdrop budget.
+ *        4. Brawlers.setMintDrop(mintDrop), grants exclusive mint rights.
+ *        5. BRAWL.transfer(mintDrop, 25_000e18), fund the airdrop budget.
  *
  *      Flow (public user):
  *        mintWithETH:  send msg.value == ethPrice, get brawler + airdrop.
@@ -71,7 +71,7 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
     uint256 public usdtPrice;
     /// @notice Flat fallback price in USDC's smallest unit (6 decimals).
     uint256 public usdcPrice;
-    /// @notice BRAWL airdropped per mint (zero on mainnet by design — see
+    /// @notice BRAWL airdropped per mint (zero on mainnet by design, see
     ///         FOUNDER_AIRDROP for the bonus on the first 100 mints).
     uint256 public airdropPerMint;
     /// @notice Bonus BRAWL airdropped to the FIRST `FOUNDER_AIRDROP_CAP`
@@ -83,7 +83,7 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
     uint256 public constant FOUNDER_AIRDROP_CAP = 100;
     /// @notice Smaller subset of "first founders" that get an additional
     ///         super-rare cosmetic. UI renders a gold "FOUNDER 50" badge
-    ///         on token ids 1..FOUNDER_50_CAP. No on-chain action — UI-only.
+    ///         on token ids 1..FOUNDER_50_CAP. No on-chain action, UI-only.
     uint256 public constant FOUNDER_50_CAP = 50;
     /// @notice Receives the dev-share portion of mint proceeds (ETH/USDT/USDC).
     address public treasury;
@@ -93,7 +93,7 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
     ///         minters can see "X went to dev, Y went to LP fund" on-chain.
     address public lpTreasury;
     /// @notice % (in basis points) of each mint that goes to lpTreasury.
-    ///         Default 3333 (33.33%) — matches "$10 of $30" split.
+    ///         Default 3333 (33.33%), matches "$10 of $30" split.
     ///         Range 0..10000. Dev can tune via setLpShare().
     uint256 public lpShareBps;
     /// @notice BRAWL sent to lpTreasury alongside the per-mint ETH share.
@@ -316,7 +316,7 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
 
     /**
      * @notice Withdraw any BRAWL remaining in this contract (e.g. after
-     *         campaign ends). Fail-safe — nobody expects a leftover balance,
+     *         campaign ends). Fail-safe, nobody expects a leftover balance,
      *         but in case airdrop was misconfigured mid-flight.
      */
     function withdrawBRAWL(address to, uint256 amount) external onlyOwner {
@@ -349,7 +349,7 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
 
         emit BrawlerSold(to, tokenId, 0, msg.value, airdropped);
 
-        // Lottery roll — 1-in-2000 free bonus brawler
+        // Lottery roll, 1-in-2000 free bonus brawler
         if (_lotteryHit(to, tokenId)) {
             _grantBonusMints(to, 1, "lottery");
         }
@@ -548,7 +548,7 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @dev ERC-20 equivalent of `_routeETH` — pulls `amount` from `from`
+     * @dev ERC-20 equivalent of `_routeETH`, pulls `amount` from `from`
      *      and splits between dev `treasury` and `lpTreasury` per
      *      `lpShareBps`. Both transfers happen via SafeERC20.
      */
@@ -579,7 +579,7 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @dev Bulk-mint discount table — buyer pays for `count` and gets
+     * @dev Bulk-mint discount table, buyer pays for `count` and gets
      *      `count + bonus` brawlers.
      *        20+  -> 7 free
      *        10+  -> 3 free
@@ -594,7 +594,7 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @dev Lottery roll — 1-in-2000 chance of an extra free mint per paid
+     * @dev Lottery roll, 1-in-2000 chance of an extra free mint per paid
      *      mint. Uses (prevrandao, buyer, tokenId, timestamp). Not
      *      cryptographically secure but unmanipulable for "did I get lucky".
      */
@@ -633,7 +633,7 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
     /**
      * @dev Transfer airdropPerMint + (founder bonus, if applicable) to `to`
      *      from this contract's BRAWL balance. Shortfalls quietly airdrop
-     *      less rather than reverting — a late mint shouldn't fail because
+     *      less rather than reverting, a late mint shouldn't fail because
      *      airdrop budget is exhausted.
      *
      *      Founder bonus is paid to mints where the resulting tokenId falls

@@ -1,10 +1,10 @@
 'use client';
 
 /**
- * Mint flow (Phase 7) — pick count + payment → (approve USDT) → sign mint →
+ * Mint flow (Phase 7), pick count + payment → (approve USDT) → sign mint →
  * mine → reveal → success.
  *
- * The mint goes through MintDrop.sol (not Brawlers.mint directly — that's
+ * The mint goes through MintDrop.sol (not Brawlers.mint directly, that's
  * gated to MintDrop/owner). Four call paths:
  *   - single ETH:   `mintWithETH{value: ethPrice}(to)`
  *   - batch ETH:    `mintMultipleWithETH{value: ethPrice*n}(to, n)`
@@ -105,7 +105,7 @@ export default function MintPage() {
     chainId: env.chainId,
     query: { enabled: !!address && paymentType === 'usdt' },
   });
-  // ── v5+ tiered pricing: read batchCost(count) — straddles tiers correctly.
+  // ── v5+ tiered pricing: read batchCost(count), straddles tiers correctly.
   // On v4 this read errors; we fall back to flat ethPrice/usdtPrice/usdcPrice.
   const batchCount = BigInt(Math.max(1, count));
   const batchCostRead = useReadContract({
@@ -336,7 +336,7 @@ export default function MintPage() {
         <h1 className="brawl-header text-2xl md:text-3xl text-brawl-text mb-2">Mint a Brawler</h1>
         <p className="text-sm text-brawl-text-dim">
           2000 brawlers in the curated initial drop. Stats rolled on-chain from
-          a pre-shuffled rarity table — 20 Epic, 40 Legendary, 200 Rare, 500
+          a pre-shuffled rarity table, 20 Epic, 40 Legendary, 200 Rare, 500
           Uncommon, 1240 Common, plus the 1-of-1 King.
           {airdropPerMint !== undefined && airdropPerMint > 0n && (
             <> Every mint airdrops <span className="text-brawl-orange">{airdropLabel}</span> to your wallet for dueling.</>
@@ -346,19 +346,19 @@ export default function MintPage() {
           Minted so far: <span className="text-brawl-cyan">{supplyLabel}</span>
         </div>
 
-        {/* Founder enticements — visible above the fold */}
+        {/* Founder enticements, visible above the fold */}
         <div className="mt-4 grid gap-2 md:grid-cols-3 text-xs">
           <div className="brawl-card p-3 border-2 border-brawl-yellow">
             <div className="brawl-header text-brawl-yellow mb-1">★ FOUNDER 50</div>
             <div className="text-brawl-text-dim">
-              Token IDs <strong>1–50</strong> — gold founder badge on your card
+              Token IDs <strong>1–50</strong>, gold founder badge on your card
               forever, plus all FOUNDER 100 perks.
             </div>
           </div>
           <div className="brawl-card p-3 border-2 border-brawl-cyan">
             <div className="brawl-header text-brawl-cyan mb-1">★ FOUNDER 100</div>
             <div className="text-brawl-text-dim">
-              Token IDs <strong>1–100</strong> — silver founder badge, bonus
+              Token IDs <strong>1–100</strong>, silver founder badge, bonus
               <strong> 20 BRAWL</strong> airdrop (enough for 2 fights), and
               your <strong>first resurrect is free</strong>.
             </div>
@@ -405,7 +405,7 @@ export default function MintPage() {
           {phase.kind === 'approving' && (
             <StatusBlock
               title="Waiting for wallet signature (approve USDT)"
-              body="Unlimited approval — you only need to do this once."
+              body="Unlimited approval, you only need to do this once."
             />
           )}
           {phase.kind === 'approveMining' && (
@@ -586,7 +586,7 @@ function IdlePanel(props: IdlePanelProps) {
     onApprove,
     onMint,
   } = props;
-  // USDT affordability check — batched cost vs balance.
+  // USDT affordability check, batched cost vs balance.
   const totalUsdt = usdtPrice !== undefined ? usdtPrice * BigInt(count) : 0n;
   const hasEnoughUsdt =
     usdtPrice !== undefined && usdtBalance !== undefined && usdtBalance >= totalUsdt;
@@ -594,7 +594,7 @@ function IdlePanel(props: IdlePanelProps) {
   if (supplyExhausted) {
     return (
       <div className="brawl-header text-sm text-brawl-red">
-        ✦ Initial mint sold out — all 500 minted
+        ✦ Initial mint sold out, all 500 minted
       </div>
     );
   }
@@ -632,7 +632,7 @@ function IdlePanel(props: IdlePanelProps) {
         <div className="space-y-2">
           <p className="text-sm text-brawl-text-dim">
             First time paying with USDT on this wallet (or batch exceeds your current
-            approval) — one-time approval required.
+            approval), one-time approval required.
           </p>
           <button
             type="button"
@@ -771,7 +771,7 @@ function PhaseIndicator({ phase }: { phase: Phase }) {
             >
               {done ? '✓' : active ? '●' : '○'} {step}
             </span>
-            {i < steps.length - 1 && <span className="text-brawl-text-faint">—</span>}
+            {i < steps.length - 1 && <span className="text-brawl-text-faint">, </span>}
           </div>
         );
       })}

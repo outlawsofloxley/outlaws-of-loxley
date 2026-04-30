@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Per-brawler fight history — scoped DuelCompleted events where this token
+ * Per-brawler fight history, scoped DuelCompleted events where this token
  * was tokenA or tokenB. Reuses the shared DuelHistoryTable.
  */
 import { use, useMemo } from 'react';
@@ -74,7 +74,7 @@ export default function BrawlerHistoryPage({
           &larr; Back to {brawler?.name ?? `#${tokenId}`}
         </Link>
         <h1 className="brawl-header text-2xl md:text-3xl text-brawl-text">
-          {title} — Fight History
+          {title}, Fight History
         </h1>
         <p className="text-sm text-brawl-text-dim">
           Every duel this brawler has fought, newest first.

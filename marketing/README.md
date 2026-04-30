@@ -1,4 +1,4 @@
-# BASEic Brawlers — Marketing Kit
+# BASEic Brawlers, Marketing Kit
 
 Pre-launch + launch + week-1 content + Telegram bots. Everything you need to
 go from "domain live" to "trading on Aerodrome with a real community" without
@@ -31,7 +31,7 @@ marketing/
     ├── compose.py              Compose marketing graphics from real sprites
     ├── contact_sheet.py        Build contact sheet of all sample SVGs
     ├── zoom_check.py           Render zoom-in sheet of recently-fixed combos
-    ├── gen.py                  Pollinations art gen (deprecated — use compose.py)
+    ├── gen.py                  Pollinations art gen (deprecated, use compose.py)
     ├── main-pfp.png            1024² King PFP for X + TG profile
     ├── x-banner.png            1500×500 5-card banner for X header
     ├── tg-cover.png            1024×576 5-brawler cover for TG group
@@ -45,25 +45,25 @@ marketing/
 
 ### T-7 days (pre-launch)
 
-1. **Set up channels** — public TG (`@baseicbrawlers`), announce TG channel
+1. **Set up channels**, public TG (`@baseicbrawlers`), announce TG channel
    (`@baseicbrawlers_announce` if not yet created), X account (`@BASEicBrawlers`).
-2. **Pin messages** — paste the templates from `content/telegram-pinned.md`
+2. **Pin messages**, paste the templates from `content/telegram-pinned.md`
    into both TG channels. Replace `[CONTRACT_ADDR]` and `[PAIR_ADDR]` placeholders
    on launch day.
-3. **Stand up bots** — see `bots/README.md`. Welcome bot can run immediately;
+3. **Stand up bots**, see `bots/README.md`. Welcome bot can run immediately;
    raid + leaderboard go live on launch day.
-4. **Generate art** — use prompts from `content/art-prompts.md`. Output goes
+4. **Generate art**, use prompts from `content/art-prompts.md`. Output goes
    into `marketing/art/` (created when needed). Keep best 5-10 PFPs + 3 banner
    variants + 2 launch-day announce graphics.
-5. **KOL outreach** — start the 7-day warm-up DM sequence in `content/kol-outreach.md`.
+5. **KOL outreach**, start the 7-day warm-up DM sequence in `content/kol-outreach.md`.
 
 ### T-24h (day before launch)
 
-6. **Schedule X launch thread** — use `content/x-launch-thread.md`. Schedule
+6. **Schedule X launch thread**, use `content/x-launch-thread.md`. Schedule
    the first tweet for T-0 minute (mainnet contract goes live + LP seeded);
    subsequent tweets fire 30 min apart auto.
-7. **Pin "soon" tweet** — short teaser tweet pinned 24h prior with countdown.
-8. **Brief moderators** — share `content/shill-pack.md` so community shillers
+7. **Pin "soon" tweet**, short teaser tweet pinned 24h prior with countdown.
+8. **Brief moderators**, share `content/shill-pack.md` so community shillers
    have approved copy + hashtags + the do-not-say list.
 
 ### T-0 (launch day)
@@ -83,10 +83,10 @@ marketing/
 ## Hard rules (carry over from NUMA)
 
 - **Never DM users first.** Every official communication is via the pinned
-  channels. Welcome bot enforces this — if anyone DMs claiming to be the dev,
+  channels. Welcome bot enforces this, if anyone DMs claiming to be the dev,
   block + report.
 - **Only one CA.** The bot's `/ca` command is the single source of truth.
 - **No price-talk in main TG.** Push to a separate `@baseicbrawlers_chart`
   group if you want to allow it.
-- **Founder badges (1-100) are the lifetime perk** — use this in every shill.
+- **Founder badges (1-100) are the lifetime perk**, use this in every shill.
   Scarcity sells.

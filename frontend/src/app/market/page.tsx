@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * /market — browse every active brawler listing.
+ * /market, browse every active brawler listing.
  *
  * Data: cached DB listings via useMarketListings + full roster via
  * useAllBrawlers. Join the two client-side so we can render rich cards
@@ -84,7 +84,7 @@ export default function MarketPage() {
           <p className="text-sm text-brawl-text-dim">
             Buy and sell brawlers for {symbol}. <span className="text-brawl-orange">5%</span> fee
             to the dev treasury; the rest goes to the seller. Listings are
-            approval-based — sellers keep custody until sold.
+            approval-based, sellers keep custody until sold.
           </p>
         </div>
         <div className="text-left md:text-right text-sm font-mono text-brawl-text-dim">

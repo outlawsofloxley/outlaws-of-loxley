@@ -1,13 +1,13 @@
 /**
- * Leaderboard bot — Posts the weekly raid leaderboard to the public group.
+ * Leaderboard bot, Posts the weekly raid leaderboard to the public group.
  *
  * Modes:
  *   - On-demand: /leaderboard prints the current week's top 10
  *   - Scheduled: every Sunday 18:00 UTC, auto-posts to PUBLIC_GROUP_ID
  *
  * Admin commands:
- *   /publish              — force-post the current week's leaderboard
- *   /lbreward @user N     — admin awards N points (rare; for art submissions,
+ *   /publish            , force-post the current week's leaderboard
+ *   /lbreward @user N   , admin awards N points (rare; for art submissions,
  *                           bug reports, anything beyond the auto-raid scoring)
  */
 import 'dotenv/config';
@@ -17,7 +17,7 @@ import { manualReward, now, startOfIsoWeek, topNForCurrentWeek } from '../db.js'
 export function start() {
 const TOKEN = process.env.LEADERBOARD_BOT_TOKEN;
 if (!TOKEN) {
-  console.warn('[leaderboard] LEADERBOARD_BOT_TOKEN missing — skipping leaderboard bot');
+  console.warn('[leaderboard] LEADERBOARD_BOT_TOKEN missing, skipping leaderboard bot');
   return;
 }
 const PUBLIC_GROUP_ID = process.env.PUBLIC_GROUP_ID
@@ -29,7 +29,7 @@ const bot = new Bot(TOKEN);
 function formatBoard(rows, weekStart) {
   if (rows.length === 0) return 'No raids logged this week. Open a raid with /raid <url>.';
   const date = new Date(weekStart * 1000).toISOString().slice(0, 10);
-  const lines = [`🏆 BASEic BRAWLERS — WEEKLY LEADERBOARD (week of ${date})`, ''];
+  const lines = [`🏆 BASEic BRAWLERS, WEEKLY LEADERBOARD (week of ${date})`, ''];
   rows.forEach((r, i) => {
     const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
     lines.push(`${medal} @${r.username}: ${r.total_points} pts`);

@@ -50,7 +50,7 @@ export async function runRepl(opts: ReplOptions): Promise<void> {
   rl.prompt();
 
   // Queue of pending lines. readline fires a `line` event per line even when
-  // the user pastes a whole block — we serialize execution here so that an
+  // the user pastes a whole block, we serialize execution here so that an
   // async command (like `mint-onchain`) blocks any queued follow-up commands
   // until it completes. Without this, pasted commands run concurrently and
   // output interleaves.
@@ -123,7 +123,7 @@ export async function runRepl(opts: ReplOptions): Promise<void> {
   });
 
   rl.on('SIGINT', () => {
-    process.stdout.write('\n' + c.gray('  Ctrl+C — saving and exiting.') + '\n');
+    process.stdout.write('\n' + c.gray('  Ctrl+C, saving and exiting.') + '\n');
     try {
       saveState(opts.dataPath, ref.state);
     } catch {

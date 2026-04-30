@@ -1,14 +1,14 @@
-# X launch thread — @BASEicBrawlers
+# X launch thread, @BASEicBrawlers
 
 12 tweets. Tweet 1 fires the moment LP is seeded + trading enabled.
-Subsequent tweets every ~30 min — schedule them up front so the thread builds
+Subsequent tweets every ~30 min, schedule them up front so the thread builds
 itself while you handle launch ops.
 
 Replace `[BRAWLERS_ADDR]`, `[BRAWL_ADDR]`, `[PAIR_ADDR]` before scheduling.
 
 ---
 
-## 1/12 — Launch announce
+## 1/12, Launch announce
 
 ```
 ⚔️ THE ARENA IS OPEN ⚔️
@@ -27,14 +27,14 @@ Mint: https://baseicbrawlers.com/mint
 🧵👇
 ```
 
-## 2/12 — What it is
+## 2/12, What it is
 
 ```
 2/
 
 Every Brawler is a fighter, not just a JPEG.
 
-→ Stats, weapon, ELO, win/loss record — all on-chain
+→ Stats, weapon, ELO, win/loss record. All on-chain.
 → Auto-matched 1v1 duels for $BRAWL stakes
 → 3 losses = your brawler dies
 → Resurrect with ETH (or stay dead, becomes graveyard art)
@@ -42,12 +42,12 @@ Every Brawler is a fighter, not just a JPEG.
 Real game. Real stakes. Real chain.
 ```
 
-## 3/12 — Founder perks
+## 3/12, Founder perks
 
 ```
 3/
 
-👑 FOUNDER PERKS — token IDs 1-100 only
+👑 FOUNDER PERKS: token IDs 1-100 only
 
 ★ FOUNDER 50  (gold badge, IDs 1-50)
 ★ FOUNDER 100 (cyan badge, IDs 51-100)
@@ -62,7 +62,7 @@ And for LIFE after:
 Mint early. The first 100 are non-replaceable.
 ```
 
-## 4/12 — Tiered pricing + bulk discount
+## 4/12, Tiered pricing + bulk discount
 
 ```
 4/
@@ -84,7 +84,7 @@ Plus:
 Earlier = cheaper. Always.
 ```
 
-## 5/12 — $BRAWL token
+## 5/12, $BRAWL token
 
 ```
 5/
@@ -99,7 +99,7 @@ $BRAWL is the arena fuel.
 CA: [BRAWL_ADDR]
 ```
 
-## 6/12 — LP + lock proof
+## 6/12, LP + lock proof
 
 ```
 6/
@@ -108,7 +108,7 @@ CA: [BRAWL_ADDR]
 
 → LP seeded on @AerodromeFi (BRAWL/ETH)
 → Locked 6 MONTHS on @UncxSecurity → [UNICRYPT_LOCK_URL]
-→ Auto-paired: $10 of every mint + 50 $BRAWL goes straight to the LP fund
+→ Auto-paired: $10 of every mint plus 50 $BRAWL goes straight to the LP fund
 → BRAWL ownership will be renounced once limits lift
 
 No presale. No team alloc. No tax.
@@ -116,7 +116,7 @@ No presale. No team alloc. No tax.
 [PAIR_ADDR]
 ```
 
-## 7/12 — Game mechanics
+## 7/12, Game mechanics
 
 ```
 7/
@@ -124,14 +124,14 @@ No presale. No team alloc. No tax.
 How a duel actually plays out:
 
 → You + opponent both stake $BRAWL
-→ On-chain combat sim runs — stats × weapon × RNG seed
+→ On-chain combat sim runs: stats × weapon × RNG seed
 → Frontend animates the fight round-by-round
 → Winner's ELO goes up, loser's down
 → 3 consecutive losses → brawler dies
 → Resurrect or let them rest in the graveyard (where they're still browsable)
 ```
 
-## 8/12 — The King
+## 8/12, The King
 
 ```
 8/
@@ -145,7 +145,7 @@ He's not for sale. He's the boss the brawlers are fighting under.
 The arena has its god, and its god has a name.
 ```
 
-## 9/12 — Tech receipts
+## 9/12, Tech receipts
 
 ```
 9/
@@ -161,7 +161,7 @@ The arena has its god, and its god has a name.
 Receipts > promises.
 ```
 
-## 10/12 — Roadmap (short, honest)
+## 10/12, Roadmap (short, honest)
 
 ```
 10/
@@ -179,7 +179,7 @@ Roadmap is short on purpose.
 If we ship more, you'll know.
 ```
 
-## 11/12 — How to get in
+## 11/12, How to get in
 
 ```
 11/
@@ -190,20 +190,20 @@ If we ship more, you'll know.
 💬 https://t.me/baseicbrawlers
 📈 https://dexscreener.com/base/[PAIR_ADDR]
 📜 Contracts:
-   NFT — [BRAWLERS_ADDR]
-   $BRAWL — [BRAWL_ADDR]
+   NFT: [BRAWLERS_ADDR]
+   $BRAWL: [BRAWL_ADDR]
 
 Always verify the CA in the pinned TG message before you ape.
 ```
 
-## 12/12 — Call to action
+## 12/12, Call to action
 
 ```
 12/
 
 ENGAGE TO ARM THE ARENA:
 🔄 RT this thread
-👑 Mint a brawler — claim a founder slot if you're early
+👑 Mint a brawler, claim a founder slot if you're early
 ⚔️ Duel someone in your ELO band
 💀 Try to die before sundown
 

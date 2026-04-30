@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * /me — the connected wallet's profile. Lets the user claim/update their
+ * /me, the connected wallet's profile. Lets the user claim/update their
  * display handle and see a quick summary of their brawlers.
  */
 import Link from 'next/link';

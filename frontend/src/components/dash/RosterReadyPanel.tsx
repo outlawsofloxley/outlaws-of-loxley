@@ -1,11 +1,11 @@
 'use client';
 
 /**
- * RosterReadyPanel — one-click "make every brawler I own duel-ready" tool.
+ * RosterReadyPanel, one-click "make every brawler I own duel-ready" tool.
  *
  * The matchmaker on /duel filters every brawler by whether its owner has
  * approved BRAWL → Duel for spending. Until dev approves, the entire
- * roster shows as "0 duel-ready" and matchmaking returns nothing — even
+ * roster shows as "0 duel-ready" and matchmaking returns nothing, even
  * though all the brawlers exist on chain.
  *
  * One unlimited approve (max uint256) makes ALL brawlers owned by this
@@ -88,7 +88,7 @@ export function RosterReadyPanel() {
         </div>
       ) : isApproved ? (
         <div className="text-sm font-mono text-brawl-green">
-          ✓ Already approved — every brawler you own is duel-ready.
+          ✓ Already approved, every brawler you own is duel-ready.
         </div>
       ) : (
         <button

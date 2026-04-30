@@ -2,7 +2,7 @@
  * ELO rating calculations.
  *
  * Standard Elo formula with a K-factor that decreases as players
- * accumulate games — new players swing more, veterans stabilize.
+ * accumulate games, new players swing more, veterans stabilize.
  *
  *   expected(A) = 1 / (1 + 10^((B - A) / 400))
  *   newA = A + K * (actualScore - expected(A))

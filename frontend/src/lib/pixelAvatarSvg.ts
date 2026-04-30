@@ -13,7 +13,7 @@ export interface PixelAvatarOpts {
   weaponName: string;
   rarity?: RarityTier | undefined;
   isDead?: boolean | undefined;
-  /** Ignored — kept for backwards compatibility with old call sites. */
+  /** Ignored, kept for backwards compatibility with old call sites. */
   gridSize?: number | undefined;
 }
 

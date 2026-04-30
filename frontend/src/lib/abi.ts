@@ -131,7 +131,7 @@ export const GRAVEYARD_ABI = parseAbi([
 ]);
 
 /**
- * BRAWL ERC-20. Same ABI is reused for USDT reads + approve flow — any
+ * BRAWL ERC-20. Same ABI is reused for USDT reads + approve flow, any
  * EIP-20 token surface works through it.
  */
 export const BRAWL_ABI = parseAbi([
@@ -151,7 +151,7 @@ export const BRAWL_ABI = parseAbi([
   'event Approval(address indexed owner, address indexed spender, uint256 value)',
 ]);
 
-/** USDT / generic ERC-20 — same surface as BRAWL. Alias for clarity at call sites. */
+/** USDT / generic ERC-20, same surface as BRAWL. Alias for clarity at call sites. */
 export const ERC20_ABI = BRAWL_ABI;
 
 export const MARKETPLACE_ABI = parseAbi([
@@ -221,7 +221,7 @@ export const MINTDROP_ABI = parseAbi([
   'function FOUNDER_AIRDROP_CAP() view returns (uint256)',
   'function FOUNDER_50_CAP() view returns (uint256)',
   'function paused() view returns (bool)',
-  // v5+ tier pricing reads (revert on v4 — handle defensively in UI)
+  // v5+ tier pricing reads (revert on v4, handle defensively in UI)
   'function priceTierCount() view returns (uint256)',
   'function priceTierAt(uint256 i) view returns ((uint16 upToSold, uint128 ethPrice, uint128 usdcPrice, uint128 usdtPrice))',
   'function priceForMint(uint256 mintNumber) view returns (uint256 eth, uint256 usdc, uint256 usdt)',

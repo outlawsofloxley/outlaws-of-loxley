@@ -4,11 +4,11 @@
  * Wallet connect button.
  *
  * Three display states:
- *   1. Not connected — shows "CONNECT WALLET", clicking triggers the injected
+ *   1. Not connected, shows "CONNECT WALLET", clicking triggers the injected
  *      wallet's connect flow (MetaMask, Rabby, etc).
- *   2. Connected to wrong chain — shows "WRONG NETWORK" in red with a
+ *   2. Connected to wrong chain, shows "WRONG NETWORK" in red with a
  *      "SWITCH" button that prompts the wallet to switch.
- *   3. Connected to correct chain — shows the truncated address + ETH balance
+ *   3. Connected to correct chain, shows the truncated address + ETH balance
  *      and a "DISCONNECT" button.
  */
 import { useEffect, useState } from 'react';
@@ -62,7 +62,7 @@ export function ConnectButton() {
     // globally and breaks desktop), we render a deep-link that opens the
     // MetaMask app and navigates its in-app browser to our dapp URL. Inside
     // MM's browser, window.ethereum IS present and the injected connector
-    // works natively — same flow as desktop from that point.
+    // works natively, same flow as desktop from that point.
     if (hasInjected === false) {
       // MetaMask's deeplink convention: strip protocol, keep host + path.
       const url =
@@ -75,7 +75,7 @@ export function ConnectButton() {
           href={mmLink}
           className="brawl-btn"
           // Force same-tab so MM takes over. Opening in a new tab on mobile
-          // tends to lose the user — they never find the original.
+          // tends to lose the user, they never find the original.
           rel="noreferrer"
         >
           Open in MetaMask
@@ -84,7 +84,7 @@ export function ConnectButton() {
     }
 
     // Desktop / in-app-browser path: inject connector is the right one.
-    // hasInjected === null means we haven't hydrated yet — render optimistic.
+    // hasInjected === null means we haven't hydrated yet, render optimistic.
     const disabled = isConnecting || !injected;
     return (
       <div className="flex flex-col items-end gap-1">
@@ -130,7 +130,7 @@ export function ConnectButton() {
   return (
     <div className="flex items-center gap-3">
       <div className="flex flex-col items-end text-xs leading-tight">
-        <span className="text-brawl-cyan font-mono">{address ? shortAddr(address) : '—'}</span>
+        <span className="text-brawl-cyan font-mono">{address ? shortAddr(address) : ', '}</span>
         <span className="text-brawl-text-dim font-mono">
           {balance
             ? `${parseFloat(formatEther(balance.value)).toFixed(4)} ${balance.symbol}`

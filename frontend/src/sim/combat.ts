@@ -1,5 +1,5 @@
 /**
- * Combat simulator. Duplicated from root src/sim/combat.ts — keep in sync so
+ * Combat simulator. Duplicated from root src/sim/combat.ts, keep in sync so
  * that parity with Solidity's on-chain verifier is preserved.
  *
  * Given two brawlers and a seed, produce a deterministic FightResult.

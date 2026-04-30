@@ -8,15 +8,15 @@
  *      there's always a match ready for real players.
  *
  * This file exposes two entry points used by /api/house/sync:
- *   - `readHouseState()` — returns the list of keeper brawlers + their
+ *   - `readHouseState()`, returns the list of keeper brawlers + their
  *     alive status + current BRAWL allowance.
- *   - `runHouseMaintenance()` — broadcasts the necessary resurrect +
+ *   - `runHouseMaintenance()`, broadcasts the necessary resurrect +
  *     approval txs from the keeper wallet.
  *
  * Keys required:
- *   - `NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS` — the house wallet's public address
+ *   - `NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS`, the house wallet's public address
  *     (shown in UI for the HOUSE badge, safe to inline into client bundle).
- *   - `HOUSE_KEEPER_PRIVATE_KEY` — server-only, never client-exposed. Must be
+ *   - `HOUSE_KEEPER_PRIVATE_KEY`, server-only, never client-exposed. Must be
  *     set on Vercel as a non-NEXT_PUBLIC env var.
  */
 import {
@@ -204,7 +204,7 @@ export async function readHouseState(): Promise<HouseStatus> {
   );
 
   // A token is "house" only when it's BOTH owned by the keeper AND listed
-  // in the whitelist. If the whitelist is empty, nothing is house — the
+  // in the whitelist. If the whitelist is empty, nothing is house, the
   // feature is effectively opt-in.
   const keeperTokens = ownerChecks.filter(
     (x) =>
@@ -298,7 +298,7 @@ export async function runHouseMaintenance(): Promise<MaintenanceResult> {
   }
   const whitelist = await readHouseWhitelist();
   if (whitelist.size === 0) {
-    result.skipped.push('house whitelist empty — add fighters from /dash or set NEXT_PUBLIC_HOUSE_BRAWLER_IDS');
+    result.skipped.push('house whitelist empty, add fighters from /dash or set NEXT_PUBLIC_HOUSE_BRAWLER_IDS');
     return result;
   }
   const pkey = privRaw.startsWith('0x') ? (privRaw as `0x${string}`) : (`0x${privRaw}` as `0x${string}`);

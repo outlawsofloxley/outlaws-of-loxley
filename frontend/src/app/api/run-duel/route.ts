@@ -29,7 +29,7 @@ import { applyDuelResult, type Outcome } from '@/core/elo';
 import { findWeapon } from '@/core/weapons';
 import type { Brawler, CombatEvent, Weapon, WeaponType } from '@/core/types';
 
-// Force Node runtime — we use node:crypto for the nonce. Edge would fail here.
+// Force Node runtime, we use node:crypto for the nonce. Edge would fail here.
 export const runtime = 'nodejs';
 
 const DUEL_EXPIRY_SECONDS = 3600;
@@ -298,7 +298,7 @@ export async function POST(request: Request) {
       expiry: BigInt(now + DUEL_EXPIRY_SECONDS),
     };
 
-    // Ask the contract to hash — avoids re-implementing abi.encode here.
+    // Ask the contract to hash, avoids re-implementing abi.encode here.
     // viem's type narrowing for struct args on readContract resolves to `never`
     // for this call; the runtime shape is correct (matches the DuelResult struct
     // in DUEL_ABI). Cast to bypass the overly-strict compile-time check.

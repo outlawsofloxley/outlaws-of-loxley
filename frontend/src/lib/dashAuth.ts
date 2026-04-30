@@ -9,7 +9,7 @@
  *         payload.v = 1
  *         payload.addr (lowercased dev address)
  *         payload.iat (issued at, seconds)
- *         payload.exp (expiry, seconds — default 24h)
+ *         payload.exp (expiry, seconds, default 24h)
  *     Cookie value = base64url(JSON.stringify(payload)) + "." + base64url(hmac)
  *   - Cookie is set HttpOnly + SameSite=Lax + Secure (in production).
  *   - Middleware + API routes verify via `verifySessionCookie` before serving
@@ -77,7 +77,7 @@ async function hmacSha256(keyString: string, data: string): Promise<Uint8Array> 
   return new Uint8Array(sig);
 }
 
-/** Constant-time byte compare — defeats timing leaks in signature checks. */
+/** Constant-time byte compare, defeats timing leaks in signature checks. */
 function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;

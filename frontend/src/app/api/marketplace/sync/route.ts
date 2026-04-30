@@ -184,7 +184,7 @@ async function syncImpl(): Promise<Response> {
           if (log.blockNumber === null || log.logIndex === null || !log.transactionHash) continue;
           const { tokenId, seller, price } = log.args;
           if (tokenId === undefined || seller === undefined || price === undefined) continue;
-          // We use block.timestamp indirectly via the ordering — use block
+          // We use block.timestamp indirectly via the ordering, use block
           // number * (approx 3s) as a sortable listedAt. Good enough for
           // display; precise timestamps aren't worth an extra RPC.
           merged.push({
@@ -280,7 +280,7 @@ async function syncImpl(): Promise<Response> {
       } else if (ev.type === 'price-updated') {
         await updateListingPrice(ev.tokenId, ev.newPrice);
       } else {
-        // unlisted or sold — clear the row.
+        // unlisted or sold, clear the row.
         await deleteListing(ev.tokenId);
       }
       eventsProcessed++;

@@ -1,12 +1,12 @@
 /**
- * GET /api/token/:id/image — SVG portrait for brawler `id`.
+ * GET /api/token/:id/image, SVG portrait for brawler `id`.
  *
  * Reads weaponName + isDead from the chain, hands them to the same
  * renderPixelAvatarSvg helper that the in-app PixelAvatar uses. Single source
  * of truth for art across client cards and external marketplaces.
  *
  * Phase 7a placeholder: procedural pixel silhouette. Real art lands here when
- * the art pipeline ships — either replace renderPixelAvatarSvg or fetch from
+ * the art pipeline ships, either replace renderPixelAvatarSvg or fetch from
  * IPFS/storage in this route.
  */
 import { createPublicClient, defineChain, http } from 'viem';

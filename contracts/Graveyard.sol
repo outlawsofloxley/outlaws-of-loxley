@@ -25,7 +25,7 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
     Duel public immutable duel;
 
     /// @notice Base cost for common brawlers at 0 wins. Per-brawler cost
-    ///         scales by rarity + wins — see `costFor(tokenId)`.
+    ///         scales by rarity + wins, see `costFor(tokenId)`.
     uint256 public resurrectionCost;
 
     /// @notice Tier multipliers scaled by 10. Applied in `costFor` as
@@ -112,7 +112,7 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
      *           cost = resurrectionCost × tierMult / 10 × (10 + wins) / 10
      *
      *         Where `tierMult` is the brawler's rarity tier multiplier
-     *         (scaled by 10 — e.g. 15 means 1.5×) and `wins` is its total
+     *         (scaled by 10, e.g. 15 means 1.5×) and `wins` is its total
      *         wins on-chain. Each win adds +10% on top of the tier cost.
      *
      *         Default tierMults: [10, 15, 25, 40, 70, 150] → with a base of
@@ -133,7 +133,7 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
     mapping(uint256 => bool) public hasUsedFreeResurrect;
 
     function costFor(uint256 tokenId) public view returns (uint256) {
-        // Founder freebie — first resurrect ever for tokenId 1..100 is free.
+        // Founder freebie, first resurrect ever for tokenId 1..100 is free.
         if (tokenId <= FOUNDER_FREE_RESURRECT_CAP && !hasUsedFreeResurrect[tokenId]) {
             return 0;
         }
@@ -148,7 +148,7 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
 
     /**
      * @notice Revive a dead brawler. Caller must own it and pay
-     *         `costFor(tokenId)` — scaled by rarity (free for first
+     *         `costFor(tokenId)`, scaled by rarity (free for first
      *         resurrect of token IDs 1..100).
      * @param tokenId The dead brawler.
      */
@@ -170,7 +170,7 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
         // Reset consecutive-loss counter so revived brawler isn't one loss from death.
         duel.resetStreak(tokenId);
 
-        // Forward full fee to treasury (overpay allowed — goes to treasury).
+        // Forward full fee to treasury (overpay allowed, goes to treasury).
         // Skip if msg.value is 0 (founder free revive).
         if (msg.value > 0) {
             (bool ok,) = treasury.call{value: msg.value}("");

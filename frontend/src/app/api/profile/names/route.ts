@@ -3,7 +3,7 @@
  *
  * Bulk lookup of wallet display names. Used by the frontend to resolve
  * owner addresses → names on /browse, /brawler/[id], /owner/[address],
- * etc. Returns { names: { "0xabc...": "Alice", ... } } — only addresses
+ * etc. Returns { names: { "0xabc...": "Alice", ... } }, only addresses
  * that have a name set are present.
  */
 import { ensureDashSchema, getWalletNames } from '@/lib/dashDb';

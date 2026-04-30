@@ -1,5 +1,5 @@
 /**
- * ELO rating calculations. Duplicated from root src/core/elo.ts — keep in sync.
+ * ELO rating calculations. Duplicated from root src/core/elo.ts, keep in sync.
  */
 
 export const STARTING_ELO = 1000;

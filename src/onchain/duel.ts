@@ -25,7 +25,7 @@ import { getBytes } from 'ethers';
 import type { OnchainClient } from './client.js';
 import type { FightResult } from '../core/types.js';
 
-/** 1 hour in seconds — submission window before the signed result expires. */
+/** 1 hour in seconds, submission window before the signed result expires. */
 export const DUEL_EXPIRY_SECONDS = 3600;
 
 /** The struct the contract expects. Field names MUST match the Solidity tuple. */
@@ -49,7 +49,7 @@ function isEventLog(log: Log | EventLog): log is EventLog {
 /** Generate a fresh 256-bit nonce. randomBytes is cryptographically strong. */
 export function freshNonce(): bigint {
   const bytes = randomBytes(32);
-  // BigInt.fromBuffer isn't a thing — do it manually
+  // BigInt.fromBuffer isn't a thing, do it manually
   let n = 0n;
   for (const b of bytes) {
     n = (n << 8n) | BigInt(b);
@@ -67,7 +67,7 @@ export function buildDuelResult(args: {
   fight: FightResult;
   newEloA: number;
   newEloB: number;
-  nowSeconds?: number; // for tests — defaults to now
+  nowSeconds?: number; // for tests, defaults to now
 }): DuelResultStruct {
   const { fight, newEloA, newEloB } = args;
   const now = args.nowSeconds ?? Math.floor(Date.now() / 1000);

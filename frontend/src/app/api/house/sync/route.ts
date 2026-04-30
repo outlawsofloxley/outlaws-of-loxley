@@ -3,7 +3,7 @@
  *
  * Runs the house-fighter keeper: auto-resurrects any dead house brawlers
  * and ensures the keeper wallet has unlimited BRAWL approval for the Duel
- * contract. Safe to call freely — idempotent (only broadcasts when an
+ * contract. Safe to call freely, idempotent (only broadcasts when an
  * action is actually needed).
  *
  * Triggered by:

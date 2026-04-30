@@ -200,7 +200,7 @@ function BrawlerHero({ brawler }: { brawler: Brawler }) {
             {brawler.name}
           </h1>
           <div className="flex items-baseline gap-5 font-mono text-sm flex-wrap">
-            <span title="Rating — skill score. Starts at 1000. Rises when you beat higher-rated opponents, falls with losses. Classic Elo-style formula.">
+            <span title="Rating, skill score. Starts at 1000. Rises when you beat higher-rated opponents, falls with losses. Classic Elo-style formula.">
               <span className="text-brawl-text-dim">RATING </span>
               <span className="text-brawl-cyan font-bold text-lg">{brawler.elo}</span>
             </span>
@@ -208,7 +208,7 @@ function BrawlerHero({ brawler }: { brawler: Brawler }) {
             <span className="text-brawl-text-dim">{brawler.xp} XP</span>
           </div>
           <div className="text-sm font-mono text-brawl-text-faint mt-1">
-            Rating starts at 1000 and shifts after every duel — higher = better at fighting.
+            Rating starts at 1000 and shifts after every duel, higher = better at fighting.
           </div>
         </div>
 
@@ -275,7 +275,7 @@ function BrawlerHero({ brawler }: { brawler: Brawler }) {
           </div>
         </div>
 
-        {/* Owner — show "The King Brawler" persona when owner == dev wallet */}
+        {/* Owner, show "The King Brawler" persona when owner == dev wallet */}
         <OwnerLine ownerAddress={brawler.owner} />
       </div>
     </div>
@@ -342,7 +342,7 @@ function StatRow({
   return (
     <div
       className="grid grid-cols-[auto_auto_1fr_auto] gap-x-2 items-baseline border-b border-brawl-border pb-1"
-      title={`${label} (${abbr}) — ${effect}`}
+      title={`${label} (${abbr}), ${effect}`}
     >
       <span className="text-brawl-text brawl-header text-sm">{label}</span>
       <span className="text-brawl-text-faint text-sm font-mono">({abbr})</span>

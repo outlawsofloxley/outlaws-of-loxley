@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * DashAuthGate — wraps the dashboard page. Checks /api/dash/session to
+ * DashAuthGate, wraps the dashboard page. Checks /api/dash/session to
  * see if a valid cookie exists. If not, renders the sign-in flow:
  *   1. GET /api/dash/nonce → receive nonce + message
  *   2. User signs via wagmi `useSignMessage`
@@ -152,7 +152,7 @@ export function DashAuthGate({ children }: { children: React.ReactNode }) {
           <div className="brawl-header text-lg text-brawl-orange">Dev Dashboard</div>
           <p className="text-sm text-brawl-text-dim leading-relaxed">
             Sign a message with the dev wallet to unlock. This doesn&rsquo;t
-            move any funds — it just proves you hold the key.
+            move any funds, it just proves you hold the key.
           </p>
 
           {!isConnected ? (

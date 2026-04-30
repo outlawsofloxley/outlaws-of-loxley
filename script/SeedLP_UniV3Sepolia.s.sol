@@ -83,7 +83,7 @@ contract SeedLP_UniV3Sepolia is Script {
         uint160 sqrtPriceX96 = 7922816251426433759354395033600;
 
         uint256 wethAmount = 0.001 ether;       // ~$4
-        uint256 brawlAmount = 10 * 1e18;        // 10 BRAWL — matches 10000:1
+        uint256 brawlAmount = 10 * 1e18;        // 10 BRAWL, matches 10000:1
 
         console2.log("=== Uniswap V3 LP seed (Base Sepolia) ===");
         console2.log("Dev:        ", dev);

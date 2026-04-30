@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * SettingsEditors — each labeled card reads a current on-chain value and
+ * SettingsEditors, each labeled card reads a current on-chain value and
  * has an input + Update button that pops the connected dev wallet for an
  * owner-only setter tx. All reads use useReadContract; writes use
  * writeContract from wagmi.
@@ -43,7 +43,7 @@ export function SettingsEditors() {
     address: env.duelAddress,
     functionName: 'devShareBps',
   });
-  // v5+ — reverts on v4. Empty data → editor renders a "deploy v5 to use" hint.
+  // v5+, reverts on v4. Empty data → editor renders a "deploy v5 to use" hint.
   const founderDiscountBps = useReadContract({
     abi: DUEL_ABI,
     address: env.duelAddress,
@@ -84,7 +84,7 @@ export function SettingsEditors() {
     address: env.mintDropAddress,
     functionName: 'treasury',
   });
-  // v5+ tier table — reverts on v4. Empty data → editor renders a hint.
+  // v5+ tier table, reverts on v4. Empty data → editor renders a hint.
   const priceTierCount = useReadContract({
     abi: MINTDROP_ABI,
     address: env.mintDropAddress,
@@ -312,7 +312,7 @@ function FightEconomicsEditor({
         hash={hash}
         reset={reset}
         label="Update Duel economics"
-        currentHint={`current: ${current.fightCost ? formatUnits(current.fightCost, 18) : '—'} BRAWL · ${current.devShareBps ?? '—'} bps · ${current.devTreasury?.slice(0, 10) ?? '—'}…`}
+        currentHint={`current: ${current.fightCost ? formatUnits(current.fightCost, 18) : ', '} BRAWL · ${current.devShareBps ?? ', '} bps · ${current.devTreasury?.slice(0, 10) ?? ', '}…`}
       />
       <div className="text-sm text-brawl-text-faint font-mono">
         {symbol ? '' : ''}
@@ -373,7 +373,7 @@ function GraveyardCostEditor({
         hash={hash}
         reset={reset}
         label="Update base resurrection cost"
-        currentHint={`current: ${current !== undefined ? formatEther(current) : '—'} ${symbol}`}
+        currentHint={`current: ${current !== undefined ? formatEther(current) : ', '} ${symbol}`}
       />
       <div className="text-sm text-brawl-text-faint font-mono">
         Per-brawler cost = base × tierMult/10 × (10 + wins)/10.
@@ -463,7 +463,7 @@ function MintPriceEditor({
         hash={hash}
         reset={reset}
         label="Update mint prices"
-        currentHint={`current: ${currentEth !== undefined ? formatEther(currentEth) : '—'} ${symbol} · ${currentUsdt !== undefined ? formatUnits(currentUsdt, 6) : '—'} USDT · ${currentUsdc !== undefined ? formatUnits(currentUsdc, 6) : '—'} USDC`}
+        currentHint={`current: ${currentEth !== undefined ? formatEther(currentEth) : ', '} ${symbol} · ${currentUsdt !== undefined ? formatUnits(currentUsdt, 6) : ', '} USDT · ${currentUsdc !== undefined ? formatUnits(currentUsdc, 6) : ', '} USDC`}
       />
     </div>
   );
@@ -518,7 +518,7 @@ function MintAirdropEditor({
         hash={hash}
         reset={reset}
         label="Update airdrop"
-        currentHint={`current: ${current !== undefined ? formatUnits(current, 18) : '—'} BRAWL/mint`}
+        currentHint={`current: ${current !== undefined ? formatUnits(current, 18) : ', '} BRAWL/mint`}
       />
     </div>
   );
@@ -572,7 +572,7 @@ function MintTreasuryEditor({
         hash={hash}
         reset={reset}
         label="Update mint treasury"
-        currentHint={`current: ${current ?? '—'}`}
+        currentHint={`current: ${current ?? ', '}`}
       />
     </div>
   );
@@ -627,7 +627,7 @@ function MarketFeeEditor({
         hash={hash}
         reset={reset}
         label="Update marketplace fee"
-        currentHint={`current: ${current ?? '—'} bps (${current ? (current / 100).toFixed(2) : '—'}%)`}
+        currentHint={`current: ${current ?? ', '} bps (${current ? (current / 100).toFixed(2) : ', '}%)`}
       />
     </div>
   );
@@ -681,7 +681,7 @@ function MarketTreasuryEditor({
         hash={hash}
         reset={reset}
         label="Update marketplace treasury"
-        currentHint={`current: ${current ?? '—'}`}
+        currentHint={`current: ${current ?? ', '}`}
       />
     </div>
   );
@@ -713,7 +713,7 @@ function MarketPauseToggle({
     <div className="space-y-2">
       <Row label="marketplace paused?">
         <div className="text-sm font-mono text-brawl-text">
-          {paused === undefined ? '—' : paused ? 'YES (new listings + buys blocked)' : 'no (normal)'}
+          {paused === undefined ? ', ' : paused ? 'YES (new listings + buys blocked)' : 'no (normal)'}
         </div>
       </Row>
       <TxFooter
@@ -813,7 +813,7 @@ function FounderDiscountEditor({
       <div className="space-y-1">
         <div className="brawl-header text-sm text-brawl-text">Founder fight discount</div>
         <div className="text-sm text-brawl-text-faint font-mono">
-          Not available — needs Duel v5+ (`founderDiscountBps`). Currently the
+          Not available, needs Duel v5+ (`founderDiscountBps`). Currently the
           contract uses the v4 hardcoded constant. Redeploy via Deploy.s.sol
           to unlock the editor.
         </div>
@@ -856,7 +856,7 @@ function FounderDiscountEditor({
         hash={hash}
         reset={reset}
         label="Update founder discount"
-        currentHint={`current: ${current ?? '—'} bps (${current !== undefined ? Number(current) / 100 : '—'}% off for tokens 1-100)`}
+        currentHint={`current: ${current ?? ', '} bps (${current !== undefined ? Number(current) / 100 : ', '}% off for tokens 1-100)`}
       />
       <div className="text-sm text-brawl-text-faint font-mono">
         Founders pay (10000 - bps) / 10000 of fight cost. 2500 = 25% off,
@@ -889,8 +889,8 @@ function TierPricingEditor({
   const postAudit = useAuditPost();
   // Pre-fill with the locked-in mainnet 5-tier table; user can edit + add/remove.
   const [tiers, setTiers] = useState<TierRow[]>([
-    { upToSold: '100',  ethPrice: '0', usdcPrice: '0', usdtPrice: '0' },
-    { upToSold: '500',  ethPrice: '10000000000000000', usdcPrice: '40000000', usdtPrice: '40000000' },
+    { upToSold: '100', ethPrice: '0', usdcPrice: '0', usdtPrice: '0' },
+    { upToSold: '500', ethPrice: '10000000000000000', usdcPrice: '40000000', usdtPrice: '40000000' },
     { upToSold: '1000', ethPrice: '11250000000000000', usdcPrice: '45000000', usdtPrice: '45000000' },
     { upToSold: '1500', ethPrice: '12500000000000000', usdcPrice: '50000000', usdtPrice: '50000000' },
     { upToSold: '2000', ethPrice: '15000000000000000', usdcPrice: '60000000', usdtPrice: '60000000' },
@@ -901,7 +901,7 @@ function TierPricingEditor({
       <div className="space-y-1">
         <div className="brawl-header text-sm text-brawl-text">Tiered mint pricing</div>
         <div className="text-sm text-brawl-text-faint font-mono">
-          Not available — needs MintDrop v5+ (`priceTiers`). Redeploy via
+          Not available, needs MintDrop v5+ (`priceTiers`). Redeploy via
           Deploy.s.sol with `TIERED_PRICING=true` to unlock.
         </div>
       </div>
@@ -963,7 +963,7 @@ function TierPricingEditor({
     <div className="space-y-3">
       <div className="brawl-header text-sm text-brawl-text">Tiered mint pricing</div>
       <div className="text-xs text-brawl-text-faint font-mono">
-        Current on-chain tier count: {tierCount?.toString() ?? '—'}.
+        Current on-chain tier count: {tierCount?.toString() ?? ', '}.
         Edit rows below + Update to replace the table. Prices are raw wei
         (ETH) / 6dp (USDC/USDT). FREE tier = 0.
       </div>

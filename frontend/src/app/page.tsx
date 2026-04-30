@@ -17,7 +17,7 @@ export default function HomePage() {
           <p>2000 pixel warriors. Mint one. Stake BRAWL. Brawl for the pot.</p>
           <p className="text-brawl-text-dim">
             Three losses in a row and you&rsquo;re{' '}
-            <span className="text-brawl-red">dead</span> — resurrection
+            <span className="text-brawl-red">dead</span>, resurrection
             isn&rsquo;t free.
           </p>
           <p className="text-brawl-text-dim text-sm sm:text-base md:text-lg">

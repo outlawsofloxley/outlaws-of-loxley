@@ -21,7 +21,7 @@ export const config = {
 };
 
 // Public auth endpoints that MUST NOT be gated (otherwise you can't log in).
-// `/api/dash/sync` is also public — same risk profile as the existing
+// `/api/dash/sync` is also public, same risk profile as the existing
 // /api/history/sync and /api/marketplace/sync routes (read-only chain→DB
 // population, idempotent, throttled).
 const PUBLIC_API_PATHS = new Set([

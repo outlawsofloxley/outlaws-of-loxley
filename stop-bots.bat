@@ -1,5 +1,5 @@
 @echo off
-REM Kills any node process running the bots. Safe — only matches the
+REM Kills any node process running the bots. Safe, only matches the
 REM specific path so you don't nuke other node servers running on the
 REM machine.
 echo Killing BASEic Brawlers bots...

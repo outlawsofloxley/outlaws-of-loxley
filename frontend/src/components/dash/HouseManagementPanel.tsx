@@ -5,7 +5,7 @@
  * remove existing. Mutations go through /api/house/whitelist (dash-authed).
  *
  * Adding a fighter that isn't yet owned by the keeper wallet is still
- * recorded — the HOUSE badge only shows once both conditions are true.
+ * recorded, the HOUSE badge only shows once both conditions are true.
  * This lets D pre-populate the whitelist with newly-minted IDs and then
  * transfer them to the keeper wallet in a follow-up step.
  */
@@ -55,7 +55,7 @@ export function HouseManagementPanel() {
   const isDevKeeper = !!(address && keeperAddr && address.toLowerCase() === keeperAddr.toLowerCase());
 
   // Split brawlers into "owned by keeper" (already HOUSE or candidate to enroll)
-  // vs "owned by dev (me)" — D might add any of his wallet's brawlers to the
+  // vs "owned by dev (me)", D might add any of his wallet's brawlers to the
   // whitelist and transfer them over in a follow-up step.
   const keeperOwned = useMemo(
     () =>
@@ -133,7 +133,7 @@ export function HouseManagementPanel() {
   return (
     <div className="space-y-4">
       <div className="brawl-header text-lg text-brawl-orange">
-        Arena roster — King Brawler&rsquo;s fighters
+        Arena roster, King Brawler&rsquo;s fighters
       </div>
       <p className="text-sm text-brawl-text-dim">
         Pick which of your brawlers sit in the arena as guaranteed opponents
@@ -146,7 +146,7 @@ export function HouseManagementPanel() {
       <div className="brawl-card p-4 space-y-2">
         <div className="flex items-center gap-2 text-sm">
           <div className="text-brawl-text-dim font-mono">King Brawler wallet:</div>
-          <div className="text-brawl-text font-mono break-all">{keeperAddr ?? '—'}</div>
+          <div className="text-brawl-text font-mono break-all">{keeperAddr ?? ', '}</div>
           {isDevKeeper && (
             <span className="text-xs brawl-header text-brawl-orange">YOU</span>
           )}
@@ -184,7 +184,7 @@ export function HouseManagementPanel() {
                     <div className="text-sm font-mono text-brawl-text-faint">
                       {b
                         ? keeperOwns
-                          ? 'in arena — duel-ready'
+                          ? 'in arena, duel-ready'
                           : `owned by ${b.owner.slice(0, 10)}… · transfer to King wallet first`
                         : 'not found on chain'}
                       {b && ' · '}
@@ -260,7 +260,7 @@ export function HouseManagementPanel() {
       {myOtherBrawlers.length > 0 && (
         <div className="brawl-card p-4 space-y-3">
           <div className="brawl-header text-sm text-brawl-orange">
-            Your other brawlers — click Add to send into the arena
+            Your other brawlers, click Add to send into the arena
           </div>
           <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
             {myOtherBrawlers.map((b) => (

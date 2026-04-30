@@ -1,5 +1,5 @@
 /**
- * Welcome bot — greets new joiners with the pinned-message reminder + scam
+ * Welcome bot, greets new joiners with the pinned-message reminder + scam
  * warning, and answers /ca, /mint, /chart, /docs, /founders, /scam, /rules,
  * /links.
  *
@@ -15,7 +15,7 @@ import { isWelcomed, markWelcomed } from '../db.js';
 export function start() {
 const TOKEN = process.env.WELCOME_BOT_TOKEN;
 if (!TOKEN) {
-  console.warn('[welcome] WELCOME_BOT_TOKEN missing — skipping welcome bot');
+  console.warn('[welcome] WELCOME_BOT_TOKEN missing, skipping welcome bot');
   return;
 }
 const SITE = process.env.SITE_URL || 'https://baseicbrawlers.com';
@@ -34,7 +34,7 @@ function welcomeText(name) {
   return [
     `Welcome to the arena, ${name}.`,
     '',
-    '⚔️ BASEic BRAWLERS — 2,000 on-chain warriors on Base.',
+    '⚔️ BASEic BRAWLERS, 2,000 on-chain warriors on Base.',
     `Mint: ${SITE}/mint`,
     'Read the pinned message before you ask anything 🙏',
     '',
@@ -102,7 +102,7 @@ bot.command('docs', (ctx) => ctx.reply(`📚 Game mechanics: ${SITE}/about`));
 bot.command('founders', (ctx) =>
   ctx.reply(
     [
-      '👑 FOUNDER PERKS — token IDs 1-100 only',
+      '👑 FOUNDER PERKS, token IDs 1-100 only',
       '',
       '★ FOUNDER 50  (gold badge, IDs 1-50)',
       '★ FOUNDER 100 (cyan badge, IDs 51-100)',
@@ -136,7 +136,7 @@ bot.command('rules', (ctx) =>
     [
       '📜 HOUSE RULES',
       '',
-      '1. No "wen 1B" / "wen CEX" — we\'re a game first.',
+      '1. No "wen 1B" / "wen CEX", we\'re a game first.',
       '2. No shilling other tokens.',
       '3. Memes welcome. NSFW + racism + doxxing = lifetime ban.',
       '4. English in main; ask for a localized sub-group.',
@@ -158,7 +158,7 @@ bot.command('links', (ctx) =>
   ),
 );
 
-// Setup helper — prints this chat's ID. Use to seed PUBLIC_GROUP_ID or
+// Setup helper, prints this chat's ID. Use to seed PUBLIC_GROUP_ID or
 // ANNOUNCE_CHANNEL_ID in .env.
 function groupIdReply(ctx) {
   return ctx.reply(
@@ -168,8 +168,8 @@ function groupIdReply(ctx) {
       ctx.chat.title ? `Title: ${ctx.chat.title}` : '',
       '',
       ctx.chat.type === 'channel'
-        ? 'Channel detected — drop into ANNOUNCE_CHANNEL_ID in .env.'
-        : 'Group detected — drop into PUBLIC_GROUP_ID in .env.',
+        ? 'Channel detected, drop into ANNOUNCE_CHANNEL_ID in .env.'
+        : 'Group detected, drop into PUBLIC_GROUP_ID in .env.',
     ].filter(Boolean).join('\n'),
   );
 }

@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/*
           Google Fonts preload. We pick "Press Start 2P" for the retro pixel
-          display font (used in headers) and "VT323" for long-form text — both
+          display font (used in headers) and "VT323" for long-form text, both
           are free and served by Google Fonts.
           preconnect on both google host + gstatic cuts ~200ms off first paint.
         */}

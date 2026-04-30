@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * ArenaLineup — shows every duel-ready brawler (approved + alive) sitting
+ * ArenaLineup, shows every duel-ready brawler (approved + alive) sitting
  * in the arena waiting to be matched. HOUSE fighters are tagged.
  *
  * Used on /duel so players can eyeball the live pool before hitting Fight.
@@ -60,7 +60,7 @@ export function ArenaLineup({ candidates, myAddress, selectedId }: ArenaLineupPr
 
       {sorted.length === 0 ? (
         <div className="text-sm text-brawl-text-dim">
-          Nobody&rsquo;s paid up yet. Pick your fighter and start a duel — others
+          Nobody&rsquo;s paid up yet. Pick your fighter and start a duel, others
           will join as they go.
         </div>
       ) : (

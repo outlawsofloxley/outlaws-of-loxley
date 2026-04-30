@@ -2,14 +2,14 @@
  * Seeded deterministic random number generator.
  *
  * We use xorshift128+ because:
- *   1. It's deterministic — same seed always produces the same sequence.
+ *   1. It's deterministic, same seed always produces the same sequence.
  *      This is critical: we need to be able to replay any duel later
  *      given its seed, and the on-chain version must produce identical
  *      results.
  *   2. It's fast and passes all standard statistical tests.
  *   3. It's ~10 lines of code and trivial to port to Solidity later.
  *   4. Unlike Math.random(), it's not dependent on V8 implementation
- *      details — it's stable across Node versions and platforms.
+ *      details, it's stable across Node versions and platforms.
  *
  * State is two 64-bit unsigned integers (we use `bigint` since JS numbers
  * only give us 53 bits of integer precision).
@@ -33,7 +33,7 @@ export function createRng(seed: bigint): RngState {
   if (seed < 0n) {
     throw new Error('Seed must be non-negative');
   }
-  // SplitMix64 — standard seed mixer. Two iterations give us two 64-bit words.
+  // SplitMix64, standard seed mixer. Two iterations give us two 64-bit words.
   let z = (seed + 0x9e3779b97f4a7c15n) & MASK_64;
   z = ((z ^ (z >> 30n)) * 0xbf58476d1ce4e5b9n) & MASK_64;
   z = ((z ^ (z >> 27n)) * 0x94d049bb133111ebn) & MASK_64;

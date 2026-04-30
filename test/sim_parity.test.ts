@@ -19,7 +19,7 @@ import type { Brawler as FrontendBrawler } from '../frontend/src/core/types';
 
 /**
  * A fixed Brawler used by every parity case. We deliberately avoid using the
- * live rollStats/rollWeapon helpers — they're also duplicated, and testing
+ * live rollStats/rollWeapon helpers, they're also duplicated, and testing
  * combat parity against seeds derived from other duplicated code would tangle
  * the failure modes. Hand-picked fields keep the failure signal clean.
  */
@@ -132,7 +132,7 @@ const SEEDS: bigint[] = [
   0x2an,
   0xffffffffffffffffn, // max u64, exercises nextUint64's high bits
   1234567890n,
-  0x9e3779b97f4a7c15n, // a splitmix64 constant — tests the seed-mixer boundary
+  0x9e3779b97f4a7c15n, // a splitmix64 constant, tests the seed-mixer boundary
   (1n << 128n) + 7n, // big seed
 ];
 

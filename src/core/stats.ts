@@ -123,7 +123,7 @@ export function rollStats(state: RngState): Stats {
   ];
   let remaining = POINT_BUY_TOTAL;
 
-  // Safety bound — we shouldn't need more iterations than this.
+  // Safety bound, we shouldn't need more iterations than this.
   const maxIterations = POINT_BUY_TOTAL * 20;
   let iter = 0;
   while (remaining > 0 && iter < maxIterations) {

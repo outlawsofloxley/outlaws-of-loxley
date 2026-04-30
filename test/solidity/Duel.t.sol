@@ -140,7 +140,7 @@ contract DuelTest is Test {
         vm.prank(alice);
         duel.submitDuel(r1, sig1);
 
-        // Second submission with same nonce — even with a different outcome
+        // Second submission with same nonce, even with a different outcome
         Duel.DuelResult memory r2 = _buildResult(idA, idB, uint32(idB), 42);
         bytes memory sig2 = _signResult(r2);
         vm.prank(alice);

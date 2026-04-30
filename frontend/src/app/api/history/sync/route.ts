@@ -33,7 +33,7 @@ type DuelLog = Log<bigint, number, false, typeof DUEL_COMPLETED_EVENT>;
 
 const CHUNK_BLOCKS = 1000n;
 // Low enough to stay under Hobby's 10s serverless budget even with a couple
-// RPC retries. Sync is idempotent — caller can invoke multiple times to
+// RPC retries. Sync is idempotent, caller can invoke multiple times to
 // catch up.
 const MAX_SYNC_CHUNKS = 4;
 const STALE_SECONDS = 8; // short throttle so consecutive page loads can catch up
@@ -168,13 +168,13 @@ async function syncImpl(): Promise<Response> {
           // Try next endpoint in the pool.
           continue;
         }
-        // Non-rate-limit error from this endpoint — also try next.
+        // Non-rate-limit error from this endpoint, also try next.
         continue;
       }
     }
 
     if (logs === null) {
-      // Every endpoint refused — halve span and retry from same `from`.
+      // Every endpoint refused, halve span and retry from same `from`.
       if (span > MIN_CHUNK) {
         span = span / 2n < MIN_CHUNK ? MIN_CHUNK : span / 2n;
         await sleep(500);

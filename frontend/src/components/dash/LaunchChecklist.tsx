@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * LaunchChecklist — pre-launch + launch-day playbook for Base mainnet.
- * Read-only reference card. Doesn't track state on-chain (yet) — just a
+ * LaunchChecklist, pre-launch + launch-day playbook for Base mainnet.
+ * Read-only reference card. Doesn't track state on-chain (yet), just a
  * visible reminder for D so the launch ops aren't done from memory.
  */
 
@@ -32,7 +32,7 @@ const PRE_LAUNCH: Step[] = [
   {
     title: '4. Confirm mainnet env file',
     detail:
-      'Create .env.base-mainnet with mainnet deployer key, RPC, USDC/USDT addresses (Base mainnet, NOT Sepolia), and confirm AIRDROP_PER_MINT=0 (no per-mint airdrop on mainnet — only the 20 BRAWL founder bonus).',
+      'Create .env.base-mainnet with mainnet deployer key, RPC, USDC/USDT addresses (Base mainnet, NOT Sepolia), and confirm AIRDROP_PER_MINT=0 (no per-mint airdrop on mainnet, only the 20 BRAWL founder bonus).',
   },
   {
     title: '5. Decide founder airdrop reserve size',
@@ -98,7 +98,7 @@ const POST_LAUNCH: Step[] = [
   {
     title: '10. renounceOwnership() on BRAWL',
     detail:
-      'Final trust signal — whitelist/blacklist/limits all frozen forever. Game contracts (Duel/MintDrop/Marketplace/Graveyard) stay dev-controlled for game tuning. Announce the renounce tx.',
+      'Final trust signal, whitelist/blacklist/limits all frozen forever. Game contracts (Duel/MintDrop/Marketplace/Graveyard) stay dev-controlled for game tuning. Announce the renounce tx.',
     cmd: 'cast send $BRAWL_ADDRESS "renounceOwnership()" --private-key $DEPLOYER_KEY --rpc-url https://mainnet.base.org',
   },
   {
@@ -119,7 +119,7 @@ export function LaunchChecklist() {
       </div>
       <p className="text-sm text-brawl-text-dim">
         Step-by-step ops for Base mainnet launch. Each <code className="font-mono text-brawl-cyan">cmd</code> is
-        ready to copy-paste once the env file is sourced. Order matters —
+        ready to copy-paste once the env file is sourced. Order matters, 
         skipping a step usually means redeploying.
       </p>
 

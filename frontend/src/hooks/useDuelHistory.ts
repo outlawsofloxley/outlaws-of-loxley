@@ -1,12 +1,12 @@
 'use client';
 
 /**
- * useDuelHistory — fetch DuelCompleted events, DB-backed.
+ * useDuelHistory, fetch DuelCompleted events, DB-backed.
  *
  * Primary path: GET /api/history/query?tokenId=N. The Postgres cache is
  * populated by /api/history/sync which polls the chain in small chunks
  * (throttled to once every ~25s). Clients never touch the RPC directly
- * anymore — so no more "limit exceeded" on the public BSC endpoint.
+ * anymore, so no more "limit exceeded" on the public BSC endpoint.
  *
  * Fallback: if the API returns 503 (DB not configured yet), we fall back
  * to the old client-side getLogs loop. Keeps the app working during the
@@ -109,7 +109,7 @@ export function useDuelHistory(tokenId?: number): UseDuelHistoryResult {
       params.set('limit', '500');
       const res = await fetch(`/api/history/query?${params.toString()}`, { cache: 'no-store' });
       if (res.status === 503) {
-        // Not configured yet — caller should fall back to chain.
+        // Not configured yet, caller should fall back to chain.
         return false;
       }
       if (!res.ok) {

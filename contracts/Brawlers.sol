@@ -25,12 +25,12 @@ import {Xorshift} from "./lib/Xorshift.sol";
  *  X:        https://x.com/BASEicBrawlers
  *
  * @dev Minting is deterministic from (masterSeed, tokenId). This means every
- *      brawler's traits are known in advance of mint — which is fine for this
+ *      brawler's traits are known in advance of mint, which is fine for this
  *      game because there's no rarity reveal mechanic, and it keeps the
  *      mint gas-cheap (no Chainlink VRF).
  *
  *      Duel updates and death status changes are handled by the Duel and
- *      Graveyard contracts respectively — both must be authorized via
+ *      Graveyard contracts respectively, both must be authorized via
  *      setDuelContract() / setGraveyardContract() before they can mutate state.
  *
  *      Starting ELO is 1000, starting level is 1, starting HP/AC are derived
@@ -46,7 +46,7 @@ contract Brawlers is ERC721, Ownable, Pausable {
     /// @notice Hard cap on total supply (initial curated drop). Scaled
     ///         from 500 → 2000 for the BASEic Brawlers Base launch.
     uint32 public constant MAX_SUPPLY = 2000;
-    /// @notice Token ID reserved for the one-of-one "King Brawler" —
+    /// @notice Token ID reserved for the one-of-one "King Brawler", 
     ///         admin-mintable once, not counted against MAX_SUPPLY.
     ///         Stats all-18, unique weapon (Kingsblade, weapon index 11),
     ///         rarity tier 5.
@@ -100,7 +100,7 @@ contract Brawlers is ERC721, Ownable, Pausable {
     /// @notice The master seed used to derive all brawler traits.
     uint256 public immutable masterSeed;
     /// @notice The "King Brawler" (dev) wallet. Mints landing on this
-    ///         address are capped to common/uncommon — dev can never pull a
+    ///         address are capped to common/uncommon, dev can never pull a
     ///         rare or better. Set once at construction (immutable). Set to
     ///         address(0) to disable the cap (e.g. local Anvil tests).
     address public immutable devWallet;
@@ -246,7 +246,7 @@ contract Brawlers is ERC721, Ownable, Pausable {
         _baseTokenURI = newBaseURI;
     }
 
-    /// @notice Public getter for the base URI (convenience — _baseURI is internal).
+    /// @notice Public getter for the base URI (convenience, _baseURI is internal).
     function baseURI() external view returns (string memory) {
         return _baseTokenURI;
     }
@@ -268,7 +268,7 @@ contract Brawlers is ERC721, Ownable, Pausable {
      *
      * @dev Only callable by the authorized MintDrop contract or the contract
      *      owner (owner path exists for dev/test workflows). MAX_SUPPLY is
-     *      enforced — the 501st mint attempt reverts with SupplyExhausted.
+     *      enforced, the 501st mint attempt reverts with SupplyExhausted.
      *
      * @param to Recipient address.
      * @return tokenId The newly minted token ID.
@@ -323,7 +323,7 @@ contract Brawlers is ERC721, Ownable, Pausable {
                 return;
             }
         }
-        // No C/U found within the scan window — dev gets whatever's at idx.
+        // No C/U found within the scan window, dev gets whatever's at idx.
     }
 
     // ─── External: King mint (dev 1-of-1) ────────────────────────────
@@ -458,7 +458,7 @@ contract Brawlers is ERC721, Ownable, Pausable {
      *           1 = Uncommon
      *           2 = Rare
      *           3 = Legendary (10 in the curated drop)
-     *           4 = Epic      (5  in the curated drop — the rarest normal tier)
+     *           4 = Epic      (5  in the curated drop, the rarest normal tier)
      *           5 = King      (only KING_TOKEN_ID / 501)
      *
      *         Determined at deploy time by the shuffled distribution;
@@ -584,7 +584,7 @@ contract Brawlers is ERC721, Ownable, Pausable {
     /**
      * @dev Pick a weapon constrained to a rarity tier. Weights within a tier
      *      are the weapon weights from weapons.ts (same units as the old
-     *      flat distribution — just summed per-tier now).
+     *      flat distribution, just summed per-tier now).
      */
     function _rollWeaponInTier(uint256 seed, uint8 tier) private view returns (uint8) {
         Xorshift.State memory rng = Xorshift.create(seed);
@@ -620,7 +620,7 @@ contract Brawlers is ERC721, Ownable, Pausable {
     /**
      * @dev Roll a random name from the first/last pools (50 × 50 = 2500 combos).
      *      Deterministic from (masterSeed, tokenId). Names are immutable after
-     *      mint — no rename function exists.
+     *      mint, no rename function exists.
      */
     function _rollName(uint256 seed, uint256 /*tokenId*/) private view returns (string memory) {
         Xorshift.State memory rng = Xorshift.create(seed);
@@ -688,7 +688,7 @@ contract Brawlers is ERC721, Ownable, Pausable {
         _addWeapon("Electric Axe", 16, 24, 5, 0, 3);
         _addWeapon("Bazooka", 22, 35, 2, 2, 2);
         _addWeapon("Rail Gun", 25, 40, 6, 2, 1);
-        // King-tier only — weight is 0 because it's not in the weighted pool.
+        // King-tier only, weight is 0 because it's not in the weighted pool.
         // Accessed only via tier 5 mapping in _tierWeaponRange.
         _addWeapon("Kingsblade", 50, 100, 10, 0, 0);
 

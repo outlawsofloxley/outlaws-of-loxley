@@ -4,7 +4,7 @@
  * Set a display name for a wallet. The user signs the message
  *   "BASEic Brawlers handle: <name>"
  * with their wallet, and the server recovers the address from the signature
- * to bind name → wallet. No auth required — the signature IS the auth.
+ * to bind name → wallet. No auth required, the signature IS the auth.
  *
  * Body: { name: string, signature: 0x... }
  * Returns: { ok, address, name } on success.
@@ -81,7 +81,7 @@ export async function POST(req: Request): Promise<Response> {
 
   const message = buildMessage(rawName);
   // verifyMessage returns the recovered signer (it does it under the hood
-  // via personal_sign hashing). We DO need the address — viem's helper
+  // via personal_sign hashing). We DO need the address, viem's helper
   // returns boolean; switch to viem's recoverMessageAddress instead.
   const { recoverMessageAddress } = await import('viem');
   let recovered: string;

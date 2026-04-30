@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * BRAWL price widget — placeholder until listed on a DEX.
+ * BRAWL price widget, placeholder until listed on a DEX.
  *
  * TODO(price): swap this when BRAWL is listed.
  * Integration sketch:
@@ -26,13 +26,13 @@ export function BrawlPricePanel() {
 
   const supply = totalSupply.data
     ? formatUnits(totalSupply.data as bigint, 18)
-    : '—';
+    : ', ';
 
   return (
     <div className="brawl-card p-4 space-y-2">
       <div className="brawl-header text-sm text-brawl-orange">$BRAWL price</div>
       <div className="text-brawl-text text-sm">
-        Not listed on a DEX yet — price <span className="text-brawl-text-faint">N/A</span>
+        Not listed on a DEX yet, price <span className="text-brawl-text-faint">N/A</span>
       </div>
       <div className="text-sm font-mono text-brawl-text-dim">
         Total supply: <span className="text-brawl-cyan">{supply}</span> BRAWL (fixed, no inflation)

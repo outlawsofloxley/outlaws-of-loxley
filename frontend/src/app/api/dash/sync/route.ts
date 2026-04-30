@@ -122,7 +122,7 @@ async function syncImpl(): Promise<Response> {
     return Response.json({ ok: false, error: 'All RPCs failed' }, { status: 502 });
   }
 
-  // Auto-reset cursor if it's ahead of the current chain head — happens
+  // Auto-reset cursor if it's ahead of the current chain head, happens
   // after switching chains (e.g. BSC → Base Sepolia) where the old cursor
   // is at a block number larger than the new chain has produced. Without
   // this, sync silently no-ops forever.

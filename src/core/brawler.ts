@@ -2,7 +2,7 @@
  * Brawler factory and name generation.
  *
  * Creating a brawler from (seed, tokenId) is fully deterministic.
- * The same inputs always produce the same brawler — critical for
+ * The same inputs always produce the same brawler, critical for
  * replayable mints.
  */
 import type { Brawler, Stats, Weapon } from './types.js';
@@ -85,7 +85,7 @@ export function createBrawler(
   };
 }
 
-/** Total games played — used for K-factor. */
+/** Total games played, used for K-factor. */
 export function totalGames(b: Brawler): number {
   return b.wins + b.losses + b.ties;
 }

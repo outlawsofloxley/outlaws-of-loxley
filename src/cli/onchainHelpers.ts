@@ -9,7 +9,7 @@ import { c } from './format.js';
 /** Format a wei amount as ETH with 4 decimals, right-padded for tables. */
 export function ethAmount(wei: bigint): string {
   const s = formatEther(wei);
-  // formatEther returns e.g. "10000.0" or "0.01" — normalize to 4dp
+  // formatEther returns e.g. "10000.0" or "0.01", normalize to 4dp
   const n = Number(s);
   if (!Number.isFinite(n)) return s + ' ETH';
   return `${n.toFixed(4)} ETH`;

@@ -2,7 +2,7 @@
  * GET /api/dash/stats
  *
  * Aggregates every revenue/volume/health number the dashboard needs into a
- * single JSON blob. Read-only — never mutates state.
+ * single JSON blob. Read-only, never mutates state.
  *
  * Gated by the dash session cookie (enforced via middleware).
  */
@@ -80,10 +80,10 @@ export async function GET() {
     transport: http(rpcUrl, { timeout: 4000 }),
   });
 
-  // RPC latency check — time a simple eth_blockNumber call.
+  // RPC latency check, time a simple eth_blockNumber call.
   const rpcPing = await timeMs(() => client.getBlockNumber());
 
-  // Postgres latency check — time a no-op roundtrip.
+  // Postgres latency check, time a no-op roundtrip.
   const dbPing = await timeMs(async () => {
     const { rows } = await sql<{ n: number }>`SELECT 1::int AS n`;
     return rows[0]?.n ?? 1;
@@ -115,7 +115,7 @@ export async function GET() {
       ? (BigInt(fightCost) * 2n * BigInt(devShareBps)) / 10000n * BigInt(duelCount)
       : 0n;
 
-  // Current tunable settings on-chain — used by Settings read panel.
+  // Current tunable settings on-chain, used by Settings read panel.
   const [mintEthPrice, mintUsdtPrice, mintAirdrop, mintTreasury, totalSold, graveyardCost, marketFeeBps, marketTreasury, duelTreasury] = await Promise.all([
     client.readContract({ abi: MINTDROP_ABI, address: mintDropAddr, functionName: 'ethPrice' }).catch(() => null) as Promise<bigint | null>,
     client.readContract({ abi: MINTDROP_ABI, address: mintDropAddr, functionName: 'usdtPrice' }).catch(() => null) as Promise<bigint | null>,

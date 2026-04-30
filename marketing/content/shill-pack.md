@@ -35,7 +35,7 @@ When someone tweets about NFT utility:
 > "On-chain ELO, on-chain combat, real prize pools. The brawler IS the gameplay. BASEic Brawlers, live on Base. baseicbrawlers.com"
 
 When someone tweets about a memecoin getting rugged:
-> "Or you could mint a BASEic Brawler — LP locked 6mo, ownership renounceable, 110+ Foundry tests. The chart is just a side effect of a working game."
+> "Or you could mint a BASEic Brawler, LP locked 6mo, ownership renounceable, 110+ Foundry tests. The chart is just a side effect of a working game."
 
 ## Hashtags (use sparingly, max 2-3 per post)
 
@@ -51,14 +51,14 @@ Situational:
 - `#OnchainSummer` (Base ecosystem campaigns)
 
 Don't use:
-- ❌ `#100x` `#1000x` `#moonshot` — degen-brain hashtags hurt brand
-- ❌ `#Shillzone` `#Pump` — same
-- ❌ Generic `#NFT` `#crypto` — too noisy, no signal
+- ❌ `#100x` `#1000x` `#moonshot`, degen-brain hashtags hurt brand
+- ❌ `#Shillzone` `#Pump`, same
+- ❌ Generic `#NFT` `#crypto`, too noisy, no signal
 
 ## Banner / image captions (for art posts)
 
 When dropping a generated brawler showcase:
-> "Brawler #[N] — [stats]. [Weapon]. Looking for a fight. baseicbrawlers.com"
+> "Brawler #[N], [stats]. [Weapon]. Looking for a fight. baseicbrawlers.com"
 
 When dropping a duel highlight:
 > "Last night in the arena: #[A] vs #[B]. [winner] takes [pot] $BRAWL + ELO. The graveyard claims another. baseicbrawlers.com"
@@ -70,16 +70,16 @@ When dropping the King:
 
 - ❌ "Guaranteed gains"
 - ❌ "Risk-free"
-- ❌ "Officially partnered with [anyone]" — unless we actually are
-- ❌ "Audited by [firm]" — we are tested but not formally audited
-- ❌ "Listed on [CEX]" — unless we actually are
-- ❌ "Backed by [VC/whale]" — we're not
+- ❌ "Officially partnered with [anyone]", unless we actually are
+- ❌ "Audited by [firm]", we are tested but not formally audited
+- ❌ "Listed on [CEX]", unless we actually are
+- ❌ "Backed by [VC/whale]", we're not
 - ❌ Anything that promises a future price
 
 ## Voice rules
 
 - Confident, not loud
 - Game-first, chart-second (the chart is downstream of the game working)
-- Receipts > hype (always link to a verifiable thing — basescan, Unicrypt lock, GitHub)
-- Self-aware about the genre — "yes it's a memecoin-shaped game, no we're not pretending it's not"
+- Receipts > hype (always link to a verifiable thing, basescan, Unicrypt lock, GitHub)
+- Self-aware about the genre, "yes it's a memecoin-shaped game, no we're not pretending it's not"
 - Pixel-art tone: a little rough, a little brutal, never corporate

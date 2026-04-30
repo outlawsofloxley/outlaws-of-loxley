@@ -1,12 +1,12 @@
 'use client';
 
 /**
- * Duel history — every DuelCompleted event emitted by the Duel contract,
+ * Duel history, every DuelCompleted event emitted by the Duel contract,
  * filterable by "All", "Mine" (duels your wallet owns either side of),
  * and by specific brawler.
  *
  * Data source: viem getLogs via useDuelHistory. Names resolved from the
- * loaded roster via useAllBrawlers — if a brawler has been transferred
+ * loaded roster via useAllBrawlers, if a brawler has been transferred
  * since the duel, we still show the current owner/name (the event only
  * carries token IDs, not names or owners at the time).
  */

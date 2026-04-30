@@ -15,24 +15,24 @@ import {MockUSDT} from "../contracts/mocks/MockUSDT.sol";
  *         + Brawlers NFT + MintDrop (ETH/USDT/USDC) + Duel + Graveyard.
  *
  *         Reads config from environment (all optional with sane Sepolia
- *         test defaults — micro prices so Sepolia ETH isn't wasted):
- *           PRIVATE_KEY           — deployer (default: Anvil account 0)
- *           SIGNER_ADDRESS        — duel signer (default: Anvil account 1)
- *           BRAWL_INITIAL_HOLDER  — receives 100k BRAWL (default: deployer)
- *           DEV_TREASURY          — dev-share recipient (default: deployer)
- *           MINT_TREASURY         — mint-proceeds recipient (default: deployer)
- *           RESURRECT_TREASURY    — graveyard fees recipient (default: deployer)
- *           MASTER_SEED           — brawler RNG seed (default: 0x2a)
- *           RESURRECTION_COST     — wei (default: 0.0001 ether — micro)
- *           ETH_MINT_PRICE        — wei per brawler (default: 0.0001 ether — micro)
- *           USDT_MINT_PRICE       — USDT units per brawler (default: 0.01 USDT = 10000)
- *           USDC_MINT_PRICE       — USDC units per brawler (default: 0.01 USDC = 10000)
- *           AIRDROP_PER_MINT      — BRAWL wei airdropped per mint (default: 50e18)
- *           FIGHT_COST            — BRAWL wei per player per fight (default: 100e18)
- *           DEV_SHARE_BPS         — dev cut in bps (default: 1000 = 10%)
- *           USDT_ADDRESS          — real USDT (default: 0 → deploy MockUSDT)
- *           USDC_ADDRESS          — real USDC (default: 0 → deploy MockUSDC)
- *           BASE_URI              — tokenURI prefix (default: local dev URL)
+ *         test defaults, micro prices so Sepolia ETH isn't wasted):
+ *           PRIVATE_KEY         , deployer (default: Anvil account 0)
+ *           SIGNER_ADDRESS      , duel signer (default: Anvil account 1)
+ *           BRAWL_INITIAL_HOLDER, receives 100k BRAWL (default: deployer)
+ *           DEV_TREASURY        , dev-share recipient (default: deployer)
+ *           MINT_TREASURY       , mint-proceeds recipient (default: deployer)
+ *           RESURRECT_TREASURY  , graveyard fees recipient (default: deployer)
+ *           MASTER_SEED         , brawler RNG seed (default: 0x2a)
+ *           RESURRECTION_COST   , wei (default: 0.0001 ether, micro)
+ *           ETH_MINT_PRICE      , wei per brawler (default: 0.0001 ether, micro)
+ *           USDT_MINT_PRICE     , USDT units per brawler (default: 0.01 USDT = 10000)
+ *           USDC_MINT_PRICE     , USDC units per brawler (default: 0.01 USDC = 10000)
+ *           AIRDROP_PER_MINT    , BRAWL wei airdropped per mint (default: 50e18)
+ *           FIGHT_COST          , BRAWL wei per player per fight (default: 100e18)
+ *           DEV_SHARE_BPS       , dev cut in bps (default: 1000 = 10%)
+ *           USDT_ADDRESS        , real USDT (default: 0 → deploy MockUSDT)
+ *           USDC_ADDRESS        , real USDC (default: 0 → deploy MockUSDC)
+ *           BASE_URI            , tokenURI prefix (default: local dev URL)
  *
  *         Usage (Base Sepolia):
  *           set -a; source .env.base-sepolia; set +a
@@ -50,7 +50,7 @@ import {MockUSDT} from "../contracts/mocks/MockUSDT.sol";
  *                                                Epic at 0 wins to ~$1400, King at 0 wins
  *                                                to ~$3000)
  *           FIGHT_COST=10000000000000000000      (10 BRAWL/fighter; founders 5)
- *           AIRDROP_PER_MINT=0                   (no per-mint airdrop on mainnet —
+ *           AIRDROP_PER_MINT=0                   (no per-mint airdrop on mainnet, 
  *                                                  only the 20-BRAWL founder bonus)
  *           FOUNDER_AIRDROP=20000000000000000000 (20 BRAWL bonus, first 100)
  *           LP_SHARE_BPS=3333                    ($10 of $30 → LP fund)
@@ -89,7 +89,7 @@ contract Deploy is Script {
         address mintTreasury = vm.envOr("MINT_TREASURY", deployer);
         address resurrectTreasury = vm.envOr("RESURRECT_TREASURY", deployer);
         uint256 masterSeed = vm.envOr("MASTER_SEED", uint256(0x2a));
-        // Sepolia-friendly micro defaults — see header for mainnet calibration.
+        // Sepolia-friendly micro defaults, see header for mainnet calibration.
         uint256 resurrectionCost = vm.envOr("RESURRECTION_COST", uint256(0.0001 ether));
         uint256 ethMintPrice = vm.envOr("ETH_MINT_PRICE", uint256(0.0001 ether));
         uint256 usdtMintPrice = vm.envOr("USDT_MINT_PRICE", uint256(10_000)); // 0.01 USDT (6 dp)
@@ -138,7 +138,7 @@ contract Deploy is Script {
         console2.log("BRAWL:                ", address(brawl));
 
         // ─── 2. Deploy Brawlers NFT (runs rarity shuffle in constructor) ──
-        // devWallet = deployer — the dev's mints get capped to common/uncommon
+        // devWallet = deployer, the dev's mints get capped to common/uncommon
         // so the team can never pull a rare or better. Anti-rug signal.
         Brawlers brawlers = new Brawlers(deployer, masterSeed, deployer);
         console2.log("Brawlers:             ", address(brawlers));
@@ -173,7 +173,7 @@ contract Deploy is Script {
         }
         address usdcAddr = usdcEnv;
         if (usdcAddr == address(0)) {
-            // Reuse MockUSDT — same 6-decimal ERC-20 surface, fine for tests.
+            // Reuse MockUSDT, same 6-decimal ERC-20 surface, fine for tests.
             MockUSDT mockc = new MockUSDT();
             usdcAddr = address(mockc);
             console2.log("MockUSDC (local):     ", usdcAddr);

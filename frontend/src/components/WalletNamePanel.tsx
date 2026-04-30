@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * WalletNamePanel — let any connected wallet claim a display name (handle)
+ * WalletNamePanel, let any connected wallet claim a display name (handle)
  * via a signed message. The handle then surfaces wherever the wallet's
  * address would be shown in the UI (brawler detail, owner pages, etc).
  */
@@ -59,7 +59,7 @@ export function WalletNamePanel() {
       <div className="brawl-header text-sm text-brawl-orange">Your handle</div>
       <p className="text-sm text-brawl-text-dim">
         Set a display name for your wallet. Other players see this on your
-        brawler cards instead of your raw 0x address. Free, no gas — you
+        brawler cards instead of your raw 0x address. Free, no gas, you
         just sign a message proving you own the wallet.
       </p>
       {!isConnected ? (
@@ -91,7 +91,7 @@ export function WalletNamePanel() {
           </div>
           <div className="text-sm text-brawl-text-faint font-mono">
             2–24 chars. Letters, digits, space, _ . - allowed. Names are
-            unique — first to claim wins.
+            unique, first to claim wins.
           </div>
           {err && <div className="text-sm text-brawl-red">{err}</div>}
           {success && <div className="text-sm text-brawl-green">✓ {success}</div>}

@@ -1,6 +1,6 @@
 /**
  * Seeded deterministic random number generator (xorshift128+ with SplitMix64
- * init). Duplicated from root src/core/rng.ts — keep in sync.
+ * init). Duplicated from root src/core/rng.ts, keep in sync.
  */
 
 export interface RngState {

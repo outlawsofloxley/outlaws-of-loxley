@@ -1,6 +1,6 @@
 /**
  * Rarity tier helpers. A brawler's rarity is derived from its weapon's drop
- * weight — the weapon catalog in weapons.ts is banded into 6 tiers (including
+ * weight, the weapon catalog in weapons.ts is banded into 6 tiers (including
  * the 1-of-1 King tier for the Kingsblade wielder).
  *
  * IMPORTANT: phase 7+ swapped the ranking of Epic and Legendary in the 500
@@ -9,8 +9,8 @@
  * = Flaming Sword / Electric Axe). KING sits above all at tokenId 501.
  *
  *   Weapon weight → tier mapping:
- *     weight == 0  → King        (Kingsblade — 1/1)
- *     weight 1-2   → Epic        (Bazooka, Rail Gun — rarest drop)
+ *     weight == 0  → King        (Kingsblade, 1/1)
+ *     weight 1-2   → Epic        (Bazooka, Rail Gun, rarest drop)
  *     weight 3-5   → Legendary   (Flaming Sword, Electric Axe)
  *     weight 7-9   → Rare        (Shotgun, Sledgehammer)
  *     weight 11-12 → Uncommon    (Machete, Pistol)

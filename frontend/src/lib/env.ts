@@ -6,7 +6,7 @@
  * used by the mint + duel flows.
  */
 
-// Raw reads — deliberately literal `process.env.FOO` references so Next.js
+// Raw reads, deliberately literal `process.env.FOO` references so Next.js
 // inlines them at build time. Dynamic `process.env[name]` access does NOT
 // get inlined, so we unroll the read here.
 export const envRaw = {
@@ -42,7 +42,7 @@ export type EnvValidation =
         usdtAddress: `0x${string}`;
         usdcAddress: `0x${string}`;
         marketplaceAddress: `0x${string}`;
-        /** Optional — when set, brawlers owned by this address are labeled "HOUSE" and auto-resurrected. */
+        /** Optional, when set, brawlers owned by this address are labeled "HOUSE" and auto-resurrected. */
         houseKeeperAddress: `0x${string}` | null;
       };
     }
@@ -94,7 +94,7 @@ export function validateEnv(): EnvValidation {
       ? (envRaw.houseKeeperAddress as `0x${string}`)
       : null;
 
-  // All checks passed — the non-null assertions are safe because we checked above.
+  // All checks passed, the non-null assertions are safe because we checked above.
   return {
     ok: true,
     env: {

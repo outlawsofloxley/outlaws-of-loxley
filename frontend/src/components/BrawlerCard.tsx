@@ -13,9 +13,9 @@ export function BrawlerCard({ brawler }: BrawlerCardProps) {
   const isDead = brawler.isDead;
   const record = `${brawler.wins}W / ${brawler.losses}L / ${brawler.ties}T`;
   const tier = rarityFromWeight(brawler.weapon.weight);
-  // Founder badges — purely cosmetic flex for the early minters. Token IDs
+  // Founder badges, purely cosmetic flex for the early minters. Token IDs
   // 1..50 = "FOUNDER 50" gold badge; 51..100 = "FOUNDER 100" silver.
-  // No stat / weapon / ELO impact — earned by being early.
+  // No stat / weapon / ELO impact, earned by being early.
   const isFounder50 = brawler.tokenId >= 1 && brawler.tokenId <= 50;
   const isFounder100 = brawler.tokenId > 50 && brawler.tokenId <= 100;
 
@@ -25,7 +25,7 @@ export function BrawlerCard({ brawler }: BrawlerCardProps) {
       className="brawl-card brawl-card-hover block p-3 group"
     >
       {/* Top row: token id + rarity badge. HOUSE label hidden in browse view
-          per D's 2026-04-27 callout — looked cluttered. The arena-roster
+          per D's 2026-04-27 callout, looked cluttered. The arena-roster
           status is still tracked under the hood for matchmaking, just not
           surfaced visually here. */}
       <div className="flex items-center justify-between mb-1">
@@ -49,8 +49,8 @@ export function BrawlerCard({ brawler }: BrawlerCardProps) {
             }
             title={
               isFounder50
-                ? 'Founder 50 — first 50 brawlers ever minted'
-                : 'Founder 100 — first 100 brawlers ever minted'
+                ? 'Founder 50, first 50 brawlers ever minted'
+                : 'Founder 100, first 100 brawlers ever minted'
             }
           >
             ★ {isFounder50 ? 'FOUNDER 50' : 'FOUNDER 100'}

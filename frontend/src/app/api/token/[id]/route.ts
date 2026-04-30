@@ -1,5 +1,5 @@
 /**
- * GET /api/token/:id — ERC-721 metadata JSON for brawler `id`.
+ * GET /api/token/:id, ERC-721 metadata JSON for brawler `id`.
  *
  * Conforms to the OpenSea metadata standard so the art shows up correctly in
  * wallets and marketplaces. Fields:
@@ -135,7 +135,7 @@ export async function GET(
   const record = `${onchainBrawler.wins}W/${onchainBrawler.losses}L/${onchainBrawler.ties}T`;
 
   const body = {
-    name: `Brawler #${tokenId} — ${onchainBrawler.name}`,
+    name: `Brawler #${tokenId}, ${onchainBrawler.name}`,
     description:
       `${onchainBrawler.name} wields a ${onchainWeapon.name} (${weaponTypeLabel}, ${rarity}). ` +
       `Record ${record}, Rating ${onchainBrawler.elo}, level ${onchainBrawler.level}. ` +
@@ -163,7 +163,7 @@ export async function GET(
 
   return NextResponse.json(body, {
     headers: {
-      // Short cache — lets OpenSea pick up Rating/record changes after duels.
+      // Short cache, lets OpenSea pick up Rating/record changes after duels.
       'Cache-Control': 'public, max-age=60, s-maxage=60',
     },
   });

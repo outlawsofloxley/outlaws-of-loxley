@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Turn 5 — Graveyard page + resurrect flow.
+ * Turn 5, Graveyard page + resurrect flow.
  *
  * Dead brawlers (3 consecutive losses) are filtered out of /browse's "alive"
  * view and land here. The Graveyard contract accepts a `resurrect(tokenId)`
@@ -134,7 +134,7 @@ function GraveyardCard({
     !!connectedAddress &&
     brawler.owner.toLowerCase() === connectedAddress.toLowerCase();
 
-  // Per-brawler cost — scaled by rarity tier + wins via Graveyard.costFor.
+  // Per-brawler cost, scaled by rarity tier + wins via Graveyard.costFor.
   const { data: perBrawlerCost } = useReadContract({
     abi: GRAVEYARD_ABI,
     address: env.graveyardAddress,
@@ -159,7 +159,7 @@ function GraveyardCard({
   useEffect(() => {
     if (isSuccess) {
       onResurrected();
-      // Don't reset immediately — give the user a moment to see the success state
+      // Don't reset immediately, give the user a moment to see the success state
       const t = setTimeout(() => reset(), 1500);
       return () => clearTimeout(t);
     }

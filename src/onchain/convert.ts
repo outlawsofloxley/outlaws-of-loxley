@@ -5,7 +5,7 @@
  * gives us a Result with both positional and named access. We use named access
  * for readability.
  *
- * createdAt is synthesised — we don't have a fast way to get the mint block
+ * createdAt is synthesised, we don't have a fast way to get the mint block
  * timestamp without another RPC roundtrip per token, and Turn 2 doesn't need
  * real timestamps. Use `Date.now()` at sync time; if accurate timestamps
  * matter later, we can fetch the transaction receipt for the BrawlerMinted
@@ -53,7 +53,7 @@ const WEAPON_TYPE_MAP: Record<number, WeaponType> = {
  * Convert a chain weapon tuple to the local Weapon shape.
  *
  * For known weapons (all 11 of them), we look up the local `Weapon` record to
- * get `rarity` — that field doesn't exist on-chain because it's purely a
+ * get `rarity`, that field doesn't exist on-chain because it's purely a
  * display concept. For unknown names (should never happen in practice), we
  * synthesise with rarity='common' so nothing else in the system crashes.
  */

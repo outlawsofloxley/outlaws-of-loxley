@@ -1,5 +1,5 @@
 /**
- * Pixel-art brawler portrait. Thin React wrapper around renderPixelAvatarSvg —
+ * Pixel-art brawler portrait. Thin React wrapper around renderPixelAvatarSvg, 
  * the SVG string is produced by the same pure function that the
  * /api/token/[id]/image route uses, so the client card and external
  * marketplaces (OpenSea, wallets) show the same picture.
@@ -12,7 +12,7 @@ interface PixelAvatarProps {
   weaponName: string;
   rarity?: RarityTier;
   isDead?: boolean;
-  /** Ignored — kept for backwards compat. */
+  /** Ignored, kept for backwards compat. */
   gridSize?: number;
   className?: string;
 }

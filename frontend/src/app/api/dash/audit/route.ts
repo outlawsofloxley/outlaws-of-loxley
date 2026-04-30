@@ -1,8 +1,8 @@
 /**
- * POST /api/dash/audit — log an action into the audit_log table.
+ * POST /api/dash/audit, log an action into the audit_log table.
  *
  * Gated by the session cookie via middleware. The logged event records
- * what tx the dev initiated — it does NOT prove the tx succeeded on-chain
+ * what tx the dev initiated, it does NOT prove the tx succeeded on-chain
  * (the wallet itself is the source of truth for that). It's a light
  * journal so D can see what knobs have been turned.
  */

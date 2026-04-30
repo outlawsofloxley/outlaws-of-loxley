@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Turn 4B — full duel flow: pick → run → animate → submit → success.
+ * Turn 4B, full duel flow: pick → run → animate → submit → success.
  *
  * 1. Pick two alive brawlers (A filters to yours if connected)
  * 2. POST /api/run-duel  (server fetches state, simulates, signs)
@@ -70,7 +70,7 @@ export default function DuelPage() {
   const { address, isConnected, chainId: activeChainId } = useAccount();
   const rightChain = activeChainId === env.chainId;
 
-  // Helper — is this brawler tagged as part of the house roster?
+  // Helper, is this brawler tagged as part of the house roster?
   const houseIds = useMemo(() => new Set(houseWhitelist), [houseWhitelist]);
   const isHouse = (br: UIBrawler): boolean =>
     isHouseBrawler(br.tokenId, br.owner, env.houseKeeperAddress, houseIds);
@@ -80,7 +80,7 @@ export default function DuelPage() {
   const [rerollTick, setRerollTick] = useState(0);
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
 
-  // Kick the house keeper on mount. Fire-and-forget — any dead dev-owned
+  // Kick the house keeper on mount. Fire-and-forget, any dead dev-owned
   // brawlers get auto-resurrected within seconds so the matchmaking pool
   // stays full. Silent no-op if the env isn't configured on the server.
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function DuelPage() {
   }, [aliveBrawlers, address]);
 
   // Read the fight cost + the BRAWL allowance for every unique owner of an
-  // alive brawler. A "duel-ready" owner is one with allowance ≥ fightCost —
+  // alive brawler. A "duel-ready" owner is one with allowance ≥ fightCost, 
   // only their brawlers can actually be submitted without reverting. The
   // matchmaker filters to duel-ready candidates so friends who haven't
   // approved yet don't get paired into a guaranteed revert.
@@ -163,7 +163,7 @@ export default function DuelPage() {
   }, [mine, aId]);
 
   // Auto-match opponent by rating proximity. Widens ±75 → ±150 → ±300 →
-  // ±500 in that order. HARD CAP at ±500 — the King (Rating 2000) is NOT
+  // ±500 in that order. HARD CAP at ±500, the King (Rating 2000) is NOT
   // matched against a newbie at 900. If nobody's in range, bId stays null
   // and the UI shows a "no match in your rating band" message.
   useEffect(() => {
@@ -172,7 +172,7 @@ export default function DuelPage() {
     const notSelfOwner = (br: UIBrawler) =>
       br.owner.toLowerCase() !== (address?.toLowerCase() ?? '');
     // House-vs-house is BANNED. House brawlers exist as opponents for
-    // humans — they shouldn't grind ELO against each other while real
+    // humans, they shouldn't grind ELO against each other while real
     // players wait. If MY fighter is house, only non-house candidates
     // are eligible. If MY fighter is human, anything goes (house OR
     // human opponents are fair game).
@@ -204,7 +204,7 @@ export default function DuelPage() {
     } else {
       setBId(null);
     }
-    // isHouse changes only when the whitelist set changes — listed below
+    // isHouse changes only when the whitelist set changes, listed below
     // via houseIds.
   }, [a, duelReadyCandidates, address, rerollTick, houseIds]);
 
@@ -268,7 +268,7 @@ export default function DuelPage() {
               BRAWL.
             </>
           ) : (
-            <>Stake + payout reads from chain — loading…</>
+            <>Stake + payout reads from chain, loading…</>
           )}
         </p>
       </div>
@@ -309,7 +309,7 @@ export default function DuelPage() {
             <>
               {mine.length === 0 && isConnected && (
                 <div className="brawl-card p-4 text-sm text-brawl-text-dim">
-                  You don&rsquo;t own any alive brawlers — switching to spectator mode. Pick
+                  You don&rsquo;t own any alive brawlers, switching to spectator mode. Pick
                   any fighter below. Mint some from{' '}
                   <Link href="/mint" className="text-brawl-orange hover:underline">
                     /mint
@@ -375,7 +375,7 @@ export default function DuelPage() {
                           </div>
                           <div className="text-brawl-text-dim">
                             Your <span className="text-brawl-orange">HOUSE</span>{' '}
-                            fighters wait for human challengers — house brawlers
+                            fighters wait for human challengers, house brawlers
                             never fight each other. Pop into Discord or wait for
                             someone to mint and approve.
                           </div>
@@ -384,7 +384,7 @@ export default function DuelPage() {
                         <>
                           <div>
                             No opponent within ±500 Rating of you (you&rsquo;re{' '}
-                            {a?.elo ?? '—'}).
+                            {a?.elo ?? ', '}).
                           </div>
                           <div className="text-brawl-text-dim">
                             You can wait for someone in your band to show up, or
@@ -474,7 +474,7 @@ export default function DuelPage() {
               connectedAddress={address}
               // ReviewPanel now owns the entire arc: animation → tx → overlay.
               // The old SuccessPanel unmounted the arena, which we don't want
-              // anymore — the frozen fight image stays visible behind the
+              // anymore, the frozen fight image stays visible behind the
               // outcome overlay. `onSubmitted` just triggers a roster refresh.
               onSubmitted={() => refetch()}
               onCancel={reset}
@@ -518,7 +518,7 @@ function PickerColumn({
           onChange(v === '' ? null : Number.parseInt(v, 10));
         }}
       >
-        <option value="">— pick —</option>
+        <option value="">, pick, </option>
         {brawlers.map((br) => (
           <option key={br.tokenId} value={br.tokenId} disabled={disabledId === br.tokenId}>
             #{br.tokenId} {br.name} (Rating {br.elo})
@@ -697,7 +697,7 @@ function ReviewPanel({
     reset: resetWrite,
   } = useWriteContract();
 
-  // Surfaced to the debug panel below — any exception during a
+  // Surfaced to the debug panel below, any exception during a
   // writeContract call lands here (usually chain mismatch / reject /
   // permission denied from the wallet).
   const [lastThrow, setLastThrow] = useState<string | null>(null);
@@ -758,7 +758,7 @@ function ReviewPanel({
   useEffect(() => {
     // When BOTH the tx mined AND the animation finished, refresh the
     // roster so balance/ELO reads are fresh. We deliberately do NOT call
-    // resetWrite() here — that would clear `txHash` and flip the gated
+    // resetWrite() here, that would clear `txHash` and flip the gated
     // overlay back on top of the arena. The write state is reset naturally
     // when the user hits "Fight Again" (component unmounts).
     if (isSuccess && txHash && animationDone) {
@@ -796,7 +796,7 @@ function ReviewPanel({
         ? a.name
         : b.name;
 
-  // Preflight status — undefined while loading, true/false once reads complete.
+  // Preflight status, undefined while loading, true/false once reads complete.
   const balanceAok = fightCost !== undefined && balanceA !== undefined && balanceA >= fightCost;
   const balanceBok = fightCost !== undefined && balanceB !== undefined && balanceB >= fightCost;
   const allowanceAok = fightCost !== undefined && allowanceA !== undefined && allowanceA >= fightCost;
@@ -811,7 +811,7 @@ function ReviewPanel({
   //     we try anything. The matchmaker already filters to ready opponents,
   //     but we double-check on chain data here.
   //   - mySideReady: MY balance must be sufficient. My allowance is NOT
-  //     required — if missing, the approve-then-submit flow handles it.
+  //     required, if missing, the approve-then-submit flow handles it.
   const opponentReady = isMeA
     ? balanceBok && allowanceBok
     : isMeB
@@ -843,7 +843,7 @@ function ReviewPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [readyToStart, myNeedsApproval, isMeA, isMeB]);
 
-  // Manual trigger — user tap inside the gated overlay. Bypasses the
+  // Manual trigger, user tap inside the gated overlay. Bypasses the
   // `hasKickedOff` guard so retries work even after a dismissed popup.
   const manualOpenWallet = () => {
     if (isApproving || isApproveMining || isSigning || isMining) return;
@@ -883,7 +883,7 @@ function ReviewPanel({
     response.winnerId !== b.tokenId &&
     streakBBefore + 1 >= 3;
 
-  // The outcome overlay — rendered on top of the frozen arena once the
+  // The outcome overlay, rendered on top of the frozen arena once the
   // fight ends. Stays on screen indefinitely; the parent phase transition
   // to 'success' fires when both (a) tx mines and (b) animation finishes.
   const finishedOverlay = (
@@ -1006,10 +1006,10 @@ function ReviewPanel({
           isApproving
             ? 'Sign the BRAWL approval in your wallet'
             : isApproveMining
-              ? 'Approval confirming — wallet will pop again for the stake'
+              ? 'Approval confirming, wallet will pop again for the stake'
               : isSigning
                 ? `Sign the ${fightCost !== undefined ? formatUnits(fightCost, 18) : ''} BRAWL stake in your wallet`
-                : 'Ready — open your wallet to pay and start the fight'
+                : 'Ready, open your wallet to pay and start the fight'
         }
         gatedAction={{
           label: gatedActionLabel,
@@ -1061,7 +1061,7 @@ function ReviewPanel({
         </div>
       )}
 
-      {/* Skip / Cancel row — only while the fight is actively playing. */}
+      {/* Skip / Cancel row, only while the fight is actively playing. */}
       {animating && txHash && (
         <div className="flex items-center justify-end gap-3 text-xs">
           <button
@@ -1103,7 +1103,7 @@ interface BrawlPreflightProps {
 }
 
 /**
- * Minimal economics panel — shows pot size + connected user's BRAWL
+ * Minimal economics panel, shows pot size + connected user's BRAWL
  * balance. Behind the scenes we still check both sides' balance + allowance
  * to avoid a wasted submit, but the user doesn't need to read the details
  * unless something is wrong.
@@ -1155,7 +1155,7 @@ function BrawlPreflight(props: BrawlPreflightProps) {
       {!bothReady && (
         <div className="text-xs text-brawl-red">
           {!balanceAok || !balanceBok
-            ? '⚠ A fighter is short BRAWL — the submit will revert.'
+            ? '⚠ A fighter is short BRAWL, the submit will revert.'
             : !allowanceAok || !allowanceBok
               ? '⚠ A fighter hasn’t approved Duel to spend BRAWL. If it’s you, the Approve & Submit button below handles it in one flow.'
               : null}
@@ -1181,7 +1181,7 @@ function EventLine({
     case 'round_start':
       return (
         <div className="text-brawl-text-faint border-t border-brawl-border pt-1 mt-1 first:border-0 first:pt-0 first:mt-0">
-          — Round {event.round} — {nameFor(event.attackerId)} has initiative
+          Round {event.round}: {nameFor(event.attackerId)} has initiative
         </div>
       );
     case 'attack_hit': {
@@ -1217,7 +1217,7 @@ function EventLine({
       if (event.winnerId === null) {
         return (
           <div className="text-brawl-yellow font-bold pt-1">
-            ✦ Double KO — tie after {event.rounds} round{event.rounds === 1 ? '' : 's'}
+            ✦ Double KO, tie after {event.rounds} round{event.rounds === 1 ? '' : 's'}
           </div>
         );
       }

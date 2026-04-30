@@ -1,10 +1,10 @@
-# KOL outreach — DM templates
+# KOL outreach, DM templates
 
 7-day warm-up sequence. Don't cold-pitch. Engage authentically for 3-4 days
-first, then drop the ask. NEVER pay for shills upfront — only after they post
+first, then drop the ask. NEVER pay for shills upfront, only after they post
 and only with a brawler airdrop, never cash.
 
-## Tier 1 — Base ecosystem KOLs (day 0-3 warm-up)
+## Tier 1, Base ecosystem KOLs (day 0-3 warm-up)
 
 Target: anyone with 5k+ X followers actively posting about Base, Aerodrome,
 on-chain games, NFTs on Base.
@@ -19,9 +19,9 @@ on-chain games, NFTs on Base.
 ```
 Hey [handle], been enjoying your posts on [specific topic, e.g. "the Aerodrome v2 fee tier shift"].
 
-I'm building BASEic Brawlers — an on-chain pixel-art combat game launching on Base this week. Brawlers fight for $BRAWL, three losses kills them, resurrect with ETH. Real combat sim on-chain (110+ tests, full TS↔Solidity parity).
+I'm building BASEic Brawlers, an on-chain pixel-art combat game launching on Base this week. Brawlers fight for $BRAWL, three losses kills them, resurrect with ETH. Real combat sim on-chain (110+ tests, full TS↔Solidity parity).
 
-Not asking for a shill — just wondering if I could mint you a brawler so you can try the arena. If you like it, share it. If you hate it, no worries.
+Not asking for a shill, just wondering if I could mint you a brawler so you can try the arena. If you like it, share it. If you hate it, no worries.
 
 Want a wallet to send to?
 ```
@@ -29,33 +29,33 @@ Want a wallet to send to?
 If they reply yes → airdrop a brawler (founder slot if still available; that's the carrot).
 If they reply no → "Totally fair, appreciate the time. Holler if you change your mind."
 
-## Tier 2 — Game / NFT KOLs (broader)
+## Tier 2, Game / NFT KOLs (broader)
 
 Same pattern, but adjust the hook:
 
 ```
 [handle], saw your take on [their recent take on web3 games / NFT utility / whatever fits].
 
-Building BASEic Brawlers — 2,000 brawlers + 1 King on Base, on-chain duels with permadeath. Mechanically the most game I've seen ship out of NFTs in a while (might be biased).
+Building BASEic Brawlers, 2,000 brawlers + 1 King on Base, on-chain duels with permadeath. Mechanically the most game I've seen ship out of NFTs in a while (might be biased).
 
 Open to send you a founder slot to try? No ask attached.
 ```
 
-## Tier 3 — Memecoin / degen accounts
+## Tier 3, Memecoin / degen accounts
 
-Different angle — these accounts care about chart + early-in:
+Different angle, these accounts care about chart + early-in:
 
 ```
 [handle], not a meme but might be your speed:
 
-Just launched BASEic Brawlers on Base — 2,000 NFTs + utility token ($BRAWL), LP locked 6mo on Unicrypt, 0% tax, anti-sniper hardened. First 100 mints are FREE + permanent founder perks (25% off fights, free first resurrect). Then $40→$60 tiered.
+Just launched BASEic Brawlers on Base, 2,000 NFTs + utility token ($BRAWL), LP locked 6mo on Unicrypt, 0% tax, anti-sniper hardened. First 100 mints are FREE + permanent founder perks (25% off fights, free first resurrect). Then $40→$60 tiered.
 
 Probably under your radar but the early-in is right now. CA + chart in pinned at @BASEicBrawlers.
 ```
 
 ## Track outreach
 
-Keep a spreadsheet (or use the included `bots/db.js` schema — table `kol_outreach`):
+Keep a spreadsheet (or use the included `bots/db.js` schema, table `kol_outreach`):
 
 | handle | tier | day0-3 interactions | DM sent | reply | airdropped tokenId | posted | notes |
 |--------|------|---------------------|---------|-------|--------------------|--------|-------|

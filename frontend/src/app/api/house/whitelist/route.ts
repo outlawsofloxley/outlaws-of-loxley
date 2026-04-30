@@ -1,9 +1,9 @@
 /**
  * House fighter whitelist CRUD.
  *
- *   GET    /api/house/whitelist            — public (BrawlerCard reads this)
- *   POST   /api/house/whitelist { tokenId }  — dash-authed
- *   DELETE /api/house/whitelist?tokenId=N    — dash-authed
+ *   GET    /api/house/whitelist          , public (BrawlerCard reads this)
+ *   POST   /api/house/whitelist { tokenId }, dash-authed
+ *   DELETE /api/house/whitelist?tokenId=N  , dash-authed
  *
  * Also triggers a fire-and-forget /api/house/sync after a mutation so the
  * new fighter gets resurrected/approved within seconds.

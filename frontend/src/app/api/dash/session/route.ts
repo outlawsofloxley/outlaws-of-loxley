@@ -1,10 +1,10 @@
 /**
- * GET /api/dash/session — lightweight check for an existing session.
+ * GET /api/dash/session, lightweight check for an existing session.
  * Used by the DashAuthGate to decide whether to show the sign-in flow or
  * render the dashboard.
  *
  * Returns { ok, authed, addr, expiresAt }. Never reveals details about
- * missing env or misconfig — those are surfaced via other endpoints.
+ * missing env or misconfig, those are surfaced via other endpoints.
  */
 import { cookies } from 'next/headers';
 import { DASH_COOKIE_NAME, verifySessionCookie } from '@/lib/dashAuth';

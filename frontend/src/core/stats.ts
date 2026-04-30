@@ -1,5 +1,5 @@
 /**
- * Stat allocation and modifier math. Duplicated from root src/core/stats.ts —
+ * Stat allocation and modifier math. Duplicated from root src/core/stats.ts, 
  * keep in sync.
  */
 import type { Stats } from './types';

@@ -1,4 +1,4 @@
-# Art prompts — gpt-image-1 + Pollinations
+# Art prompts, gpt-image-1 + Pollinations
 
 Use the OpenAI key in `reference_creative_api_keys.md` (or fall back to
 `https://image.pollinations.ai/prompt/...` for free unlimited gen). Save
@@ -13,14 +13,14 @@ wearing [OUTFIT], expression [EXPRESSION], game asset for "BASEic Brawlers"
 on-chain game. NO text, NO watermark, NO logo, NO modern clothing.
 ```
 
-Variants — fill in:
+Variants, fill in:
 - WEAPON: baseball bat / axe / sword / hammer / spear / bow / dagger / staff
 - OUTFIT: tattered cloak / leather armor / mage robes / ranger's hood / barbarian fur / ninja garb
 - EXPRESSION: scowling / smirking / wide-eyed / battle-roar / cold-stare
 
 Generate 4 variants each → 24 PFPs total. Pick best 10 for X posting.
 
-## Banner — group cover (1500x500)
+## Banner, group cover (1500x500)
 
 ```
 Wide pixel-art landscape banner, 1500x500, fight-arena perspective from
@@ -30,7 +30,7 @@ background (#4A2C7A) with neon-orange torches (#f5a623) at the corners.
 Crowd silhouettes in the back row. NO text, NO logo, NO watermark.
 ```
 
-## Banner — X header (1500x500)
+## Banner, X header (1500x500)
 
 ```
 Wide pixel-art header, 1500x500, "BASEic BRAWLERS" theme, single hero
@@ -65,7 +65,7 @@ the image. Quiet, somber mood. NO text overlay or watermark.
 
 ```
 Square pixel-art celebration graphic, 1080x1080, single brawler holding up
-a glowing gold star badge labelled "FOUNDER" (badge can have text — that's
+a glowing gold star badge labelled "FOUNDER" (badge can have text, that's
 the only text allowed), surrounded by floating coins and confetti pixels,
 dark purple stage background with gold spotlight from above. Triumphant
 pose. NO other text or watermark beyond the badge.

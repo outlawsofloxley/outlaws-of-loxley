@@ -81,7 +81,7 @@ contract Duel is Ownable, Pausable, ReentrancyGuard {
 
     /// @notice BRAWL ERC-20 token used for fight stakes. Zero address disables fees.
     IERC20 public brawlToken;
-    /// @notice Stake per player per duel (in BRAWL's smallest unit — 10^18).
+    /// @notice Stake per player per duel (in BRAWL's smallest unit, 10^18).
     uint256 public fightCost;
     /// @notice Dev share of total pot (bps). 1000 = 10%. Capped at MAX_DEV_BPS.
     uint16 public devShareBps;
@@ -237,12 +237,12 @@ contract Duel is Ownable, Pausable, ReentrancyGuard {
         // Consume nonce before external calls (CEI).
         usedNonces[result.nonce] = true;
 
-        // Capture owners once — ownerOf call is not free and we need both
+        // Capture owners once, ownerOf call is not free and we need both
         // addresses for fees and for deciding who to pay out.
         address ownerA = brawlers.ownerOf(result.tokenA);
         address ownerB = brawlers.ownerOf(result.tokenB);
 
-        // Pull stakes in. If fightCost is 0 or brawlToken unset, skip —
+        // Pull stakes in. If fightCost is 0 or brawlToken unset, skip, 
         // preserves pre-fee behavior for dev/test contracts. Founder
         // brawlers (tokenId 1..100) pay `founderDiscountBps` less per fight.
         _collectFees(result.tokenA, result.tokenB, ownerA, ownerB);
@@ -271,7 +271,7 @@ contract Duel is Ownable, Pausable, ReentrancyGuard {
     ///         in 1..FOUNDER_FIGHT_DISCOUNT_CAP pay `founderDiscountBps` less
     ///         BRAWL per duel.
     uint256 public constant FOUNDER_FIGHT_DISCOUNT_CAP = 100;
-    /// @notice Discount in basis points. Default 2500 (25%) — tunable via
+    /// @notice Discount in basis points. Default 2500 (25%), tunable via
     ///         setFounderDiscountBps so D can dial it down/up if launch
     ///         pricing changes. Capped at 10000 (100% off = free fights).
     uint256 public founderDiscountBps = 2500;
@@ -286,7 +286,7 @@ contract Duel is Ownable, Pausable, ReentrancyGuard {
         emit FounderDiscountChanged(newBps);
     }
 
-    /// @notice Per-fighter stake — full `fightCost` for non-founders, less
+    /// @notice Per-fighter stake, full `fightCost` for non-founders, less
     ///         (per `founderDiscountBps`) for any brawler with tokenId in
     ///         1..FOUNDER_FIGHT_DISCOUNT_CAP.
     function fighterCost(uint256 tokenId) public view returns (uint256) {

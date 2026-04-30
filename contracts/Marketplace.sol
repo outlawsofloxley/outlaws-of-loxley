@@ -18,13 +18,13 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
  *         and simply grants this contract approval to transfer on a sale.
  *         This means:
  *           - The seller can keep using their brawler (e.g. list while
- *             dueling — though fighting can't kill them off a listing).
+ *             dueling, though fighting can't kill them off a listing).
  *           - If the seller transfers or re-approves elsewhere, the next
  *             buy call detects the stale state and auto-cancels the listing
  *             while refunding the buyer. No locked NFTs, no stuck funds.
  *           - If the seller revokes approval, same deal.
  *
- *         BRAWL token is NOT accepted here — it's reserved for duel stakes
+ *         BRAWL token is NOT accepted here, it's reserved for duel stakes
  *         and external DEX trading. Per-chain native currency only.
  */
 contract Marketplace is Ownable, ReentrancyGuard, Pausable, IERC721Receiver {
@@ -141,7 +141,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable, IERC721Receiver {
 
     /**
      * @notice Cancel an existing listing. No-op if not listed or not seller.
-     *         Not gated by whenNotPaused — sellers should always be able to
+     *         Not gated by whenNotPaused, sellers should always be able to
      *         exit even if the marketplace is frozen for an emergency.
      */
     function cancel(uint256 tokenId) external {
@@ -168,7 +168,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable, IERC721Receiver {
         if (l.seller == address(0)) revert NotListed();
         if (msg.value < l.price) revert InsufficientPayment(l.price, msg.value);
 
-        // Check for stale state. Reverting is safe — the EVM returns
+        // Check for stale state. Reverting is safe, the EVM returns
         // `msg.value` to the caller automatically on revert. The stale
         // listing remains in storage until someone calls `sweep`.
         address currentOwner = brawlers.ownerOf(tokenId);
@@ -194,7 +194,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable, IERC721Receiver {
     }
 
     /**
-     * @notice Anyone can sweep a stale listing — one where the seller no
+     * @notice Anyone can sweep a stale listing, one where the seller no
      *         longer owns the brawler, or has revoked the marketplace's
      *         approval to transfer it. Reverts if the listing is still
      *         valid (in which case only the seller can call `cancel`).
@@ -255,7 +255,7 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable, IERC721Receiver {
         return IERC721Receiver.onERC721Received.selector;
     }
 
-    // Reject direct native transfers — funds only accepted via `buy`.
+    // Reject direct native transfers, funds only accepted via `buy`.
     receive() external payable {
         revert TransferFailed();
     }

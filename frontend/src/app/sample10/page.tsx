@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * /sample10 — focused art-review page. Renders 20 brawlers spanning every
- * archetype × multiple rarities at large size. No dead row — dead is just
+ * /sample10, focused art-review page. Renders 20 brawlers spanning every
+ * archetype × multiple rarities at large size. No dead row, dead is just
  * the same brawler with a red X overlay.
  *
  * For each (archetype, rarity) target, scans tokenIds 1..2500 looking for
@@ -24,37 +24,37 @@ interface Target {
 }
 
 const TARGETS: readonly Target[] = [
-  // Common (3) — plain street fighters
-  { archetype: 'brawler',   rarity: 'common',    weapon: 'baseball bat' },
-  { archetype: 'thug',      rarity: 'common',    weapon: 'crowbar' },
-  { archetype: 'mongol',    rarity: 'common',    weapon: 'knife' },
+  // Common (3), plain street fighters
+  { archetype: 'brawler', rarity: 'common', weapon: 'baseball bat' },
+  { archetype: 'thug', rarity: 'common', weapon: 'crowbar' },
+  { archetype: 'mongol', rarity: 'common', weapon: 'knife' },
 
-  // Uncommon (4) — early variety, NEW: viking + mongol
-  { archetype: 'pirate',    rarity: 'uncommon',  weapon: 'machete' },
-  { archetype: 'viking',    rarity: 'uncommon',  weapon: 'sledgehammer' },
-  { archetype: 'punjab',    rarity: 'uncommon',  weapon: 'flaming sword' },
-  { archetype: 'boxer',     rarity: 'uncommon',  weapon: 'knife' },
+  // Uncommon (4), early variety, NEW: viking + mongol
+  { archetype: 'pirate', rarity: 'uncommon', weapon: 'machete' },
+  { archetype: 'viking', rarity: 'uncommon', weapon: 'sledgehammer' },
+  { archetype: 'punjab', rarity: 'uncommon', weapon: 'flaming sword' },
+  { archetype: 'boxer', rarity: 'uncommon', weapon: 'knife' },
 
-  // Rare (6) — NEW: mafia + spartan + berserker
-  { archetype: 'mafia',     rarity: 'rare',      weapon: 'pistol' },
-  { archetype: 'ninja',     rarity: 'rare',      weapon: 'shotgun' },
-  { archetype: 'spartan',   rarity: 'rare',      weapon: 'machete' },
-  { archetype: 'samurai',   rarity: 'rare',      weapon: 'flaming sword' },
-  { archetype: 'berserker', rarity: 'rare',      weapon: 'electric axe' },
-  { archetype: 'cowboy',    rarity: 'rare',      weapon: 'pistol' },
+  // Rare (6), NEW: mafia + spartan + berserker
+  { archetype: 'mafia', rarity: 'rare', weapon: 'pistol' },
+  { archetype: 'ninja', rarity: 'rare', weapon: 'shotgun' },
+  { archetype: 'spartan', rarity: 'rare', weapon: 'machete' },
+  { archetype: 'samurai', rarity: 'rare', weapon: 'flaming sword' },
+  { archetype: 'berserker', rarity: 'rare', weapon: 'electric axe' },
+  { archetype: 'cowboy', rarity: 'rare', weapon: 'pistol' },
 
-  // Legendary (4) — fully kitted, NEW: viking + mafia
-  { archetype: 'knight',    rarity: 'legendary', weapon: 'electric axe' },
-  { archetype: 'wrestler',  rarity: 'legendary', weapon: 'sledgehammer' },
-  { archetype: 'viking',    rarity: 'legendary', weapon: 'sledgehammer' },
-  { archetype: 'mafia',     rarity: 'legendary', weapon: 'shotgun' },
+  // Legendary (4), fully kitted, NEW: viking + mafia
+  { archetype: 'knight', rarity: 'legendary', weapon: 'electric axe' },
+  { archetype: 'wrestler', rarity: 'legendary', weapon: 'sledgehammer' },
+  { archetype: 'viking', rarity: 'legendary', weapon: 'sledgehammer' },
+  { archetype: 'mafia', rarity: 'legendary', weapon: 'shotgun' },
 
-  // Epic (2) — top tier, NEW: berserker + spartan
-  { archetype: 'berserker', rarity: 'epic',      weapon: 'sledgehammer' },
-  { archetype: 'spartan',   rarity: 'epic',      weapon: 'flaming sword' },
+  // Epic (2), top tier, NEW: berserker + spartan
+  { archetype: 'berserker', rarity: 'epic', weapon: 'sledgehammer' },
+  { archetype: 'spartan', rarity: 'epic', weapon: 'flaming sword' },
 
-  // King (1) — the 1/1
-  { archetype: 'royal',     rarity: 'king',      weapon: 'kingsblade' },
+  // King (1), the 1/1
+  { archetype: 'royal', rarity: 'king', weapon: 'kingsblade' },
 ];
 
 function findTokenIdFor(target: Target, used: Set<number>): number {
@@ -94,8 +94,8 @@ export default function Sample10Page() {
           svg: renderBrawlerArt({
             tokenId: rareChief.tokenId,
             weaponName: built[epicIdx]!.weapon,
-            rarity: 'rare',       // rare → identical face roll to rare chief
-            bgRarity: 'epic',     // epic → bg with all 6 yellow crosses
+            rarity: 'rare', // rare → identical face roll to rare chief
+            bgRarity: 'epic', // epic → bg with all 6 yellow crosses
           }),
         };
       }
@@ -106,10 +106,10 @@ export default function Sample10Page() {
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-6">
       <div className="space-y-1">
-        <h1 className="brawl-header text-2xl text-brawl-orange">Sample 20 — art review</h1>
+        <h1 className="brawl-header text-2xl text-brawl-orange">Sample 20, art review</h1>
         <p className="text-sm text-brawl-text-dim font-mono">
           One brawler per archetype × rarity slot. Dead state is the same
-          sprite with a red X overlay — not shown here for brevity.
+          sprite with a red X overlay, not shown here for brevity.
         </p>
       </div>
 

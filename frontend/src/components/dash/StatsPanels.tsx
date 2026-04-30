@@ -176,14 +176,14 @@ export function StatsPanels() {
   );
 
   const keeperBnb = useMemo(
-    () => (data?.keeper.bnbBalanceWei ? formatEther(BigInt(data.keeper.bnbBalanceWei)) : '—'),
+    () => (data?.keeper.bnbBalanceWei ? formatEther(BigInt(data.keeper.bnbBalanceWei)) : ', '),
     [data],
   );
   const keeperBrawl = useMemo(
     () =>
       data?.keeper.brawlBalanceWei
         ? formatUnits(BigInt(data.keeper.brawlBalanceWei), 18)
-        : '—',
+        : ', ',
     [data],
   );
 
@@ -240,7 +240,7 @@ export function StatsPanels() {
               sub={`${data.revenue.duelDev.duelCount} duels`}
             />
             <RevenueCard
-              label={`Marketplace fees (${data.revenue.marketplace.feeBps !== null ? (data.revenue.marketplace.feeBps / 100).toFixed(1) : '—'}%)`}
+              label={`Marketplace fees (${data.revenue.marketplace.feeBps !== null ? (data.revenue.marketplace.feeBps / 100).toFixed(1) : ', '}%)`}
               value={`${truncNum(marketFee)} ${sym}`}
               sub={`${data.revenue.marketplace.count} sales · ${truncNum(marketGross)} ${sym} gross`}
             />
@@ -295,12 +295,12 @@ export function StatsPanels() {
               />
               <HealthRow
                 label="Duel sync last block"
-                value={data.health.duelSyncLastBlock ?? '—'}
+                value={data.health.duelSyncLastBlock ?? ', '}
                 sub={data.health.duelSyncUpdatedAt ? new Date(data.health.duelSyncUpdatedAt).toLocaleString() : null}
               />
               <HealthRow
                 label="Market sync last block"
-                value={data.health.marketSyncLastBlock ?? '—'}
+                value={data.health.marketSyncLastBlock ?? ', '}
                 sub={data.health.marketSyncUpdatedAt ? new Date(data.health.marketSyncUpdatedAt).toLocaleString() : null}
               />
             </div>

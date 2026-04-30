@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Emergency unstick queue — current matchmaking is purely client-side
+ * Emergency unstick queue, current matchmaking is purely client-side
  * (no Arena.sol contract yet), so the button refreshes the house-keeper
  * state + triggers a sync, which is the only off-chain state that could
  * leave a player waiting. When the on-chain queue ships, this is where
@@ -15,7 +15,7 @@ export function EmergencyUnstickPanel() {
   const [err, setErr] = useState<string | null>(null);
 
   const handle = useCallback(async () => {
-    if (!confirm('Trigger emergency unstick? This forces a house-keeper sync + DB event sync. No on-chain queue exists yet, so this is a no-op for stuck players — but it ensures keeper fighters are fresh.')) {
+    if (!confirm('Trigger emergency unstick? This forces a house-keeper sync + DB event sync. No on-chain queue exists yet, so this is a no-op for stuck players, but it ensures keeper fighters are fresh.')) {
       return;
     }
     setBusy(true);

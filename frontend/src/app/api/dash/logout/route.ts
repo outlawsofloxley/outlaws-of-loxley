@@ -1,5 +1,5 @@
 /**
- * POST /api/dash/logout — clear the session cookie.
+ * POST /api/dash/logout, clear the session cookie.
  * GET also supported so a stale session can be cleared via a link.
  */
 import { buildClearCookieHeader } from '@/lib/dashAuth';

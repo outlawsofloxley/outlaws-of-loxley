@@ -1,12 +1,12 @@
 'use client';
 
 /**
- * useMarketListings — read active marketplace listings from the Postgres
+ * useMarketListings, read active marketplace listings from the Postgres
  * cache (populated by /api/marketplace/sync).
  *
  * Same architecture as useDuelHistory: client hits /api/marketplace/listings
  * which returns DB rows and kicks off a fire-and-forget sync. No direct
- * eth_getLogs from the browser — no more RPC rate-limit surprises.
+ * eth_getLogs from the browser, no more RPC rate-limit surprises.
  */
 import { useEffect, useState } from 'react';
 

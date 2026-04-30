@@ -118,7 +118,7 @@ export function requireConfig(): OnchainConfig {
     const parts: string[] = [];
     if (missing.length > 0) parts.push(`missing: ${missing.join(', ')}`);
     if (invalid.length > 0) parts.push(`invalid: ${invalid.join(', ')}`);
-    throw new Error(`onchain config incomplete — ${parts.join('; ')}`);
+    throw new Error(`onchain config incomplete, ${parts.join('; ')}`);
   }
 
   return {

@@ -1,7 +1,7 @@
-# Brawlers — Phase / Iteration History
+# Brawlers, Phase / Iteration History
 
 Archived from `CLAUDE.md` on 2026-04-26 to keep the live tracker concise.
-This file is the long-form record of every shipped iteration — addresses
+This file is the long-form record of every shipped iteration, addresses
 and decisions current to v1 launch on BSC Testnet.
 
 ## Phase summary
@@ -11,7 +11,7 @@ and decisions current to v1 launch on BSC Testnet.
 | 1–3 | TypeScript game engine, CLI REPL, persistence | Complete (164 tests pass) |
 | 4 | Solidity contracts (Brawlers / Duel / Graveyard) | Complete (72 forge tests, byte-identical TS↔Solidity parity) |
 | 5 | On-chain integration: CLI talks to deployed contracts via ethers v6 | Complete |
-| 6 | Next.js frontend | Complete — all 6 turns shipped |
+| 6 | Next.js frontend | Complete, all 6 turns shipped |
 | 7a | Contract `tokenURI` + hybrid metadata API endpoints | Complete locally |
 | 7-TOKENOMICS | BRAWL ERC-20 + MintDrop + fight stake economics | Complete (86 forge tests) |
 | 7-FRONTEND-WIRE | Frontend wired to Phase 7 contracts | Complete |
@@ -20,12 +20,12 @@ and decisions current to v1 launch on BSC Testnet.
 | 7-ITERATION-2 | Batch mint (20/tx) + win-scaled resurrection + signer key uploaded | Complete (2026-04-24 pm) |
 | 7-ITERATION-3 | Batch reveal grid + one-click duel + history + leaderboard + visual duel animation | Complete (2026-04-24 pm+1) |
 | 7-ITERATION-3 polish | BSC-RPC-safe getLogs (1k chunks, retry-halve), pot-centric duel UI, leaderboard fighters-only, weapon glyphs + clash spark | Complete (2026-04-24 pm+2) |
-| 7-ITERATION-4 art v1 | Fantums-style 32×32 avatar generator — round head, googly eyes, rarity-driven hats, 12 hand-drawn weapon sprites, /audit page | Complete (2026-04-24 pm+3) |
+| 7-ITERATION-4 art v1 | Fantums-style 32×32 avatar generator, round head, googly eyes, rarity-driven hats, 12 hand-drawn weapon sprites, /audit page | Complete (2026-04-24 pm+3) |
 | 7-ITERATION-4 art v2 | Big variety pass: gender split + 7 hairstyles + hair streaks + 17 hat types + 6 arm accessories + 5 auras + 4 eyewear + 6 pet types + pet collars + 10 pant palettes | Complete (2026-04-24 pm+4) |
 | 7-ITERATION-4 art v3 | Off-hand items, background scenes, floor props, chest badges, face extras, species variants | Complete (2026-04-24 pm+5) |
-| 7-ITERATION-4 art v4 | Weather scenes + boosted scene chance on lower tiers + expanded palettes — art ready for 500-mint test | Complete (2026-04-24 pm+6) |
+| 7-ITERATION-4 art v4 | Weather scenes + boosted scene chance on lower tiers + expanded palettes, art ready for 500-mint test | Complete (2026-04-24 pm+6) |
 | 7-ITERATION-5 matchmaking-lite | Auto-match opponent ±75→±150→±300→any window with reroll | Complete (2026-04-24 pm+7) |
-| 7-ITERATION-6 duel pizazz + DB | Animation gated on wallet-sign, intro stare-down + feints, thunder/lightning/disco/blood, ~10s pacing, frozen arena outcome overlays. Neon Postgres wired via `@vercel/postgres` — `/api/history/sync` + `/api/history/query`, RPC pool rotation | Complete (2026-04-24 pm+8) |
+| 7-ITERATION-6 duel pizazz + DB | Animation gated on wallet-sign, intro stare-down + feints, thunder/lightning/disco/blood, ~10s pacing, frozen arena outcome overlays. Neon Postgres wired via `@vercel/postgres`, `/api/history/sync` + `/api/history/query`, RPC pool rotation | Complete (2026-04-24 pm+8) |
 | 7-ITERATION-7 marketplace | `Marketplace.sol` deployed, approval-based, 5% fee, native-currency. `/market` page, `MarketplacePanel`, sync/listings APIs, daily cron. 26 forge tests | Complete (2026-04-24 pm+9) |
 | 7-ITERATION-8 mobile polish | Hamburger nav, safe-area insets, 44px tap targets, text-base inputs (no iOS auto-zoom), full-width primary CTAs on mobile | Complete (2026-04-24 pm+10) |
 | 7-ITERATION-9 mobile wallet | Tried `@metamask/sdk` connector alongside `injected()` | Complete (2026-04-24 pm+11) |
@@ -34,14 +34,14 @@ and decisions current to v1 launch on BSC Testnet.
 | 7-ITERATION-12 fresh-wallet + strict MM + death anim + art v5 + arena lineup | Preflight split into opponentReady/mySideReady. Strict matchmaking (no "any" fallback). Death animation on 3 consecutive losses. Art v5 (chunky 24×32 humanoids per `ss/v1imge.jpg`). ArenaLineup component | Complete (2026-04-24 pm+14) |
 | 7-ITERATION-13 /dash dev dashboard | Dev dashboard at `/dash` with SIWE auth (HMAC cookie keyed by `DASH_SESSION_SECRET`), revenue/health/audit/settings widgets, house whitelist manager. Built autonomously overnight 2026-04-25 | Complete (2026-04-25) |
 | 7-ITERATION-14 art polish | Multi-turn D-driven art tightening: all-purple background per rarity, archetype system (brawler/pirate/ninja/thug/wrestler/boxer/cowboy/knight/punjab/samurai/royal), removed scenes/off-hand/sparkles/species, faces tightened (drop wide/oneeyed expressions, drop warpaint, drop beard/bigbeard, keep moustache/goatee), dark-skin brightPupil override, dead state = red X + 7 blood drips, weapons redesigned 9-10 rows tall + held above head, detailed pets (6×6 sitting dog/cat with eyes), `/sample10` review page | Complete (2026-04-26) |
-| 7c | Base mainnet | Pending — decide migration from BSC Testnet |
+| 7c | Base mainnet | Pending, decide migration from BSC Testnet |
 
 ## Iter-3 verification (2026-04-24 pm+1)
 
 - `npx tsc --noEmit` clean
 - `npx next build` succeeds; routes added: `/leaderboard`, `/history`, `/brawler/[id]/history`. All render statically except `/brawler/[id]/*` (dynamic) and the API routes.
 
-## Phase 7 tokenomics — design decisions
+## Phase 7 tokenomics, design decisions
 
 Set 2026-04-23, revised 2026-04-24:
 
@@ -56,11 +56,11 @@ Set 2026-04-23, revised 2026-04-24:
 | Mint price (testnet) | 0.0001 tBNB or 1 MockUSDT |
 | Resurrection cost | `base × tierMult/10 × (10 + wins)/10` where tierMult ∈ [10,15,25,40,70,150]. On mainnet set base to $100 equivalent |
 | Batch mint | `mintMultipleWithETH/USDT(to, count)`, MAX_BATCH=20/tx, single signature, N events, N×50 BRAWL airdrop |
-| Rename | REMOVED — names permanent, rolled from 50×50 pool on mint |
-| Rarity gameplay effect | Weapon tier only — no extra stat bonus |
-| BRAWL initial holder | EOA (deployer by default) — no multisig |
+| Rename | REMOVED, names permanent, rolled from 50×50 pool on mint |
+| Rarity gameplay effect | Weapon tier only, no extra stat bonus |
+| BRAWL initial holder | EOA (deployer by default), no multisig |
 
-## Phase 7a — hybrid metadata architecture
+## Phase 7a, hybrid metadata architecture
 
 **Contract side** (`contracts/Brawlers.sol`):
 - `_baseTokenURI` storage var

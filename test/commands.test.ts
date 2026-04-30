@@ -328,7 +328,7 @@ describe('commands', () => {
 
       // Apply three consecutive losses to brawler 1 using the store API.
       // (Fight simulation is RNG-dependent; forcing the outcome directly is
-      // the correct test here — we're testing the death + refusal path,
+      // the correct test here, we're testing the death + refusal path,
       // not RNG luck.)
       const fakeFight = (winnerId: number) => ({
         seed: 0xdeadbeefn,

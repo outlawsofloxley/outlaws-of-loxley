@@ -2,14 +2,14 @@
  * Contract ABIs.
  *
  * Hand-written to match the Solidity contracts in `contracts/`. We only include
- * the functions and events the CLI actually uses — anything else would be dead
+ * the functions and events the CLI actually uses, anything else would be dead
  * weight.
  *
  * If a contract's interface changes, update the ABI here AND the Solidity
  * source, then re-deploy. There is no auto-sync.
  */
 
-/** Brawlers ERC-721 — see contracts/Brawlers.sol */
+/** Brawlers ERC-721, see contracts/Brawlers.sol */
 export const BRAWLERS_ABI = [
   // --- Reads ---
   'function masterSeed() view returns (uint256)',
@@ -40,7 +40,7 @@ export const BRAWLERS_ABI = [
   'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)',
 ] as const;
 
-/** Duel — see contracts/Duel.sol */
+/** Duel, see contracts/Duel.sol */
 export const DUEL_ABI = [
   // --- Reads ---
   'function brawlers() view returns (address)',
@@ -60,7 +60,7 @@ export const DUEL_ABI = [
   'event StreakReset(uint256 indexed tokenId)',
 ] as const;
 
-/** Graveyard — see contracts/Graveyard.sol */
+/** Graveyard, see contracts/Graveyard.sol */
 export const GRAVEYARD_ABI = [
   // --- Reads ---
   'function brawlers() view returns (address)',

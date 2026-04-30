@@ -66,7 +66,7 @@ export function Providers({ children }: { children: ReactNode }) {
           queries: {
             // Keep chain reads fresh but don't hammer the RPC.
             staleTime: 10_000, // 10 seconds
-            // Don't retry indefinitely on local dev errors — fail fast instead.
+            // Don't retry indefinitely on local dev errors, fail fast instead.
             retry: 1,
             refetchOnWindowFocus: false,
           },

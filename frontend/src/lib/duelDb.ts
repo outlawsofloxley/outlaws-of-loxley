@@ -104,7 +104,7 @@ export async function setLastSyncedBlock(block: bigint): Promise<void> {
   `;
 }
 
-/** Upsert a single event — idempotent by (tx_hash, log_index). */
+/** Upsert a single event, idempotent by (tx_hash, log_index). */
 export async function upsertDuelEvent(ev: {
   txHash: string;
   logIndex: number;

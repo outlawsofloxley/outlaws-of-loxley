@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * /owner/[address] — list all brawlers owned by an arbitrary wallet.
+ * /owner/[address], list all brawlers owned by an arbitrary wallet.
  * Linked from the detail page's owner field. Read-only.
  */
 import { use, useMemo } from 'react';

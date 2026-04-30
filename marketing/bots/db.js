@@ -1,6 +1,6 @@
 /**
  * JSON-file-backed store for the three bots. Tiny volume (raid scores,
- * weekly leaderboard, welcomed users, KOL log) — JSON on disk is plenty
+ * weekly leaderboard, welcomed users, KOL log), JSON on disk is plenty
  * and avoids native-build pain (better-sqlite3 needs MSBuild on Windows
  * + prebuilt-binary catch-up for new Node versions).
  *
@@ -16,11 +16,11 @@ import 'dotenv/config';
 const DB_PATH = process.env.DB_PATH || './bots-state.json';
 
 const EMPTY = {
-  raid_targets: [],   // { id, tweet_url, posted_by, created_at, closed_at? }
-  raid_scores: [],    // { raid_id, user_id, username, proof_url, points, created_at }
+  raid_targets: [], // { id, tweet_url, posted_by, created_at, closed_at? }
+  raid_scores: [], // { raid_id, user_id, username, proof_url, points, created_at }
   leaderboard_weekly: [], // { week_start, user_id, username, total_points }
-  welcome_seen: [],   // { user_id, welcomed_at }
-  kol_outreach: [],   // { handle, tier, interactions, dm_sent_at, replied, airdropped_token_id, posted, notes }
+  welcome_seen: [], // { user_id, welcomed_at }
+  kol_outreach: [], // { handle, tier, interactions, dm_sent_at, replied, airdropped_token_id, posted, notes }
   next_raid_id: 1,
 };
 

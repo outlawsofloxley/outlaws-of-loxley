@@ -232,7 +232,7 @@ contract MarketplaceTest is Test {
         vm.prank(carol);
         market.buy{value: 3 ether}(tokenId);
 
-        // Carol should have paid exactly `price` — 2 ether refunded.
+        // Carol should have paid exactly `price`, 2 ether refunded.
         assertEq(carolBefore - carol.balance, price);
     }
 
@@ -263,7 +263,7 @@ contract MarketplaceTest is Test {
         vm.prank(alice);
         market.list(tokenId, 1 ether);
 
-        // Alice transfers out after listing — stale.
+        // Alice transfers out after listing, stale.
         vm.prank(alice);
         brawlers.transferFrom(alice, bob, tokenId);
 
@@ -275,7 +275,7 @@ contract MarketplaceTest is Test {
 
         // EVM refunds msg.value on revert automatically.
         assertEq(carol.balance, carolBefore, "buyer fully refunded via revert");
-        // Listing stays in storage until someone calls sweep — by design.
+        // Listing stays in storage until someone calls sweep, by design.
         assertTrue(market.isListed(tokenId), "stale listing remains, awaiting sweep");
     }
 
@@ -362,7 +362,7 @@ contract MarketplaceTest is Test {
         vm.expectRevert(); // Pausable: paused
         market.buy{value: 1 ether}(tokenId);
 
-        // Cancel still works even when paused — emergency exit for sellers.
+        // Cancel still works even when paused, emergency exit for sellers.
         vm.prank(alice);
         market.cancel(tokenId);
         assertFalse(market.isListed(tokenId));
@@ -379,7 +379,7 @@ contract MarketplaceTest is Test {
     // ─── Admin ──────────────────────────────────────────────────────
 
     function test_setFee_ownerOnly_andCapped() public {
-        market.setFee(250); // 2.5% — valid
+        market.setFee(250); // 2.5%, valid
         assertEq(market.feeBps(), 250);
 
         vm.expectRevert(abi.encodeWithSelector(Marketplace.FeeTooHigh.selector, 1001));

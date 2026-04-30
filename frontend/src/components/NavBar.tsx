@@ -53,7 +53,7 @@ export function NavBar() {
   return (
     <>
       <nav className="border-b border-brawl-border bg-brawl-bg/95 backdrop-blur sticky top-0 z-50">
-        {/* Row 1: 3-col grid — logo | brand (centered) | wallet/menu.
+        {/* Row 1: 3-col grid, logo | brand (centered) | wallet/menu.
             Grid keeps the brand pinned to the visual center of the navbar
             regardless of the side columns' widths. */}
         <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 grid grid-cols-[auto_1fr_auto] items-center gap-3">
@@ -74,7 +74,7 @@ export function NavBar() {
             />
           </Link>
 
-          {/* Center: brand text — pinned dead-center via the grid 1fr column */}
+          {/* Center: brand text, pinned dead-center via the grid 1fr column */}
           <Link
             href="/"
             className="brawl-header text-sm md:text-xl text-brawl-text whitespace-nowrap text-center hover:text-brawl-orange transition-colors"
@@ -101,7 +101,7 @@ export function NavBar() {
           </div>
         </div>
 
-        {/* Row 2: nav items — desktop only, centered under the brand */}
+        {/* Row 2: nav items, desktop only, centered under the brand */}
         <div className="hidden md:block border-t border-brawl-border/60">
           <div className="max-w-7xl mx-auto px-4 md:px-8 h-12 flex items-center justify-center gap-6">
             {NAV_ITEMS.map((item) => (

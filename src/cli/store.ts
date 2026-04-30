@@ -140,7 +140,7 @@ export function addBrawler(state: GameState, brawler: Brawler): void {
  * a stale local copy it gets overwritten.
  *
  * Returns true if an existing brawler was replaced, false if newly added.
- * Initializes the streaks entry to zero if the token is new — we can't know
+ * Initializes the streaks entry to zero if the token is new, we can't know
  * the current streak from chain alone (Duel contract has it but we don't
  * fetch it yet; Turn 2 sync starts fresh, Turn 3's duel flow will update it).
  */
@@ -189,7 +189,7 @@ export function applyDuelResult(
   const bWon = fight.winnerId === bOld.tokenId;
   const tied = fight.winnerId === null;
 
-  // Streak bookkeeping — reset on win/tie, increment on loss.
+  // Streak bookkeeping, reset on win/tie, increment on loss.
   const aStreak = state.streaks[aOld.tokenId] ?? { consecutiveLosses: 0 };
   const bStreak = state.streaks[bOld.tokenId] ?? { consecutiveLosses: 0 };
   if (aWon || tied) {

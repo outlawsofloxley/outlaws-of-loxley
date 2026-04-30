@@ -4,7 +4,7 @@
  *
  * The `player` wallet is what sends transactions (mint, submitDuel, resurrect).
  * The `signer` wallet is what cryptographically signs DuelResult structs so
- * the Duel contract will accept them — it's an off-chain role, the key never
+ * the Duel contract will accept them, it's an off-chain role, the key never
  * sends transactions in Phase 5.
  *
  * Both wallets share the same JsonRpcProvider so we only open one connection.
@@ -28,13 +28,13 @@ export interface OnchainClient {
 /**
  * Build the full client from a validated config.
  *
- * Does not hit the network — provider is lazy. Callers should issue a small
+ * Does not hit the network, provider is lazy. Callers should issue a small
  * read (e.g. `provider.getBlockNumber()`) to confirm the RPC is reachable
  * before doing real work.
  */
 export function createClient(cfg: OnchainConfig): OnchainClient {
   // staticNetwork must be a Network object (not `true`) when we also pass the
-  // network argument — passing `true` here would be ignored and trigger a
+  // network argument, passing `true` here would be ignored and trigger a
   // chain-id probe on every call. See ethers v6 migration guide.
   const network = Network.from(cfg.chainId);
   const provider = new JsonRpcProvider(cfg.rpcUrl, network, {
@@ -43,7 +43,7 @@ export function createClient(cfg: OnchainConfig): OnchainClient {
   const player = new Wallet(cfg.playerKey, provider);
   const dutySigner = new Wallet(cfg.signerKey, provider);
 
-  // Contracts bound to the player wallet — writes are signed by player.
+  // Contracts bound to the player wallet, writes are signed by player.
   const brawlers = new Contract(cfg.brawlersAddress, BRAWLERS_ABI, player);
   const duel = new Contract(cfg.duelAddress, DUEL_ABI, player);
   const graveyard = new Contract(cfg.graveyardAddress, GRAVEYARD_ABI, player);

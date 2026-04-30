@@ -6,7 +6,7 @@
  * promise. Refreshes on explicit `refetch()` or after window focus > 60s
  * stale.
  *
- * The endpoint is public (no auth needed) — the whitelist is visible
+ * The endpoint is public (no auth needed), the whitelist is visible
  * information (BrawlerCard displays HOUSE badges to everyone).
  */
 import { useCallback, useEffect, useState } from 'react';

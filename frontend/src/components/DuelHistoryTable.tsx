@@ -153,7 +153,7 @@ export function DuelHistoryTable({
                 mine={mineTokenIds?.has(r.tokenA) ?? false}
                 highlight={highlightTokenId === r.tokenA}
               />
-              <div className="text-brawl-text-faint text-sm">vs — {r.rounds} rounds</div>
+              <div className="text-brawl-text-faint text-sm">vs, {r.rounds} rounds</div>
               <BrawlerCell
                 tokenId={r.tokenB}
                 name={nameOf.get(r.tokenB)}

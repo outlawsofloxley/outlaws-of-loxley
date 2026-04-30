@@ -5,7 +5,7 @@
  * work even if ethers fails to import (unlikely, but isolates the blast
  * radius).
  *
- * All network calls are wrapped in try/catch and return a CommandResult — the
+ * All network calls are wrapped in try/catch and return a CommandResult, the
  * REPL loop never sees an unhandled rejection from Phase 5 code.
  */
 import type { CommandResult } from './commands.js';
@@ -38,7 +38,7 @@ import { c, formatFight } from './format.js';
 import { ethAmount, formatOnchainError, okTag, shortHex } from './onchainHelpers.js';
 
 /**
- * `addr` — print the currently configured contract addresses.
+ * `addr`, print the currently configured contract addresses.
  *
  * Pure read from env; never hits the network. Useful as a first diagnostic
  * when on-chain commands misbehave.
@@ -94,7 +94,7 @@ export function commandAddr(): CommandResult {
 }
 
 /**
- * `whoami` — print the player's address, its ETH balance, and block height.
+ * `whoami`, print the player's address, its ETH balance, and block height.
  *
  * Hits the RPC (one getBalance + one getBlockNumber). Network failures are
  * caught and rendered as a one-line error.
@@ -167,7 +167,7 @@ export async function commandWhoami(): Promise<CommandResult> {
 export { shortHex };
 
 /**
- * `mint-onchain [n]` — mint n brawlers on-chain.
+ * `mint-onchain [n]`, mint n brawlers on-chain.
  *
  * Flow for each mint:
  *   1. Send `Brawlers.mint(player)` tx
@@ -177,7 +177,7 @@ export { shortHex };
  *
  * Runs sequentially (not parallel) so tx nonces stay in order with a single
  * RPC. If mint i succeeds but mint i+1 fails, everything up to i is already
- * saved — the command reports partial success. Cap at 20 per invocation.
+ * saved, the command reports partial success. Cap at 20 per invocation.
  */
 export async function commandMintOnchain(state: GameState, args: string[]): Promise<CommandResult> {
   const n = args.length === 0 ? 1 : parseInt(args[0]!, 10);
@@ -206,7 +206,7 @@ export async function commandMintOnchain(state: GameState, args: string[]): Prom
   let successes = 0;
 
   try {
-    // Preflight — chain ID and contract presence. These are cheap and worth
+    // Preflight, chain ID and contract presence. These are cheap and worth
     // doing BEFORE burning gas on a tx that would then revert / mis-send.
     const network = await client.provider.getNetwork();
     if (Number(network.chainId) !== client.config.chainId) {
@@ -275,7 +275,7 @@ export async function commandMintOnchain(state: GameState, args: string[]): Prom
 }
 
 /**
- * `sync [id]` — reconcile local cache with chain state.
+ * `sync [id]`, reconcile local cache with chain state.
  *
  * With no arg: pull `nextTokenId` from chain, then fetch tokens 1..nextTokenId-1.
  * With an arg: fetch just that single tokenId.
@@ -434,11 +434,11 @@ function sameCoreFields(a: Brawler, b: Brawler): boolean {
 }
 
 /**
- * `duel-onchain <idA> <idB> [hexSeed]` — run an on-chain duel.
+ * `duel-onchain <idA> <idB> [hexSeed]`, run an on-chain duel.
  *
  * Flow:
  *   1. Preflight (chain match, contract present, both brawlers alive)
- *   2. Fetch fresh on-chain state for both brawlers (don't trust local cache —
+ *   2. Fetch fresh on-chain state for both brawlers (don't trust local cache, 
  *      someone else might have moved them)
  *   3. Run the fight simulation locally with the provided or random seed
  *   4. Compute new ELOs via Phase 2 code
@@ -476,7 +476,7 @@ export async function commandDuelOnchain(state: GameState, args: string[]): Prom
       }
     } catch {
       return {
-        output: c.red(`duel-onchain: invalid seed "${args[2]!}" — must be decimal or 0x hex`),
+        output: c.red(`duel-onchain: invalid seed "${args[2]!}", must be decimal or 0x hex`),
         mutated: false,
       };
     }
@@ -514,7 +514,7 @@ export async function commandDuelOnchain(state: GameState, args: string[]): Prom
     }
     await verifyBrawlersContractExists(client);
 
-    // Fetch fresh state — we don't trust local cache for writes
+    // Fetch fresh state, we don't trust local cache for writes
     const [a, b] = await Promise.all([fetchBrawler(client, idA), fetchBrawler(client, idB)]);
     if (a.status !== 'alive') {
       lines.push('  ' + c.red(`Brawler #${idA} (${a.name}) is dead. Resurrect first.`));
@@ -530,7 +530,7 @@ export async function commandDuelOnchain(state: GameState, args: string[]): Prom
     // Run sim locally
     const fight = simulateFight(a, b, seed);
 
-    // Compute ELO — use Phase 2 math, which matches the contract because
+    // Compute ELO, use Phase 2 math, which matches the contract because
     // we send the final ELOs in the signed payload.
     const outcomeForA =
       fight.winnerId === a.tokenId ? 'win' : fight.winnerId === b.tokenId ? 'loss' : 'tie';
@@ -617,7 +617,7 @@ export async function commandDuelOnchain(state: GameState, args: string[]): Prom
 }
 
 /**
- * `resurrect <id>` — pay the resurrection fee to revive a dead brawler.
+ * `resurrect <id>`, pay the resurrection fee to revive a dead brawler.
  *
  * Flow:
  *   1. Preflight (chain match, Graveyard contract present)
@@ -663,7 +663,7 @@ export async function commandResurrect(state: GameState, args: string[]): Promis
 
     const b = await fetchBrawler(client, tokenId);
     if (b.status === 'alive') {
-      lines.push('  ' + c.red(`${b.name} is already alive — no resurrection needed.`));
+      lines.push('  ' + c.red(`${b.name} is already alive, no resurrection needed.`));
       lines.push('');
       return { output: lines.join('\n'), mutated: false };
     }
@@ -692,7 +692,7 @@ export async function commandResurrect(state: GameState, args: string[]): Promis
     if (bFresh.status === 'alive') {
       lines.push('  ' + c.green(`✓ ${b.name} rises from the dead.`));
     } else {
-      lines.push('  ' + c.red('✗ Tx landed but brawler still marked dead — investigate.'));
+      lines.push('  ' + c.red('✗ Tx landed but brawler still marked dead, investigate.'));
     }
     lines.push('');
     lines.push(

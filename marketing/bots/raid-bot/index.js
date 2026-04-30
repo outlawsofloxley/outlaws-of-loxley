@@ -1,16 +1,16 @@
 /**
- * Raid bot — admins post a tweet URL, the bot opens a "raid" round in the
+ * Raid bot, admins post a tweet URL, the bot opens a "raid" round in the
  * group. Members reply with a link to their like / RT / QT (any x.com or
  * twitter.com URL counts as proof, idempotent per user+url). Each unique
  * proof scores 1 point that flows into the weekly leaderboard.
  *
  * Admin commands:
- *   /raid <tweet_url>  — open raid (auto-closes in 6h)
- *   /closeraid         — manually close the latest open raid
+ *   /raid <tweet_url>, open raid (auto-closes in 6h)
+ *   /closeraid       , manually close the latest open raid
  *
  * Member commands:
- *   /me               — show your week-to-date points
- *   /raidstatus       — show open raid + your contribution
+ *   /me             , show your week-to-date points
+ *   /raidstatus     , show open raid + your contribution
  *
  * Any text message with an x.com/twitter.com URL inside an open raid
  * window is auto-credited. Keeps friction low.
@@ -29,7 +29,7 @@ import {
 export function start() {
 const TOKEN = process.env.RAID_BOT_TOKEN;
 if (!TOKEN) {
-  console.warn('[raid] RAID_BOT_TOKEN missing — skipping raid bot');
+  console.warn('[raid] RAID_BOT_TOKEN missing, skipping raid bot');
   return;
 }
 
@@ -57,7 +57,7 @@ bot.command('raid', async (ctx) => {
   const id = openRaidTarget(url, ctx.from.username || String(ctx.from.id));
   await ctx.reply(
     [
-      `⚔️ RAID #${id} OPEN — 6 hours`,
+      `⚔️ RAID #${id} OPEN, 6 hours`,
       '',
       `Target: ${url}`,
       '',

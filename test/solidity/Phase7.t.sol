@@ -51,7 +51,7 @@ contract Phase7Test is Test {
         owner = address(this);
         signerAddr = vm.addr(signerPk);
 
-        // BRAWL v2 — initialHolder + initialOwner. Owner enables trading
+        // BRAWL v2, initialHolder + initialOwner. Owner enables trading
         // and whitelists game contracts so test transfers don't hit
         // anti-sniper limits.
         brawl = new BRAWL(owner, owner);
@@ -83,8 +83,8 @@ contract Phase7Test is Test {
                 usdtPrice: USDT_PRICE,
                 usdcPrice: USDC_PRICE,
                 airdropPerMint: AIRDROP,
-                founderAirdropAmount: 0,    // off in baseline tests
-                lpShareBps: 0,              // all to dev treasury so existing assertions pass
+                founderAirdropAmount: 0, // off in baseline tests
+                lpShareBps: 0, // all to dev treasury so existing assertions pass
                 lpBrawlPerMint: 0           // off
             })
         );
@@ -134,7 +134,7 @@ contract Phase7Test is Test {
         new BRAWL(address(0), owner);
     }
 
-    // Zero-owner case is rejected by OZ Ownable's own constructor — no
+    // Zero-owner case is rejected by OZ Ownable's own constructor, no
     // additional test needed.
 
     // ─── Brawlers: supply cap + mint auth ───────────────────────────
@@ -153,7 +153,7 @@ contract Phase7Test is Test {
         vm.expectRevert(Brawlers.NotMintDropOrOwner.selector);
         brawlers.mint(alice);
 
-        // MintDrop can call it (via its own mint paths — simulated here with
+        // MintDrop can call it (via its own mint paths, simulated here with
         // a direct prank from mintDrop's address).
         vm.prank(address(mintDrop));
         uint256 id = brawlers.mint(alice);

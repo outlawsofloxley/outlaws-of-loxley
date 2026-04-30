@@ -2,7 +2,7 @@
  * High-level Graveyard contract operations.
  *
  * Resurrection flow:
- *   1. Read `resurrectionCost()` from chain (don't hardcode — owner can change it)
+ *   1. Read `resurrectionCost()` from chain (don't hardcode, owner can change it)
  *   2. Send `resurrect(tokenId)` with that value attached
  *   3. Wait 1 confirmation, decode Resurrected event
  *

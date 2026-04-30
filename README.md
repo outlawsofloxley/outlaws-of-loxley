@@ -1,7 +1,7 @@
 # BASEic Brawlers
 
 On-chain NFT battle game on Base. 2000 pixel-art warriors duel for ELO with
-$BRAWL stakes. Lose three in a row and you die — pay ETH to resurrect.
+$BRAWL stakes. Lose three in a row and you die. Pay ETH to resurrect.
 
 🟢 **Live (testnet):** [baseicbrawlers.com](https://baseicbrawlers.com) (Base Sepolia, chain 84532)
 🐦 **X:** [@BASEicBrawlers](https://x.com/BASEicBrawlers)
@@ -9,19 +9,19 @@ $BRAWL stakes. Lose three in a row and you die — pay ETH to resurrect.
 
 ## What's in the box
 
-- **Solidity contracts** (`contracts/`) — Brawlers ERC-721, BRAWL ERC-20 with
+- **Solidity contracts** (`contracts/`). Brawlers ERC-721, BRAWL ERC-20 with
   anti-sniping rails, Duel engine with off-chain signed result settlement,
   Graveyard with tier-scaled resurrect cost, MintDrop with tiered pricing
   (100 free / $40 / $45 / $50 / $60), Marketplace.
-- **Game engine** (`src/`) — TypeScript brawler stats, ELO, RNG, weapon
-  matchups. Identical algorithm to the on-chain version (Phase-4 parity).
-- **Web UI** (`frontend/`) — Next.js 16 + wagmi 3 + viem. Browse, mint, duel,
+- **Game engine** (`src/`). TypeScript brawler stats, ELO, RNG, weapon
+  matchups. Same algorithm as the on-chain version (Phase-4 parity).
+- **Web UI** (`frontend/`). Next.js 16 + wagmi 3 + viem. Browse, mint, duel,
   graveyard, leaderboard, marketplace, history. Pixel-art SVG avatars
   generated deterministically per tokenId.
-- **Marketing kit** (`marketing/`) — Telegram bots (welcome / raid /
+- **Marketing kit** (`marketing/`). Telegram bots (welcome / raid /
   leaderboard, Grammy + JSON state), launch copy, art generators, KOL
   outreach templates.
-- **Test suites** — 211 vitest (engine + sim parity) + 112 forge.
+- **Test suites**. 211 vitest (engine + sim parity) + 112 forge.
 
 ## Repo layout
 
@@ -39,7 +39,7 @@ SESSION_STATE.md Live handoff doc (read first, update last)
 
 ## Setup
 
-Requirements: Node 22+ (24/25 work), Foundry 1.5+, Git.
+You'll need Node 22+ (24/25 work too), Foundry 1.5+, Git.
 
 ```bash
 git clone <repo-url> --recurse-submodules
@@ -67,8 +67,8 @@ forge script script/Deploy.s.sol:Deploy \
 cd frontend && npm run dev
 ```
 
-Open <http://localhost:3000>. Anvil's default account 0 is the deployer; import
-its private key into MetaMask for test ETH and contract owner permissions.
+Open <http://localhost:3000>. Anvil's account 0 is the deployer. Import its
+key into MetaMask for test ETH and contract owner permissions.
 
 ## Tests
 
@@ -93,15 +93,16 @@ See `.env.base-sepolia` for the canonical address list. As of v5
 
 ## Mainnet plan
 
-- Tiered pricing locked: 100 free founder slots, then 400 @ $40, 500 @ $45,
+- Tiered pricing locked. 100 free founder slots, then 400 @ $40, 500 @ $45,
   500 @ $50, 500 @ $60.
-- BRAWL/ETH pool seeded on Aerodrome v2; LP locked on Unicrypt for 6 months
+- BRAWL/ETH pool seeded on Aerodrome v2. LP locked on Unicrypt for 6 months
   (`script/SeedAndLockLP.s.sol`).
-- BRAWL renounce sequence after 24-48h soak (whitelist game contracts → enable
-  trading → blacklist obvious bots → liftLimits → renounceOwnership).
+- BRAWL renounce sequence after a 24 to 48 hour soak: whitelist game
+  contracts, enable trading, blacklist obvious bots, liftLimits,
+  renounceOwnership.
 - Game contracts (Duel/MintDrop/Marketplace/Graveyard) stay dev-controlled
-  for game tuning; no rug-able functions in those.
+  for game tuning. No rug-able functions in those.
 
-## License
+## Licence
 
-License TBD — pending owner decision before public push.
+Licence TBD. Owner will pick one before any public push.

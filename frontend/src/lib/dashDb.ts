@@ -127,7 +127,7 @@ export async function ensureDashSchema(): Promise<void> {
     )
   `;
 
-  // Player handles — wallet → display name. Set by the wallet owner via a
+  // Player handles, wallet → display name. Set by the wallet owner via a
   // signed message ("BASEic Brawlers handle: <name>"). Verified server-side
   // before insert. Names are unique-folded (lowercased) so two wallets
   // can't claim the same handle.

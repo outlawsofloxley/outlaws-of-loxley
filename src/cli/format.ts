@@ -188,7 +188,7 @@ export function formatFight(fight: FightResult, nameOf: (id: number) => string):
       case 'fight_end': {
         lines.push('');
         if (e.winnerId === null) {
-          lines.push(c.yellow(c.bold('  DOUBLE KO — tie.')));
+          lines.push(c.yellow(c.bold('  DOUBLE KO, tie.')));
         } else {
           lines.push(c.green(c.bold(`  WINNER: ${resolveName(e.winnerId)}`)) + c.gray(` (${e.rounds} rounds)`));
         }
