@@ -17,7 +17,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "hello": "tsx src/hello.ts",
-    "game": "tsx src/cli/main.ts"
+    "game": "tsx src/cli/main.ts",
+    "deploy:sepolia:dry": "node scripts/deploy.mjs --target sepolia --dry-run",
+    "deploy:sepolia:preflight": "node scripts/deploy.mjs --target sepolia --phase preflight",
+    "deploy:sepolia": "node scripts/deploy.mjs --target sepolia --yes",
+    "deploy:mainnet:dry": "node scripts/deploy.mjs --target mainnet --dry-run",
+    "deploy:mainnet:preflight": "node scripts/deploy.mjs --target mainnet --phase preflight",
+    "deploy:mainnet": "node scripts/deploy.mjs --target mainnet"
   },
   "devDependencies": {
     "@types/node": "20.14.10",

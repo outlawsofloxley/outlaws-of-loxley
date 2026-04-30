@@ -16,6 +16,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Deploy orchestrator reports (full transcript + markdown summary).
+# Local-only — re-runnable, not worth tracking in git.
+logs/
+
 # ── Next.js / Turbopack ──────────────────────────────────────
 .next/
 out/
