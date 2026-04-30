@@ -29,6 +29,23 @@
   Vercel deploy, smoke tests. `npm run deploy:sepolia` rehearsed clean
   on the v6 rollout. `npm run deploy:mainnet` is the same flow with
   two safety prompts. See `LAUNCH.md` for the full playbook.
+- **Marketing art** (last verified 2026-04-30 evening):
+  - Procedural assets are byte-identical to a fresh regen against the
+    current `frontend/src/lib/brawlerArt.ts` (em-dash sweep was
+    comment-only, didn't shift output).
+  - 126 sample SVGs in `marketing/art/samples/`, plus `contact_sheet.png`,
+    `rarity_showcase.png`, `mint_preview_100.png`, `base_archetypes.png`,
+    `fixed_combos.png`.
+  - 8 composited marketing pieces just regenerated via `compose.py`:
+    `x-banner.png`, `tg-cover.png`, `founder-{1,50,100}.png`,
+    `death-scene.png`, `main-pfp.png`, `rarity-showcase.png`.
+  - 5 Kling animation MP4s in `videos/` (king, knight-epic,
+    mafia-legendary, mongol-rare, spartan-epic) from Apr 29.
+  - All marketing copy already references 2,000 supply (1240 / 500 / 200 /
+    40 / 20 + 1 King). Stray "500" references in `content/*.md` are
+    banner dimensions or tier ranges, not supply.
+  - `marketing/art/` is gitignored (local-only binary blobs;
+    deterministically reproducible via the regen scripts).
 - **GitHub repo**: https://github.com/baseicbrawlers/baseic-brawlers
   (private, commit `65eb013`, 268 files). Pushed 2026-04-30 under the
   `baseicbrawlers` GH account using a noreply commit email so the real
