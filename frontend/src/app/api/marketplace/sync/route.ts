@@ -24,6 +24,7 @@ import {
   upsertListing,
   wipeAllListings,
 } from '@/lib/marketDb';
+import { DASH_COOKIE_NAME, verifySessionCookie } from '@/lib/dashAuth';
 import { isDbConfigured } from '@/lib/duelDb';
 
 export const runtime = 'nodejs';
@@ -128,22 +129,35 @@ async function syncImpl(request?: Request): Promise<Response> {
   }
   const chainId = Number.parseInt(chainIdStr, 10);
 
-  // Operator escape hatch: ?wipe=1 with the dash sync key forces a full
-  // wipe before the regular sync runs. Use this to clear ghosts left by
-  // a chain switch or a missed Unlisted event, without waiting for the
-  // reconciliation pass to catch up.
+  // Operator escape hatch: ?wipe=1 forces a full wipe before the regular
+  // sync runs. Use this to clear ghosts left by a chain switch or a missed
+  // Unlisted event without waiting for the reconciliation pass to catch up.
+  //
+  // Auth: either a valid dash session cookie (D logged in at /dash) OR the
+  // raw DASH_SESSION_SECRET via &key=... for headless ops.
   let forcedWipe = 0;
   if (request) {
     const url = new URL(request.url);
     if (url.searchParams.get('wipe') === '1') {
+      const cookieHeader = request.headers.get('cookie') ?? '';
+      const cookieValue = cookieHeader
+        .split(';')
+        .map((c) => c.trim())
+        .find((c) => c.startsWith(`${DASH_COOKIE_NAME}=`))
+        ?.slice(DASH_COOKIE_NAME.length + 1);
+      const sessionPayload = await verifySessionCookie(cookieValue);
       const provided = url.searchParams.get('key') ?? '';
       const expected = process.env.DASH_SESSION_SECRET ?? '';
-      if (expected.length >= 32 && provided === expected) {
+      const keyOk = expected.length >= 32 && provided === expected;
+      if (sessionPayload || keyOk) {
         await ensureMarketSchema();
         forcedWipe = await wipeAllListings();
         await setMarketLastSyncedBlock(0n);
       } else {
-        return Response.json({ ok: false, error: 'wipe requires valid key' }, { status: 401 });
+        return Response.json(
+          { ok: false, error: 'wipe requires dash session or DASH_SESSION_SECRET key' },
+          { status: 401 },
+        );
       }
     }
   }
