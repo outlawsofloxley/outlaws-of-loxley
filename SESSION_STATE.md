@@ -5,13 +5,30 @@
 > Stable project context lives in `CLAUDE.md`.
 
 ## Last updated
-2026-04-30 (private GitHub repo created + pushed, language sweep + audit done)
+2026-04-30 evening (v6 contracts live on Sepolia, deploy orchestrator in repo)
 
 ## Where we are
-- **v5 contracts deployed 2026-04-29** to Base Sepolia (chain 84532). Addresses
-  in `.env.base-sepolia` (canonical source) and synced to `frontend/.env.local`.
-- **Live**: https://baseicbrawlers.com. Vercel production redeployed, serves
-  v5 BRAWLERS `0x936ae7…`. Verified by hitting `/api/token/1`.
+- **v6 contracts deployed 2026-04-30** to Base Sepolia via the new
+  orchestrator (`scripts/deploy.mjs`). Fresh addresses in
+  `.env.base-sepolia`. Old v5 contracts at `0x936ae7…` etc. stay alive
+  on-chain but are no longer referenced by the frontend. v6 includes
+  every audit fix (EIP-712 signatures, one-time-set pointers, refund
+  overpay, owner caps, tier coverage check).
+- **Live**: https://baseicbrawlers.com. Vercel production deployed, smoke
+  tests pass: `/api/token/2001` returns King metadata, `/api/marketplace/listings`
+  returns `[]`, `/api/history/sync` returns `200`.
+- **v6 addresses (Sepolia, chain 84532)**:
+  - `BRAWL     = 0xf3b431d2afec0286723e058b7cf0110783323a0a`
+  - `BRAWLERS  = 0x55695a72714a05ce1cab069e9d42341912f47602`
+  - `DUEL      = 0x09ac227ae70a030b5edb5c892a6c3ed730e4d4df`
+  - `GRAVEYARD = 0x7897a918e625e10b9658963d05e006980b0db918`
+  - `MINTDROP  = 0xbf2db93fb3f642639a3a53942b224fa697ee31bd`
+  - `MOCKUSDT  = 0x6afee7c9bb4b8e47a085fb7f2769f840ccad696c`
+- **Deploy orchestrator** at `scripts/deploy.mjs`. Single command rolls
+  out preflight, forge deploy, address parsing, env updates, Vercel sync,
+  Vercel deploy, smoke tests. `npm run deploy:sepolia` rehearsed clean
+  on the v6 rollout. `npm run deploy:mainnet` is the same flow with
+  two safety prompts. See `LAUNCH.md` for the full playbook.
 - **GitHub repo**: https://github.com/baseicbrawlers/baseic-brawlers
   (private, commit `65eb013`, 268 files). Pushed 2026-04-30 under the
   `baseicbrawlers` GH account using a noreply commit email so the real
@@ -58,26 +75,28 @@
   and founder discount render a "needs v5+" hint until the new reads succeed.
 
 ## Pending / next actions
-1. **Audit fixes for mainnet day**. Pick the ones that matter from the
-   audit at the bottom of this session's transcript. Highest priorities:
-   - Graveyard refund of overpayment (CRITICAL).
-   - MintDrop ETH routing order (CRITICAL).
-   - Duel signature chain ID for cross-chain replay safety (HIGH).
-   - Add CSP, HSTS, X-Frame-Options headers to `next.config.ts` (LOW but easy).
-   - Tighten `/api/run-duel` expiry from 1h to 5min (MEDIUM, easy edit).
-2. **500-mint test on Base Sepolia with mates**. Art is ready, contracts
-   unchanged. Mint, eyeball `/audit` live tab, verify rarity distribution.
-   D's wallet still hits the dev-rarity-cap (Common/Uncommon only), so
-   mates need to mint from fresh wallets to surface Epic/Rare on-chain.
-3. **Telegram welcome bot token**. D needs to re-create
+1. **500-mint test on Base Sepolia with mates** (NOW UNBLOCKED). v6
+   contracts are live and clean (totalSold = 0). Distribute mint links,
+   eyeball `/audit` live tab, verify rarity distribution. D's wallet
+   still hits the dev-rarity-cap (Common/Uncommon only), so mates need
+   to mint from fresh wallets to surface Epic/Rare on-chain.
+2. **Telegram welcome bot token**. D needs to re-create
    `@baseicbrawlers_welcome_bot` via @BotFather /newbot. RAID and
    LEADERBOARD tokens are already wired in `marketing/bots/.env`.
-4. **`PUBLIC_GROUP_ID`**. Add @RawDataBot to `@baseicbrawlers`, copy the
+3. **`PUBLIC_GROUP_ID`**. Add @RawDataBot to `@baseicbrawlers`, copy the
    negative integer ID, drop in `marketing/bots/.env`.
-5. **Marketplace v5 redeploy** (deferred, not blocking). The current
-   marketplace `0xEeab07…` is still v4. Redeploy if needed. No blocker today.
-6. **CLI `mint-onchain` rewrite**. Still calls `brawlers.mint()` directly,
+4. **Marketplace v6 redeploy** (deferred, not blocking). The Marketplace
+   contract is still pointed at the old Brawlers contract from v4. Per
+   the orchestrator design, redeploying the Marketplace is a separate
+   forge script (`script/DeployMarketplace.s.sol`). For mainnet day this
+   should be folded into the main deploy.
+5. **CLI `mint-onchain` rewrite**. Still calls `brawlers.mint()` directly,
    reverts on testnets. Rewrite to use `MintDrop.mintWithETH`. UI unaffected.
+6. **Mainnet day**. Run `npm run deploy:mainnet` when launch ETH is in
+   the deployer wallet and marketing is primed. Orchestrator handles
+   contracts + Vercel + smoke. Manual follow-ups: SeedAndLockLP.s.sol
+   (Aerodrome LP + Unicrypt lock), 24-48h soak, BRAWL renounce sequence,
+   manual BRAWL allocations (50k LP / 10k dev / 15k reserve).
 
 ## Mainnet-day playbook (locked)
 - Tiered pricing: 100 free / 400 @$40 / 500 @$45 / 500 @$50 / 500 @$60
@@ -106,7 +125,13 @@
 
 ## Useful one-liners
 ```bash
-# Sanity-check live deploy points to v5 BRAWLERS
+# Deploy (full automated rollout; see LAUNCH.md for details)
+npm run deploy:sepolia:dry         # preflight only, zero broadcast
+npm run deploy:sepolia              # full Sepolia flow
+npm run deploy:mainnet              # mainnet flow with two confirmations
+node scripts/deploy.mjs --target sepolia --phase smoke-test  # re-run one phase
+
+# Sanity-check live deploy points to v6 King
 curl -s https://baseicbrawlers.com/api/token/2001 | head -c 400
 
 # Inspect on-chain state on Sepolia
@@ -117,8 +142,8 @@ cast call "$BRAWLERS_ADDRESS" "nextTokenId()(uint32)" \
 # Regenerate marketing art (Pollinations, free, no key)
 python3 /c/tools/brawlers/marketing/art/gen.py
 
-# Redeploy frontend after env changes
-cd /c/tools/brawlers/frontend && vercel deploy --prod --yes
+# Trigger a fresh marketplace ghost prune
+curl -s -X POST https://baseicbrawlers.com/api/marketplace/sync
 
 # GitHub
 gh repo view baseicbrawlers/baseic-brawlers --web
