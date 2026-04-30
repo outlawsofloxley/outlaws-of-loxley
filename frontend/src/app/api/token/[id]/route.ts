@@ -17,6 +17,7 @@
 import { NextResponse } from 'next/server';
 import { createPublicClient, defineChain, http } from 'viem';
 import { BRAWLERS_ABI } from '@/lib/abi';
+import { validateEnv } from '@/lib/env';
 
 export const runtime = 'nodejs';
 
@@ -85,16 +86,15 @@ export async function GET(
     );
   }
 
-  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL;
-  const chainIdStr = process.env.NEXT_PUBLIC_CHAIN_ID;
-  const brawlersAddr = process.env.NEXT_PUBLIC_BRAWLERS_ADDRESS;
-  if (!rpcUrl || !chainIdStr || !brawlersAddr) {
+  const v = validateEnv();
+  if (!v.ok) {
     return NextResponse.json(
-      { error: 'Server env missing RPC / chain / brawlers address' },
+      { error: `Server env: ${v.errors.join('; ')}` },
       { status: 500 },
     );
   }
-  const chainId = Number.parseInt(chainIdStr, 10);
+  const { rpcUrl, chainId } = v.env;
+  const brawlersAddr = v.env.brawlersAddress;
   const chain = buildChain(chainId, rpcUrl);
   const client = createPublicClient({ chain, transport: http(rpcUrl) });
 

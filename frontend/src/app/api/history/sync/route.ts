@@ -13,6 +13,7 @@
  * GET is also supported for Vercel Cron, which fires GET by default.
  */
 import { createPublicClient, defineChain, http, parseAbiItem, type Log } from 'viem';
+import { validateEnv } from '@/lib/env';
 import {
   ensureSchema,
   getSyncState,
@@ -70,13 +71,12 @@ async function syncImpl(): Promise<Response> {
     );
   }
 
-  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL;
-  const chainIdStr = process.env.NEXT_PUBLIC_CHAIN_ID;
-  const duelAddr = process.env.NEXT_PUBLIC_DUEL_ADDRESS;
-  if (!rpcUrl || !chainIdStr || !duelAddr) {
-    return Response.json({ ok: false, error: 'RPC/CHAIN/DUEL env missing' }, { status: 500 });
+  const v = validateEnv();
+  if (!v.ok) {
+    return Response.json({ ok: false, error: 'env: ' + v.errors.join('; ') }, { status: 500 });
   }
-  const chainId = Number.parseInt(chainIdStr, 10);
+  const { rpcUrl, chainId } = v.env;
+  const duelAddr = v.env.duelAddress;
 
   await ensureSchema();
 

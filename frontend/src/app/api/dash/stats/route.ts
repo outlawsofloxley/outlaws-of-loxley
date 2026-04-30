@@ -24,6 +24,7 @@ import {
   recentAudit,
 } from '@/lib/dashDb';
 import { getMarketSyncState } from '@/lib/marketDb';
+import { validateEnv } from '@/lib/env';
 import { sql } from '@vercel/postgres';
 
 export const runtime = 'nodejs';
@@ -58,20 +59,18 @@ export async function GET() {
     return Response.json({ ok: false, error: 'POSTGRES_URL not configured' }, { status: 503 });
   }
 
-  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL;
-  const chainIdStr = process.env.NEXT_PUBLIC_CHAIN_ID;
-  if (!rpcUrl || !chainIdStr) {
-    return Response.json({ ok: false, error: 'RPC/CHAIN env missing' }, { status: 500 });
+  const v = validateEnv();
+  if (!v.ok) {
+    return Response.json({ ok: false, error: 'env: ' + v.errors.join('; ') }, { status: 500 });
   }
-  const chainId = Number.parseInt(chainIdStr, 10);
-
-  const brawlersAddr = process.env.NEXT_PUBLIC_BRAWLERS_ADDRESS as Address;
-  const duelAddr = process.env.NEXT_PUBLIC_DUEL_ADDRESS as Address;
-  const graveyardAddr = process.env.NEXT_PUBLIC_GRAVEYARD_ADDRESS as Address;
-  const mintDropAddr = process.env.NEXT_PUBLIC_MINTDROP_ADDRESS as Address;
-  const brawlAddr = process.env.NEXT_PUBLIC_BRAWL_ADDRESS as Address;
-  const marketAddr = process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS as Address;
-  const keeperAddr = process.env.NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS as Address | undefined;
+  const { rpcUrl, chainId } = v.env;
+  const brawlersAddr = v.env.brawlersAddress;
+  const duelAddr = v.env.duelAddress;
+  const graveyardAddr = v.env.graveyardAddress;
+  const mintDropAddr = v.env.mintDropAddress;
+  const brawlAddr = v.env.brawlAddress;
+  const marketAddr = v.env.marketplaceAddress;
+  const keeperAddr: Address | undefined = v.env.houseKeeperAddress ?? undefined;
 
   await ensureDashSchema();
 

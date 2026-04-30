@@ -24,6 +24,7 @@ import { createPublicClient, defineChain, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { randomBytes } from 'node:crypto';
 import { BRAWLERS_ABI } from '@/lib/abi';
+import { validateEnv } from '@/lib/env';
 import { simulateFight } from '@/sim/combat';
 import { applyDuelResult, type Outcome } from '@/core/elo';
 import { findWeapon } from '@/core/weapons';
@@ -187,31 +188,22 @@ export async function POST(request: Request) {
   }
 
   const signerKeyRaw = process.env.BRAWLERS_SIGNER_KEY;
-  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL;
-  const chainIdStr = process.env.NEXT_PUBLIC_CHAIN_ID;
-  const brawlersAddr = process.env.NEXT_PUBLIC_BRAWLERS_ADDRESS;
-  const duelAddr = process.env.NEXT_PUBLIC_DUEL_ADDRESS;
-
-  const missing: string[] = [];
-  if (!signerKeyRaw) missing.push('BRAWLERS_SIGNER_KEY');
-  if (!rpcUrl) missing.push('NEXT_PUBLIC_RPC_URL');
-  if (!chainIdStr) missing.push('NEXT_PUBLIC_CHAIN_ID');
-  if (!brawlersAddr) missing.push('NEXT_PUBLIC_BRAWLERS_ADDRESS');
-  if (!duelAddr) missing.push('NEXT_PUBLIC_DUEL_ADDRESS');
-  if (missing.length > 0 || !signerKeyRaw || !rpcUrl || !chainIdStr || !brawlersAddr || !duelAddr) {
+  if (!signerKeyRaw) {
     return NextResponse.json(
-      { error: `Server env missing: ${missing.join(', ')}` },
+      { error: 'Server env missing: BRAWLERS_SIGNER_KEY' },
       { status: 500 },
     );
   }
-
-  const chainId = Number.parseInt(chainIdStr, 10);
-  if (!Number.isInteger(chainId) || chainId <= 0) {
+  const v = validateEnv();
+  if (!v.ok) {
     return NextResponse.json(
-      { error: `NEXT_PUBLIC_CHAIN_ID is not a positive integer: ${chainIdStr}` },
+      { error: `Server env: ${v.errors.join('; ')}` },
       { status: 500 },
     );
   }
+  const { rpcUrl, chainId } = v.env;
+  const brawlersAddr = v.env.brawlersAddress;
+  const duelAddr = v.env.duelAddress;
 
   const chain = buildChain(chainId, rpcUrl);
   const client = createPublicClient({ chain, transport: http(rpcUrl) });

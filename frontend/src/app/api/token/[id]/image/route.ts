@@ -11,6 +11,7 @@
  */
 import { createPublicClient, defineChain, http } from 'viem';
 import { BRAWLERS_ABI } from '@/lib/abi';
+import { validateEnv } from '@/lib/env';
 import { renderPixelAvatarSvg } from '@/lib/pixelAvatarSvg';
 import { rarityFromWeight } from '@/lib/rarity';
 
@@ -61,16 +62,15 @@ export async function GET(
     });
   }
 
-  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL;
-  const chainIdStr = process.env.NEXT_PUBLIC_CHAIN_ID;
-  const brawlersAddr = process.env.NEXT_PUBLIC_BRAWLERS_ADDRESS;
-  if (!rpcUrl || !chainIdStr || !brawlersAddr) {
-    return new Response(errorSvg('Server env missing'), {
+  const v = validateEnv();
+  if (!v.ok) {
+    return new Response(errorSvg(`Server env: ${v.errors.join('; ')}`), {
       status: 500,
       headers: { 'content-type': 'image/svg+xml; charset=utf-8' },
     });
   }
-  const chainId = Number.parseInt(chainIdStr, 10);
+  const { rpcUrl, chainId } = v.env;
+  const brawlersAddr = v.env.brawlersAddress;
   const chain = buildChain(chainId, rpcUrl);
   const client = createPublicClient({ chain, transport: http(rpcUrl) });
 

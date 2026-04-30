@@ -34,6 +34,7 @@ import {
   seedHouseWhitelistFromEnv,
 } from './dashDb';
 import { isDbConfigured } from './duelDb';
+import { validateEnv } from './env';
 
 const BRAWLERS_READ_ABI = parseAbi([
   'function nextTokenId() view returns (uint32)',
@@ -122,31 +123,29 @@ function chain(chainId: number, rpc: string) {
   });
 }
 
+/// Local pull from validateEnv. Keeps the local return-shape while routing
+/// through the central env validator so addresses are always canonical
+/// EIP-55 checksum form (avoids viem strict-checksum throw on readContract).
 function requireEnv() {
-  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL;
-  const chainIdStr = process.env.NEXT_PUBLIC_CHAIN_ID;
-  const brawlersAddr = process.env.NEXT_PUBLIC_BRAWLERS_ADDRESS;
-  const graveyardAddr = process.env.NEXT_PUBLIC_GRAVEYARD_ADDRESS;
-  const brawlAddr = process.env.NEXT_PUBLIC_BRAWL_ADDRESS;
-  const duelAddr = process.env.NEXT_PUBLIC_DUEL_ADDRESS;
-  if (!rpcUrl || !chainIdStr || !brawlersAddr || !graveyardAddr || !brawlAddr || !duelAddr) {
-    throw new Error('Missing NEXT_PUBLIC_* contract env vars');
+  const v = validateEnv();
+  if (!v.ok) {
+    throw new Error('Missing NEXT_PUBLIC_* contract env vars: ' + v.errors.join('; '));
   }
   return {
-    rpcUrl,
-    chainId: Number.parseInt(chainIdStr, 10),
-    brawlers: brawlersAddr as Address,
-    graveyard: graveyardAddr as Address,
-    brawl: brawlAddr as Address,
-    duel: duelAddr as Address,
+    rpcUrl: v.env.rpcUrl,
+    chainId: v.env.chainId,
+    brawlers: v.env.brawlersAddress,
+    graveyard: v.env.graveyardAddress,
+    brawl: v.env.brawlAddress,
+    duel: v.env.duelAddress,
   };
 }
 
 export async function readHouseState(): Promise<HouseStatus> {
   const env = requireEnv();
-  const keeperRaw = process.env.NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS;
-  const keeperAddress: Address | null =
-    keeperRaw && /^0x[0-9a-fA-F]{40}$/.test(keeperRaw) ? (keeperRaw as Address) : null;
+  // validateEnv normalises the keeper address to canonical EIP-55 checksum.
+  const v = validateEnv();
+  const keeperAddress: Address | null = v.ok ? v.env.houseKeeperAddress : null;
   const hasPrivateKey = typeof process.env.HOUSE_KEEPER_PRIVATE_KEY === 'string';
   const whitelist = await readHouseWhitelist();
 
@@ -283,12 +282,14 @@ export async function readHouseState(): Promise<HouseStatus> {
 
 export async function runHouseMaintenance(): Promise<MaintenanceResult> {
   const env = requireEnv();
-  const keeperRaw = process.env.NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS;
+  // Use validateEnv's canonical-checksummed keeper address.
+  const v = validateEnv();
+  const keeperAddress = v.ok ? v.env.houseKeeperAddress : null;
   const privRaw = process.env.HOUSE_KEEPER_PRIVATE_KEY;
 
   const result: MaintenanceResult = { actions: [], errors: [], skipped: [] };
 
-  if (!keeperRaw || !/^0x[0-9a-fA-F]{40}$/.test(keeperRaw)) {
+  if (!keeperAddress) {
     result.errors.push('NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS not configured');
     return result;
   }
@@ -303,9 +304,9 @@ export async function runHouseMaintenance(): Promise<MaintenanceResult> {
   }
   const pkey = privRaw.startsWith('0x') ? (privRaw as `0x${string}`) : (`0x${privRaw}` as `0x${string}`);
   const account = privateKeyToAccount(pkey);
-  if (account.address.toLowerCase() !== keeperRaw.toLowerCase()) {
+  if (account.address.toLowerCase() !== keeperAddress.toLowerCase()) {
     result.errors.push(
-      `HOUSE_KEEPER_PRIVATE_KEY address mismatch: derived ${account.address}, expected ${keeperRaw}`,
+      `HOUSE_KEEPER_PRIVATE_KEY address mismatch: derived ${account.address}, expected ${keeperAddress}`,
     );
     return result;
   }

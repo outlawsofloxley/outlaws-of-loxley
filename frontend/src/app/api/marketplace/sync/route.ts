@@ -11,7 +11,8 @@
  * Same throttle + RPC rotation pattern as the duel sync so we stay under
  * BSC public RPC rate limits and Hobby's 10s serverless budget.
  */
-import { createPublicClient, defineChain, getAddress, http, parseAbi, parseAbiItem, type Log, type PublicClient } from 'viem';
+import { createPublicClient, defineChain, http, parseAbi, parseAbiItem, type Log, type PublicClient } from 'viem';
+import { validateEnv } from '@/lib/env';
 import {
   deleteListing,
   ensureMarketSchema,
@@ -122,13 +123,13 @@ async function syncImpl(request?: Request): Promise<Response> {
     return Response.json({ ok: false, error: 'POSTGRES_URL not configured' }, { status: 503 });
   }
 
-  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL;
-  const chainIdStr = process.env.NEXT_PUBLIC_CHAIN_ID;
-  const marketAddr = process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS;
-  if (!rpcUrl || !chainIdStr || !marketAddr) {
-    return Response.json({ ok: false, error: 'RPC/CHAIN/MARKETPLACE env missing' }, { status: 500 });
+  const v = validateEnv();
+  if (!v.ok) {
+    return Response.json({ ok: false, error: 'env: ' + v.errors.join('; ') }, { status: 500 });
   }
-  const chainId = Number.parseInt(chainIdStr, 10);
+  const { rpcUrl, chainId } = v.env;
+  // marketplaceAddress is already canonical-checksummed by validateEnv.
+  const normalizedMarketAddr = v.env.marketplaceAddress;
 
   // Operator escape hatch: ?wipe=1 forces a full wipe before the regular
   // sync runs. Use this to clear ghosts left by a chain switch or a missed
@@ -170,7 +171,7 @@ async function syncImpl(request?: Request): Promise<Response> {
   // no events for those tokenIds. Wipe and start fresh when we notice the
   // tracked address differ from the configured one.
   const tracked = await getTrackedMarketplaceAddress();
-  const configured = marketAddr.toLowerCase();
+  const configured = normalizedMarketAddr.toLowerCase();
   let wipedRows = forcedWipe;
   if (tracked === null) {
     await setTrackedMarketplaceAddress(configured);
@@ -204,13 +205,8 @@ async function syncImpl(request?: Request): Promise<Response> {
   // Always reconcile the cache against on-chain state, even when chunk-level
   // event sync is throttled. This catches ghost rows left over from missed
   // Unlisted/Sold events (cursor jumps, RPC outages, contract redeploys
-  // without a wipe).
-  //
-  // Normalise the address via getAddress so viem's EIP-55 checksum guard
-  // doesn't make every readContract throw before hitting the network. The
-  // env-stored value can be in any case; viem only accepts strict checksum
-  // or all-lowercase.
-  const normalizedMarketAddr = getAddress(marketAddr);
+  // without a wipe). marketplaceAddress is already in canonical EIP-55
+  // checksum form thanks to validateEnv.
   const cachedIds = await getAllCachedTokenIds();
   const reconciliation = cachedIds.length > 0
     ? await reconcileCachedListings(clients, normalizedMarketAddr, cachedIds)

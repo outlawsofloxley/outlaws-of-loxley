@@ -2,9 +2,14 @@
  * Environment variable access. All public frontend env vars must be prefixed
  * with `NEXT_PUBLIC_` so Next.js inlines them at build time.
  *
- * Phase 7 extends the env with three new addresses (BRAWL, MintDrop, USDT)
- * used by the mint + duel flows.
+ * Every address coming back from validateEnv is normalised through viem's
+ * getAddress() so it lands in canonical EIP-55 checksum form. viem's
+ * readContract / getLogs APIs throw on wrong-case mixed-checksum addresses
+ * even when the underlying RPC would accept them, so normalising once at
+ * the env boundary stops that bug from biting any route that uses these
+ * addresses downstream.
  */
+import { getAddress } from 'viem';
 
 // Raw reads, deliberately literal `process.env.FOO` references so Next.js
 // inlines them at build time. Dynamic `process.env[name]` access does NOT
@@ -25,6 +30,29 @@ export const envRaw = {
 
 function isHex40(s: string): s is `0x${string}` {
   return /^0x[0-9a-fA-F]{40}$/.test(s);
+}
+
+/// Try to parse a raw env value into a canonical EIP-55 checksum address.
+/// Returns null and pushes a structured error message on failure.
+function tryNormaliseAddress(
+  raw: string | undefined,
+  envName: string,
+  errors: string[],
+): `0x${string}` | null {
+  if (!raw) {
+    errors.push(`${envName} is not set`);
+    return null;
+  }
+  if (!isHex40(raw)) {
+    errors.push(`${envName} is not a valid address: "${raw}"`);
+    return null;
+  }
+  try {
+    return getAddress(raw);
+  } catch {
+    errors.push(`${envName} could not be checksummed: "${raw}"`);
+    return null;
+  }
 }
 
 /** Result of validating env vars. */
@@ -59,24 +87,30 @@ export function validateEnv(): EnvValidation {
     errors.push('NEXT_PUBLIC_CHAIN_ID is not set');
   }
 
-  const addressVars: [keyof typeof envRaw, string][] = [
-    ['brawlersAddress', 'NEXT_PUBLIC_BRAWLERS_ADDRESS'],
-    ['duelAddress', 'NEXT_PUBLIC_DUEL_ADDRESS'],
-    ['graveyardAddress', 'NEXT_PUBLIC_GRAVEYARD_ADDRESS'],
-    ['brawlAddress', 'NEXT_PUBLIC_BRAWL_ADDRESS'],
-    ['mintDropAddress', 'NEXT_PUBLIC_MINTDROP_ADDRESS'],
-    ['usdtAddress', 'NEXT_PUBLIC_USDT_ADDRESS'],
-    ['usdcAddress', 'NEXT_PUBLIC_USDC_ADDRESS'],
-    ['marketplaceAddress', 'NEXT_PUBLIC_MARKETPLACE_ADDRESS'],
-  ];
-  for (const [key, envName] of addressVars) {
-    const value = envRaw[key];
-    if (!value) {
-      errors.push(`${envName} is not set`);
-    } else if (!isHex40(value)) {
-      errors.push(`${envName} is not a valid address: "${value}"`);
-    }
-  }
+  const brawlersAddress = tryNormaliseAddress(
+    envRaw.brawlersAddress, 'NEXT_PUBLIC_BRAWLERS_ADDRESS', errors,
+  );
+  const duelAddress = tryNormaliseAddress(
+    envRaw.duelAddress, 'NEXT_PUBLIC_DUEL_ADDRESS', errors,
+  );
+  const graveyardAddress = tryNormaliseAddress(
+    envRaw.graveyardAddress, 'NEXT_PUBLIC_GRAVEYARD_ADDRESS', errors,
+  );
+  const brawlAddress = tryNormaliseAddress(
+    envRaw.brawlAddress, 'NEXT_PUBLIC_BRAWL_ADDRESS', errors,
+  );
+  const mintDropAddress = tryNormaliseAddress(
+    envRaw.mintDropAddress, 'NEXT_PUBLIC_MINTDROP_ADDRESS', errors,
+  );
+  const usdtAddress = tryNormaliseAddress(
+    envRaw.usdtAddress, 'NEXT_PUBLIC_USDT_ADDRESS', errors,
+  );
+  const usdcAddress = tryNormaliseAddress(
+    envRaw.usdcAddress, 'NEXT_PUBLIC_USDC_ADDRESS', errors,
+  );
+  const marketplaceAddress = tryNormaliseAddress(
+    envRaw.marketplaceAddress, 'NEXT_PUBLIC_MARKETPLACE_ADDRESS', errors,
+  );
 
   const chainIdNum = envRaw.chainId ? Number.parseInt(envRaw.chainId, 10) : NaN;
   if (envRaw.chainId && (!Number.isInteger(chainIdNum) || chainIdNum <= 0)) {
@@ -87,27 +121,32 @@ export function validateEnv(): EnvValidation {
     return { ok: false, errors };
   }
 
-  // Optional: house keeper address. Missing or invalid → null → UI skips
-  // the HOUSE badge logic entirely.
-  const houseKeeperAddress =
-    envRaw.houseKeeperAddress && isHex40(envRaw.houseKeeperAddress)
-      ? (envRaw.houseKeeperAddress as `0x${string}`)
-      : null;
+  // Optional: house keeper address. Missing or invalid will be silently
+  // null so the UI just skips the HOUSE badge logic.
+  let houseKeeperAddress: `0x${string}` | null = null;
+  if (envRaw.houseKeeperAddress && isHex40(envRaw.houseKeeperAddress)) {
+    try {
+      houseKeeperAddress = getAddress(envRaw.houseKeeperAddress);
+    } catch {
+      houseKeeperAddress = null;
+    }
+  }
 
-  // All checks passed, the non-null assertions are safe because we checked above.
+  // All required addresses passed normalisation, so the non-null assertions
+  // are safe.
   return {
     ok: true,
     env: {
       rpcUrl: envRaw.rpcUrl!,
       chainId: chainIdNum,
-      brawlersAddress: envRaw.brawlersAddress as `0x${string}`,
-      duelAddress: envRaw.duelAddress as `0x${string}`,
-      graveyardAddress: envRaw.graveyardAddress as `0x${string}`,
-      brawlAddress: envRaw.brawlAddress as `0x${string}`,
-      mintDropAddress: envRaw.mintDropAddress as `0x${string}`,
-      usdtAddress: envRaw.usdtAddress as `0x${string}`,
-      usdcAddress: envRaw.usdcAddress as `0x${string}`,
-      marketplaceAddress: envRaw.marketplaceAddress as `0x${string}`,
+      brawlersAddress: brawlersAddress!,
+      duelAddress: duelAddress!,
+      graveyardAddress: graveyardAddress!,
+      brawlAddress: brawlAddress!,
+      mintDropAddress: mintDropAddress!,
+      usdtAddress: usdtAddress!,
+      usdcAddress: usdcAddress!,
+      marketplaceAddress: marketplaceAddress!,
       houseKeeperAddress,
     },
   };

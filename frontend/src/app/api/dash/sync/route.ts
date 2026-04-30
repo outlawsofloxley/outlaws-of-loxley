@@ -16,6 +16,7 @@
  * Gated by the dash session cookie (checked via middleware on /api/dash/*).
  */
 import { createPublicClient, defineChain, http, parseAbiItem, type Log } from 'viem';
+import { validateEnv } from '@/lib/env';
 import { isDbConfigured } from '@/lib/duelDb';
 import {
   ensureDashSchema,
@@ -73,15 +74,14 @@ async function syncImpl(): Promise<Response> {
     return Response.json({ ok: false, error: 'POSTGRES_URL not configured' }, { status: 503 });
   }
 
-  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL;
-  const chainIdStr = process.env.NEXT_PUBLIC_CHAIN_ID;
-  const mintDrop = process.env.NEXT_PUBLIC_MINTDROP_ADDRESS;
-  const graveyard = process.env.NEXT_PUBLIC_GRAVEYARD_ADDRESS;
-  const market = process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS;
-  if (!rpcUrl || !chainIdStr || !mintDrop || !graveyard || !market) {
-    return Response.json({ ok: false, error: 'missing env' }, { status: 500 });
+  const v = validateEnv();
+  if (!v.ok) {
+    return Response.json({ ok: false, error: 'env: ' + v.errors.join('; ') }, { status: 500 });
   }
-  const chainId = Number.parseInt(chainIdStr, 10);
+  const { rpcUrl, chainId } = v.env;
+  const mintDrop = v.env.mintDropAddress;
+  const graveyard = v.env.graveyardAddress;
+  const market = v.env.marketplaceAddress;
 
   await ensureDashSchema();
 
