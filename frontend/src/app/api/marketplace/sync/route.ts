@@ -115,7 +115,7 @@ async function reconcileCachedListings(
   return { pruned, checked: tokenIds.length };
 }
 
-async function syncImpl(): Promise<Response> {
+async function syncImpl(request?: Request): Promise<Response> {
   if (!isDbConfigured()) {
     return Response.json({ ok: false, error: 'POSTGRES_URL not configured' }, { status: 503 });
   }
@@ -128,6 +128,26 @@ async function syncImpl(): Promise<Response> {
   }
   const chainId = Number.parseInt(chainIdStr, 10);
 
+  // Operator escape hatch: ?wipe=1 with the dash sync key forces a full
+  // wipe before the regular sync runs. Use this to clear ghosts left by
+  // a chain switch or a missed Unlisted event, without waiting for the
+  // reconciliation pass to catch up.
+  let forcedWipe = 0;
+  if (request) {
+    const url = new URL(request.url);
+    if (url.searchParams.get('wipe') === '1') {
+      const provided = url.searchParams.get('key') ?? '';
+      const expected = process.env.DASH_SESSION_SECRET ?? '';
+      if (expected.length >= 32 && provided === expected) {
+        await ensureMarketSchema();
+        forcedWipe = await wipeAllListings();
+        await setMarketLastSyncedBlock(0n);
+      } else {
+        return Response.json({ ok: false, error: 'wipe requires valid key' }, { status: 401 });
+      }
+    }
+  }
+
   await ensureMarketSchema();
 
   // Detect Marketplace contract swap (e.g. v4, v5 redeploy). Old listings
@@ -136,11 +156,11 @@ async function syncImpl(): Promise<Response> {
   // tracked address differ from the configured one.
   const tracked = await getTrackedMarketplaceAddress();
   const configured = marketAddr.toLowerCase();
-  let wipedRows = 0;
+  let wipedRows = forcedWipe;
   if (tracked === null) {
     await setTrackedMarketplaceAddress(configured);
   } else if (tracked !== configured) {
-    wipedRows = await wipeAllListings();
+    wipedRows += await wipeAllListings();
     await setTrackedMarketplaceAddress(configured);
     await setMarketLastSyncedBlock(0n);
     console.warn(
@@ -383,9 +403,9 @@ async function syncImpl(): Promise<Response> {
   });
 }
 
-export async function POST() {
-  return syncImpl();
+export async function POST(request: Request) {
+  return syncImpl(request);
 }
-export async function GET() {
-  return syncImpl();
+export async function GET(request: Request) {
+  return syncImpl(request);
 }
