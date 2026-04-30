@@ -53,7 +53,7 @@ const RPC_TIMEOUT_MS = 2500;
 const BASE_SEPOLIA_RPC_POOL = [
   'https://base-sepolia-rpc.publicnode.com',
   'https://sepolia.base.org',
-  'https://base-sepolia.public.blastapi.io',
+  // base-sepolia.public.blastapi.io was retired by Blast in 2026.
 ];
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));

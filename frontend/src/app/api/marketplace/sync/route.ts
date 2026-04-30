@@ -11,7 +11,7 @@
  * Same throttle + RPC rotation pattern as the duel sync so we stay under
  * BSC public RPC rate limits and Hobby's 10s serverless budget.
  */
-import { createPublicClient, defineChain, http, parseAbi, parseAbiItem, type Log, type PublicClient } from 'viem';
+import { createPublicClient, defineChain, getAddress, http, parseAbi, parseAbiItem, type Log, type PublicClient } from 'viem';
 import {
   deleteListing,
   ensureMarketSchema,
@@ -62,7 +62,8 @@ const RPC_TIMEOUT_MS = 2500;
 const BASE_SEPOLIA_RPC_POOL = [
   'https://base-sepolia-rpc.publicnode.com',
   'https://sepolia.base.org',
-  'https://base-sepolia.public.blastapi.io',
+  // base-sepolia.public.blastapi.io was retired by Blast in 2026; calls now
+  // return HTTP 403 with a "use Alchemy instead" body. Removed from the pool.
 ];
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -204,9 +205,15 @@ async function syncImpl(request?: Request): Promise<Response> {
   // event sync is throttled. This catches ghost rows left over from missed
   // Unlisted/Sold events (cursor jumps, RPC outages, contract redeploys
   // without a wipe).
+  //
+  // Normalise the address via getAddress so viem's EIP-55 checksum guard
+  // doesn't make every readContract throw before hitting the network. The
+  // env-stored value can be in any case; viem only accepts strict checksum
+  // or all-lowercase.
+  const normalizedMarketAddr = getAddress(marketAddr);
   const cachedIds = await getAllCachedTokenIds();
   const reconciliation = cachedIds.length > 0
-    ? await reconcileCachedListings(clients, marketAddr as `0x${string}`, cachedIds)
+    ? await reconcileCachedListings(clients, normalizedMarketAddr, cachedIds)
     : { pruned: 0, checked: 0 };
 
   if (throttled) {
@@ -259,25 +266,25 @@ async function syncImpl(request?: Request): Promise<Response> {
       try {
         const [listedLogs, unlistedLogs, priceLogs, soldLogs] = await Promise.all([
           c.getLogs({
-            address: marketAddr as `0x${string}`,
+            address: normalizedMarketAddr,
             event: LISTED_EVENT,
             fromBlock: from,
             toBlock: to,
           }) as Promise<ListedLog[]>,
           c.getLogs({
-            address: marketAddr as `0x${string}`,
+            address: normalizedMarketAddr,
             event: UNLISTED_EVENT,
             fromBlock: from,
             toBlock: to,
           }) as Promise<UnlistedLog[]>,
           c.getLogs({
-            address: marketAddr as `0x${string}`,
+            address: normalizedMarketAddr,
             event: PRICE_UPDATED_EVENT,
             fromBlock: from,
             toBlock: to,
           }) as Promise<PriceUpdatedLog[]>,
           c.getLogs({
-            address: marketAddr as `0x${string}`,
+            address: normalizedMarketAddr,
             event: SOLD_EVENT,
             fromBlock: from,
             toBlock: to,

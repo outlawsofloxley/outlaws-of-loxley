@@ -69,3 +69,5 @@ Thumbs.db
 # ── Certificates / private keys (belt and braces) ────────────
 *.pem
 *.key
+
+.vercel

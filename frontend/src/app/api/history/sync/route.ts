@@ -43,11 +43,11 @@ const MIN_CHUNK = 100n;
 const CHUNK_DELAY_MS = 150;
 const RPC_TIMEOUT_MS = 2500;
 // Base Sepolia RPC fallback order. publicnode + sepolia.base.org are the
-// most reliable; blastapi as backup. Used when chainId === 84532.
+// most reliable. Used when chainId === 84532.
 const BASE_SEPOLIA_RPC_POOL = [
   'https://base-sepolia-rpc.publicnode.com',
   'https://sepolia.base.org',
-  'https://base-sepolia.public.blastapi.io',
+  // base-sepolia.public.blastapi.io was retired by Blast in 2026.
 ];
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
