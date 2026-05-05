@@ -5,18 +5,47 @@
 > Stable project context lives in `CLAUDE.md`.
 
 ## Last updated
-2026-04-30 evening (v6 contracts live on Sepolia, deploy orchestrator in repo)
+2026-05-05 evening (art polish pass deployed: faces / weapons / twinkles / palettes)
 
 ## Where we are
+- **Art polish pass deployed 2026-05-05** to https://baseicbrawlers.com.
+  Build `frontend-g4zlgmolh-ghubbers-projects.vercel.app`, smoke tests green
+  (`/api/token/2001` 200, `/api/token/2001/image` 200, fresh SVG serving).
+  All changes in `frontend/src/lib/brawlerArt.ts`:
+  - **Faces**: freckles' third pixel was overwriting the right-eye sclera —
+    fixed by moving freckles to outer cheek (cols `CX±2`). Moustache
+    dropped entirely; its 4-pixel wing sat directly under the eye row and
+    read as a droopy unibrow at thumbnail scale. Goatee is the only
+    facial-hair option now. Scar moved from col 13 → col 14 (was colliding
+    with the right-eye sclera at row 8, making #55/#63 in the mint preview
+    look like the eye was a tear streak).
+  - **Weapons**: 1-pixel auto dark outline (`#0E0810`) around every weapon
+    silhouette via a 3-pass `drawWeapon` (collect pixels → outline neighbours
+    → re-stamp body). Opt-out via `outline: false` on `WeaponSprite` for the
+    four near-black guns (pistol/shotgun/bazooka/rail gun). Bat redetailed
+    (shine column, two grip-tape rings sandwiching a wood band). Knife
+    widened from 1-pixel to 3-pixel blade with white centre highlight.
+    Machete and flaming sword got a fuller-groove centre stripe (`D` =
+    `#7A7A7A`); flaming sword's blade widened from 1 to 3 pixels to match.
+  - **Backgrounds**: token-deterministic 5-pixel twinkle scatter replaces
+    the static corner crosses. 1 / 2 / 3 / 4 / 5 / 6 twinkles from common
+    up to king. Fisher-Yates over a 14-position safe-zone pool seeded by
+    tokenId via a separate LCG, so brawler rolls are unaffected. Per-rarity
+    palette preserved (yellow from rare up, orange + gold for epic and
+    king). Common gets its first-ever sparkle. `drawPlus` removed (dead).
+  - **Palettes**: `HAIR_COLORS` expanded 10 → 16; orange / green / blue /
+    bright-red vibrants now ~50% of pulls. `SKIN_PALETTES` reweighted 70%
+    lighter / 30% darker (pale + light-tan + peach listed twice each).
+    Aesthetic call per D: lighter skin makes outfit and rarity-bg colours
+    pop better at 24x32.
+  - Discord bot's portrait fetcher picks up the new art automatically on
+    next request; no bot restart needed.
 - **v6 contracts deployed 2026-04-30** to Base Sepolia via the new
   orchestrator (`scripts/deploy.mjs`). Fresh addresses in
   `.env.base-sepolia`. Old v5 contracts at `0x936ae7…` etc. stay alive
   on-chain but are no longer referenced by the frontend. v6 includes
   every audit fix (EIP-712 signatures, one-time-set pointers, refund
   overpay, owner caps, tier coverage check).
-- **Live**: https://baseicbrawlers.com. Vercel production deployed, smoke
-  tests pass: `/api/token/2001` returns King metadata, `/api/marketplace/listings`
-  returns `[]`, `/api/history/sync` returns `200`.
 - **v6 addresses (Sepolia, chain 84532)**:
   - `BRAWL     = 0xf3b431d2afec0286723e058b7cf0110783323a0a`
   - `BRAWLERS  = 0x55695a72714a05ce1cab069e9d42341912f47602`
@@ -29,18 +58,19 @@
   Vercel deploy, smoke tests. `npm run deploy:sepolia` rehearsed clean
   on the v6 rollout. `npm run deploy:mainnet` is the same flow with
   two safety prompts. See `LAUNCH.md` for the full playbook.
-- **Marketing art** (last verified 2026-04-30 evening):
-  - Procedural assets are byte-identical to a fresh regen against the
-    current `frontend/src/lib/brawlerArt.ts` (em-dash sweep was
-    comment-only, didn't shift output).
-  - 126 sample SVGs in `marketing/art/samples/`, plus `contact_sheet.png`,
-    `rarity_showcase.png`, `mint_preview_100.png`, `base_archetypes.png`,
-    `fixed_combos.png`.
-  - 8 composited marketing pieces just regenerated via `compose.py`:
-    `x-banner.png`, `tg-cover.png`, `founder-{1,50,100}.png`,
-    `death-scene.png`, `main-pfp.png`, `rarity-showcase.png`.
-  - 5 Kling animation MP4s in `videos/` (king, knight-epic,
-    mafia-legendary, mongol-rare, spartan-epic) from Apr 29.
+- **Marketing art** (last verified 2026-05-05 evening, regenerated against
+  the art polish pass):
+  - 168 SVGs in `samples/`, 126 in `big/`, 251 in `showcase/`, 12 in `weapons/`.
+  - Sheets refreshed: `contact_sheet.png` (full 168-tile roster),
+    `inspect_munted.png` (16-tile zoom), `weapons_sheet.png` (12-weapon
+    showcase), `fixed_combos.png`, `base_archetypes.png`, `rarity_showcase.png`,
+    `mint_preview_100.png`, `scene_variants.png` (background flavour A/B sheet).
+  - 8 composited marketing pieces refreshed via `compose.py`: `main-pfp.png`,
+    `x-banner.png`, `tg-cover.png`, `rarity-showcase.png`,
+    `founder-{1,50,100}.png`, `death-scene.png`.
+  - 5 Kling animation MP4s in `videos/` (king, knight-epic, mafia-legendary,
+    mongol-rare, spartan-epic) from Apr 29 — NOT regenerated; they predate
+    the art polish pass and show the older skin/hair distribution.
   - All marketing copy already references 2,000 supply (1240 / 500 / 200 /
     40 / 20 + 1 King). Stray "500" references in `content/*.md` are
     banner dimensions or tier ranges, not supply.
@@ -61,43 +91,23 @@
   fee rounding worth a closer look; Duel signatures should add chain ID
   for cross-chain replay safety; a few rate-limit gaps on public sync
   endpoints.
-- **fixed_combos.png audit closed** (2026-04-29): all 12 archetype:rarity rows
-  show consistent faces with RAISED mouth label (or `OFFSET=-1` for
-  pirate:uncommon). v5 mouth-fix patch confirmed working.
-- **contact_sheet.png face-cleanup pass closed** (2026-04-29 evening). D
-  circled 22 brawlers with munted faces. Three root-cause bugs in
-  `frontend/src/lib/brawlerArt.ts` fixed:
-    1. Eyepatch (`Accessory='eyepatch'`) was rolling on **any** archetype at
-       18% × 1/3 chance, so ~6% of all brawlers got an eyepatch even on
-       non-pirate kings, mafia, samurai, etc. Removed `'eyepatch'` from the
-       random pool at the `accessory` roll site (line ~726). Pirates
-       already use `forceAccessory: ['earring']` so they're unaffected.
-       The eyepatch case in `drawAccessory` is left in place so it can be
-       opted back in via `spec.forceAccessory` if ever wanted.
-    2. Moustache facialHair *replaced* the mouth. The face had eyes plus a
-       2-pixel dark bar above the lip and **no mouth row** rendered at
-       all. Made the moustache + mouth always render together so the face
-       reads as a moustachioed open mouth instead of no mouth.
-    3. `expression='squint'` skipped `drawEye()` entirely and put two
-       dark dots at the pupil positions. On dark-skinned brawlers those
-       dots blended into the skin and the face read as eyeless. Squint
-       now calls `drawEye` first (white sclera + pupil) and stamps a line
-       over the pupil. Closed-eye with the sclera still anchoring the face.
-  Regenerated `marketing/art/samples/*` (126 SVGs) and `contact_sheet.png`.
-  All 22 previously-circled brawlers verified clean. `npx tsc --noEmit`
-  clean. 211/211 vitest tests pass. Forge tests untouched (no contract
-  changes). Frontend redeployed.
+- **Face cleanup passes closed**: 2026-04-29 (eyepatch over-rolled,
+  moustache replaced mouth, squint went eyeless on dark-skinned brawlers
+  — all fixed) and 2026-05-05 (freckles+sclera collision, moustache
+  dropped, scar+sclera collision — all fixed in the art polish pass
+  above). Full triage in `docs/PHASE_HISTORY.md`.
 - **Frontend code is v5-ready and v4-defensive**. Reads `MintDrop.batchCost`
   with fallback to flat `ethPrice * count`. Dash editors for tiered pricing
   and founder discount render a "needs v5+" hint until the new reads succeed.
 
 ## Pending / next actions
-1. **500-mint test on Base Sepolia with mates** (NOW UNBLOCKED). v6
-   contracts are live and clean (totalSold = 0). Distribute mint links,
-   eyeball `/audit` live tab, verify rarity distribution. D's wallet
-   still hits the dev-rarity-cap (Common/Uncommon only), so mates need
-   to mint from fresh wallets to surface Epic/Rare on-chain.
-2. **Telegram welcome bot token**. D needs to re-create
+1. **500-mint Sepolia rehearsal with the closed beta cohort** (NOW
+   UNBLOCKED). v6 contracts are live and clean (totalSold = 0). Distribute
+   mint links, eyeball `/audit` live tab, verify rarity distribution. The
+   deployer wallet hits the dev-rarity-cap (Common/Uncommon only), so the
+   beta cohort needs to mint from fresh wallets to surface Epic/Rare
+   on-chain.
+2. **Telegram welcome bot token**. The operator needs to re-create
    `@baseicbrawlers_welcome_bot` via @BotFather /newbot. RAID and
    LEADERBOARD tokens are already wired in `marketing/bots/.env`.
 3. **`PUBLIC_GROUP_ID`**. Add @RawDataBot to `@baseicbrawlers`, copy the

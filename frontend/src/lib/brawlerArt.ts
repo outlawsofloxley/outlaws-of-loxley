@@ -128,27 +128,49 @@ interface SkinPalette {
 }
 
 // Tuned from reference, warm tans, peaches, browns, some deeper tones.
+// 2026-05-05 reweighted to ~70% lighter / ~30% darker per D's ask: lighter
+// skin tones make the rarity-bg colours and outfit accents pop better at
+// 24x32 thumbnail size. Aesthetic call, not a demographic one. Weighting
+// is done by listing the lighter palettes more times so a uniform `pick`
+// over the array gives the desired distribution.
 const SKIN_PALETTES: readonly SkinPalette[] = [
+  // Lighter tier (~70%): pale + light tan + peach + tan brown.
+  { base: '#F2D6B3', shade: '#C09470', line: '#3A2010' }, // pale
+  { base: '#F2D6B3', shade: '#C09470', line: '#3A2010' }, // pale
+  { base: '#E8B088', shade: '#B8785A', line: '#3A1E10' }, // light tan
   { base: '#E8B088', shade: '#B8785A', line: '#3A1E10' }, // light tan
   { base: '#E8A070', shade: '#B4703A', line: '#3A1A08' }, // peach
+  { base: '#E8A070', shade: '#B4703A', line: '#3A1A08' }, // peach
   { base: '#D4905A', shade: '#A06038', line: '#2E1608' }, // tan brown
+  // Darker tier (~30%): medium + brown + dark.
   { base: '#B8794A', shade: '#84522A', line: '#2A1408' }, // medium
   { base: '#8C5A38', shade: '#5A3620', line: '#1E0E04' }, // brown
   { base: '#60402A', shade: '#3C2618', line: '#180A02' }, // dark
-  { base: '#F2D6B3', shade: '#C09470', line: '#3A2010' }, // pale
 ];
 
+// 2026-05-05 expanded palette for more vibrant hair (D's "more orange,
+// green, blue and red — they look cool" ask). Naturals stay as the bedrock,
+// vibrants get strong representation across the colour wheel. Roughly
+// 50/50 split on a uniform pick.
 const HAIR_COLORS: readonly string[] = [
+  // Naturals.
   '#1a1a1a', // black
   '#3A2010', // dk brown
   '#6E4018', // brown
   '#B87038', // auburn
   '#D8A030', // blonde
   '#F4D048', // platinum
-  '#BA2A2A', // red (mohawk)
-  '#5A3A88', // purple
-  '#2A8ABB', // teal
   '#808080', // grey
+  // Vibrants — orange, green, blue, red, plus purple.
+  '#FF7A1A', // bright orange
+  '#FF9A3C', // peach orange
+  '#3AAA45', // emerald green
+  '#5AC85A', // lime green
+  '#3A8AC8', // royal blue
+  '#2A8ABB', // teal
+  '#BA2A2A', // crimson red
+  '#E84838', // bright red
+  '#5A3A88', // purple
 ];
 
 // Lighter purple base per D's 2026-04-25 feedback, pops the bright
@@ -301,7 +323,7 @@ type HairStyle =
   | 'ponytail';
 
 type Expression = 'neutral' | 'focused' | 'squint' | 'grin';
-type FacialHair = 'none' | 'moustache' | 'beard' | 'goatee' | 'bigbeard';
+type FacialHair = 'none' | 'beard' | 'goatee' | 'bigbeard';
 type HatKind =
   | 'none'
   | 'beanie'
@@ -712,13 +734,15 @@ function rollFeatures(tokenId: number, rarity: RarityTier): Features {
   // brightPupil hack which gave dark-skinned characters glowing white eyes.
   const pupilColor = pick(rng, PUPIL_COLORS);
 
-  // Facial hair, men only, archetype-biased. Beard + bigbeard removed
-  // 2026-04-25 (D's "stuffed the mouths on" feedback). Just two clean
-  // options: tiny moustache above the lip, or chin goatee in hair color.
+  // Facial hair, men only, archetype-biased. Goatee on the neck row is the
+  // only option that reads cleanly at 24x32. Beard/bigbeard dropped
+  // 2026-04-25 ("stuffed the mouths on") and moustache dropped 2026-05-04
+  // because its wings sat directly under the eye row and read as droopy
+  // brows rather than facial hair.
   const facialHair: FacialHair = (() => {
     if (gender !== 'm') return 'none';
     if (rng() >= spec.facialHairChance) return 'none';
-    return pick(rng, ['moustache', 'goatee'] as const);
+    return 'goatee';
   })();
 
   // Accessory: archetype-forced or rolled. Eyepatch removed from the random
@@ -939,18 +963,6 @@ function drawFace(cells: Cell[], f: Features): void {
   // are visually consistent across all archetypes.
   const mouthY = HEAD_TOP + 6 + mouthDy;
 
-  // Moustache sits on the upper-lip row, mouth on the lip row below, both
-  // ALWAYS rendered together. The previous "moustache stands in for the
-  // mouth" behaviour read as "no mouth = munted" once D ran the contact
-  // sheet on 2026-04-29. Drawing them stacked makes the lower face read
-  // cleanly as facial-hair + open mouth.
-  if (f.facialHair === 'moustache') {
-    // 2-pixel moustache row just above the lip. Sits at mouthY-1 so it
-    // tracks the mouth as the face proportions shift.
-    put(cells, CX, mouthY - 1, line);
-    put(cells, CX + 1, mouthY - 1, line);
-  }
-
   // Mouth, always drawn. Pirate gets an X-mouth ("dead-eye" /
   // X-marks-the-spot) in place of the standard line. Goatee sits below
   // the mouth on the neck row in drawFace's goatee branch.
@@ -964,8 +976,15 @@ function drawFace(cells: Cell[], f: Features): void {
   } else {
     switch (f.expression) {
       case 'grin':
+        // 3-wide flat grin line. The previous version painted a single
+        // WHITE pixel between two dark mouth pixels (intended as "smile
+        // showing teeth"); at 24x32 thumbnail scale that lone white pixel
+        // read as a fang/single-tooth and made faces look feral. Removed
+        // 2026-05-04 per D's munted-face callout. Grin stays distinct
+        // from default by being 3 wide (default is 2 wide) — same dark
+        // colour throughout.
         put(cells, CX - 1, mouthY, mouthColor);
-        put(cells, CX, mouthY, '#FFFFFF');
+        put(cells, CX,     mouthY, mouthColor);
         put(cells, CX + 1, mouthY, mouthColor);
         break;
       default:
@@ -1130,17 +1149,37 @@ function drawHat(cells: Cell[], f: Features): void {
       put(cells, HEAD_RIGHT - 1, HEAD_TOP - 3, '#FFD84A');
       put(cells, CX, HEAD_TOP - 1, '#C13E3E');
       return;
-    case 'helmet':
-      for (let y = HEAD_TOP - 1; y <= HEAD_BOTTOM; y++) {
+    case 'helmet': {
+      // Open-faced medieval skullcap, knight archetype. The previous
+      // "solid grey block over the entire head + black bar across the
+      // eye row" version made ~50% of knight tiles render as featureless
+      // grey boxes (helmet hat rolled). Reverted 2026-05-04 to a proper
+      // skullcap with cheek guards that frames the face without burying it.
+      const helmet = '#8A8A8A';
+      const trim = '#5A5A5A';
+      // Skullcap body: rows HEAD_TOP-1 .. HEAD_TOP+2 (rows 3-6). Covers
+      // the top half of the head so hair underneath gets hidden cleanly.
+      for (let y = HEAD_TOP - 1; y <= HEAD_TOP + 2; y++) {
         for (let x = HEAD_LEFT; x <= HEAD_RIGHT; x++) {
-          put(cells, x, y, '#8A8A8A');
+          put(cells, x, y, helmet);
         }
       }
-      // Visor slot
-      for (let x = HEAD_LEFT + 1; x <= HEAD_RIGHT - 1; x++) {
-        put(cells, x, HEAD_TOP + 4, '#1A1A1A');
+      // Brow ridge: a darker trim row sitting just above the eye row,
+      // reading as the helmet's lower edge resting on the brow.
+      for (let x = HEAD_LEFT; x <= HEAD_RIGHT; x++) {
+        put(cells, x, HEAD_TOP + 3, trim);
+      }
+      // Cheek guards: helmet sides extend down the head outline columns
+      // (HEAD_LEFT and HEAD_RIGHT) past the eye row down to one row
+      // before the chin. Frames the face like a medieval nasal helm
+      // without occluding the eyes (cols 9-10, 12-13) or the mouth
+      // (cols 11-12).
+      for (let y = HEAD_TOP + 4; y <= HEAD_TOP + 6; y++) {
+        put(cells, HEAD_LEFT, y, helmet);
+        put(cells, HEAD_RIGHT, y, helmet);
       }
       return;
+    }
     case 'cowboy':
       for (let x = HEAD_LEFT + 1; x <= HEAD_RIGHT - 1; x++) put(cells, x, HEAD_TOP - 2, f.hatColor);
       for (let x = HEAD_LEFT - 2; x <= HEAD_RIGHT + 2; x++) put(cells, x, HEAD_TOP - 1, f.hatColor);
@@ -1679,14 +1718,26 @@ function drawFaceMark(cells: Cell[], f: Features): void {
     case 'none':
       return;
     case 'scar':
-      put(cells, HEAD_RIGHT - 2, HEAD_TOP + 2, '#FFFFFF');
-      put(cells, HEAD_RIGHT - 2, HEAD_TOP + 3, '#FFFFFF');
-      put(cells, HEAD_RIGHT - 2, HEAD_TOP + 4, '#FFFFFF');
+      // 3-pixel vertical scar on the right cheek/temple, 1 column outside
+      // the right-eye sclera. Was at col HEAD_RIGHT-2 (=13) — same column
+      // as the sclera at row HEAD_TOP+4 — and the bottom scar pixel merged
+      // with the sclera, making the right eye look like a tear streak.
+      // Moved to HEAD_RIGHT-1 (=14) so the scar sits next to the eye, not
+      // through it (fix for #55/#63 in mint preview, 2026-05-05).
+      put(cells, HEAD_RIGHT - 1, HEAD_TOP + 2, '#FFFFFF');
+      put(cells, HEAD_RIGHT - 1, HEAD_TOP + 3, '#FFFFFF');
+      put(cells, HEAD_RIGHT - 1, HEAD_TOP + 4, '#FFFFFF');
       return;
     case 'freckles':
-      put(cells, CX - 1, eyeY + 1, line);
-      put(cells, CX + 1, eyeY + 1, line);
-      put(cells, CX + 2, eyeY, line);
+      // Two freckles on the outer cheek row, one below each sclera. Earlier
+      // versions placed them below each PUPIL (cols CX-1, CX+1) which put
+      // the right freckle at col 12 — same column as the right mouth pixel.
+      // The vertical stack of freckle + mouth-right read as an asymmetric
+      // sneer on every mafia/punjab/viking tile flagged 2026-05-04. Moving
+      // them outward to col CX-2 / CX+2 puts them below the sclera, well
+      // clear of the 2-pixel mouth at cols CX, CX+1.
+      put(cells, CX - 2, eyeY + 1, line);
+      put(cells, CX + 2, eyeY + 1, line);
       return;
     case 'warpaint': {
       // Vertical red cheek stripes, berserker face. Both stripes pinned
@@ -1764,12 +1815,16 @@ interface WeaponSprite {
   sprite: readonly string[];
   palette: Record<string, string>;
   grip: { x: number; y: number };
+  // Set false to skip the auto dark outline. Use for weapons whose own
+  // body colour is already near-black (guns) where the outline merges
+  // into the body and turns the silhouette into a dark blob.
+  outline?: boolean;
 }
 
 // Weapons redesigned 2026-04-26 v2, even taller, held above the head.
 // Most melee blades now span 9-10 rows (hand at row 9 up to row 0/1, the
-// top of the cell). Inspired by Fantums art: dramatic silhouettes that
-// dominate the right edge of the cell.
+// top of the cell). Dramatic silhouettes that dominate the right edge of
+// the cell.
 //
 // Palette keys: s=silver blade, S=white highlight, g=gold accent,
 // h=brown handle, m=metal dark, M=metal mid, b=bat brown, B=bat shadow,
@@ -1777,37 +1832,49 @@ interface WeaponSprite {
 // r=red metal, R=red shadow
 const WEAPONS: Record<string, WeaponSprite> = {
   knife: {
-    // Long dagger, 10 rows tall, pointed white tip, gold cross-guard.
+    // 3-wide blade dagger, was 1-wide and read as a fluorescent tube.
+    // White tip, silver edges with white centre highlight running the
+    // length of the blade, gold cross-guard, brown grip.
     sprite: [
       '.S.',
       '.S.',
-      '.s.',
-      '.s.',
-      '.s.',
-      '.s.',
-      '.s.',
-      '.s.',
+      'sSs',
+      'sSs',
+      'sSs',
+      'sSs',
+      'sSs',
+      'sSs',
       'gSg',
       '.h.',
     ],
-    palette: { s: '#E0E0E0', S: '#FFFFFF', g: '#FFD84A', h: '#5A3A1A' },
+    palette: { s: '#A0A0A0', S: '#FFFFFF', g: '#FFD84A', h: '#5A3A1A' },
     grip: { x: 1, y: 9 },
   },
   'baseball bat': {
-    // Tall tapered bat, fat at the top, narrower at the handle.
+    // 2-col bat with shine column, body, shadow, and a wrapped grip at
+    // the bottom (two black tape rings sandwiching a wood band). The
+    // S/b/B columns suggest a cylindrical surface; the t/h/t handle
+    // pattern reads as cloth grip-tape so the lower bat doesn't look
+    // like more uniform wood.
     sprite: [
+      'Sb',
+      'Sb',
       'bb',
-      'bb',
-      'bb',
       'bB',
       'bB',
       'bB',
       'bB',
-      'bB',
+      'tt',
       'hh',
-      'hh',
+      'tt',
     ],
-    palette: { b: '#C48A48', B: '#8A5A28', h: '#3A2610' },
+    palette: {
+      S: '#E0B080',
+      b: '#C48A48',
+      B: '#8A5A28',
+      h: '#5A3A1A',
+      t: '#1A1A1A',
+    },
     grip: { x: 0, y: 9 },
   },
   crowbar: {
@@ -1827,19 +1894,21 @@ const WEAPONS: Record<string, WeaponSprite> = {
     grip: { x: 1, y: 8 },
   },
   machete: {
-    // 9-row wide cleaver blade, sweep at the top, full width down to hilt.
+    // 9-row wide cleaver blade, swept tip, fuller groove down the centre.
+    // The fuller (darker centre stripe `D`) reads as a real blade groove
+    // and breaks up what was previously a flat silver rectangle.
     sprite: [
       '.ss',
-      'sss',
       'sSs',
-      'sss',
-      'sss',
-      'sss',
-      'sss',
+      'sDs',
+      'sDs',
+      'sDs',
+      'sDs',
+      'sDs',
       'gsg',
       '.h.',
     ],
-    palette: { s: '#E0E0E0', S: '#FFFFFF', g: '#FFD84A', h: '#5A3A1A' },
+    palette: { s: '#E0E0E0', S: '#FFFFFF', D: '#7A7A7A', g: '#FFD84A', h: '#5A3A1A' },
     grip: { x: 1, y: 8 },
   },
   pistol: {
@@ -1853,6 +1922,7 @@ const WEAPONS: Record<string, WeaponSprite> = {
     ],
     palette: { m: '#1A1A1A', M: '#7A7A7A', h: '#5A3A1A' },
     grip: { x: 2, y: 4 },
+    outline: false,
   },
   shotgun: {
     // Long barrel with stock + grip.
@@ -1866,6 +1936,7 @@ const WEAPONS: Record<string, WeaponSprite> = {
     ],
     palette: { m: '#1A1A1A', M: '#7A7A7A', h: '#5A3A1A' },
     grip: { x: 3, y: 5 },
+    outline: false,
   },
   sledgehammer: {
     // 9-row hammer, 4-wide head + clear shaft + handle.
@@ -1884,20 +1955,23 @@ const WEAPONS: Record<string, WeaponSprite> = {
     grip: { x: 1, y: 8 },
   },
   'flaming sword': {
-    // 10-row blade, flame tower 3 rows tall on top.
+    // Flame tower (3 rows) + 3-wide blade with fuller groove + cross-guard.
+    // Was a 1-wide blade that vanished against busy backgrounds; widened
+    // to match the rest of the sword family and given the same fuller
+    // detail as machete so the family reads consistently.
     sprite: [
       '.f.',
       'fFf',
       'fFf',
-      '.s.',
-      '.S.',
-      '.s.',
-      '.s.',
-      '.s.',
+      'sSs',
+      'sDs',
+      'sDs',
+      'sDs',
+      'sDs',
       'gSg',
       '.h.',
     ],
-    palette: { f: '#FF6A1A', F: '#FFD84A', s: '#E0E0E0', S: '#FFFFFF', g: '#FFD84A', h: '#5A3A1A' },
+    palette: { f: '#FF6A1A', F: '#FFD84A', s: '#E0E0E0', S: '#FFFFFF', D: '#7A7A7A', g: '#FFD84A', h: '#5A3A1A' },
     grip: { x: 1, y: 9 },
   },
   'electric axe': {
@@ -1928,6 +2002,7 @@ const WEAPONS: Record<string, WeaponSprite> = {
     ],
     palette: { m: '#1A1A1A', M: '#A0A0A0', h: '#5A3A1A' },
     grip: { x: 4, y: 5 },
+    outline: false,
   },
   'rail gun': {
     // Sci-fi rifle with cyan core.
@@ -1942,6 +2017,7 @@ const WEAPONS: Record<string, WeaponSprite> = {
     ],
     palette: { m: '#1A1A1A', M: '#A0A0A0', e: '#6AE0FF', E: '#D0F4FF', h: '#5A3A1A' },
     grip: { x: 4, y: 6 },
+    outline: false,
   },
   kingsblade: {
     // 10-row regal blade, bumped to 5-wide for the king-only "huge weapon"
@@ -1982,11 +2058,55 @@ function drawWeapon(cells: Cell[], weaponName: string): void {
   const w = resolveWeapon(weaponName);
   const x0 = R_HAND.x - w.grip.x;
   const y0 = R_HAND.y - w.grip.y;
+
+  // Pass 1: collect every (x, y) the weapon sprite paints. Used by pass 2
+  // to know which neighbouring cells should be the auto-outline.
+  const weaponPixels = new Set<string>();
   for (let dy = 0; dy < w.sprite.length; dy++) {
     const row = w.sprite[dy]!;
     for (let dx = 0; dx < row.length; dx++) {
       const ch = row[dx]!;
-      if (ch === ' ') continue;
+      if (ch === ' ' || ch === '.') continue;
+      if (!w.palette[ch]) continue;
+      weaponPixels.add(`${x0 + dx},${y0 + dy}`);
+    }
+  }
+
+  // Pass 2: 1-pixel dark outline around every weapon silhouette pixel.
+  // 4-neighbours of any weapon pixel that aren't themselves weapon pixels
+  // become a dark border. Lifts every weapon off the background and stops
+  // brown bats vanishing on brown panels / silver blades on grey skies.
+  // Skip the grip cell so the weapon stays visually attached to the hand
+  // (no dark gap between the handle and the fist). Skipped entirely for
+  // weapons with `outline: false` (the four guns) where the body colour
+  // is already near-black and the outline turns the silhouette into a blob.
+  if (w.outline !== false) {
+    const outline = '#0E0810';
+    const gripKey = `${R_HAND.x},${R_HAND.y}`;
+    for (const key of weaponPixels) {
+      const [px, py] = key.split(',').map(Number) as [number, number];
+      const neighbours: Array<[number, number]> = [
+        [px - 1, py],
+        [px + 1, py],
+        [px, py - 1],
+        [px, py + 1],
+      ];
+      for (const [nx, ny] of neighbours) {
+        const nKey = `${nx},${ny}`;
+        if (weaponPixels.has(nKey)) continue;
+        if (nKey === gripKey) continue;
+        put(cells, nx, ny, outline);
+      }
+    }
+  }
+
+  // Pass 3: re-stamp the weapon sprite ON TOP of the outline so the
+  // silhouette wins where outline neighbours overlap weapon pixels.
+  for (let dy = 0; dy < w.sprite.length; dy++) {
+    const row = w.sprite[dy]!;
+    for (let dx = 0; dx < row.length; dx++) {
+      const ch = row[dx]!;
+      if (ch === ' ' || ch === '.') continue;
       const color = w.palette[ch];
       if (!color) continue;
       put(cells, x0 + dx, y0 + dy, color);
@@ -2053,14 +2173,101 @@ function drawOffHand(cells: Cell[], f: Features): void {
 
 // ─── Scenes / aura / spark ─────────────────────────────────────────────
 
-// Bright "+" cross, 5 pixels (top, left, center, right, bottom). Used as
-// the rarity-tier accent on the upgraded backgrounds (rare → king).
-function drawPlus(cells: Cell[], cx: number, cy: number, color: string): void {
-  put(cells, cx, cy - 1, color);
-  put(cells, cx - 1, cy, color);
-  put(cells, cx, cy, color);
-  put(cells, cx + 1, cy, color);
-  put(cells, cx, cy + 1, color);
+// Token-deterministic LCG, separate stream from the brawler RNG so adding
+// twinkle scatter doesn't disturb existing brawler rolls.
+function twinkleRng(seed: number): () => number {
+  let s = ((seed * 9176) ^ 0x5a3779b9) >>> 0;
+  if (s === 0) s = 1;
+  return () => {
+    s = (Math.imul(s, 1103515245) + 12345) >>> 0;
+    return s & 0x7fffffff;
+  };
+}
+
+// 5-pixel twinkle: bright centre + 4 dim cardinal arms. Reads as a small
+// shimmer star at 24x32, where single-pixel sparkles get lost in pattern noise.
+function drawTwinkle(cells: Cell[], cx: number, cy: number, bright: string, dim: string): void {
+  put(cells, cx, cy, bright);
+  put(cells, cx - 1, cy, dim);
+  put(cells, cx + 1, cy, dim);
+  put(cells, cx, cy - 1, dim);
+  put(cells, cx, cy + 1, dim);
+}
+
+// Pre-defined twinkle positions chosen to (a) sit in bg corners/edges
+// away from the brawler silhouette, (b) be at least 3 cells apart so two
+// 5-pixel twinkles never collide. Fisher-Yates over this pool gives a
+// deterministic per-token scatter pattern.
+const TWINKLE_POOL: ReadonlyArray<readonly [number, number]> = [
+  [2, 2], [5, 4], [21, 2], [18, 4],
+  [2, 8], [21, 8],
+  [2, 14], [21, 14],
+  [2, 20], [21, 20],
+  [2, 26], [21, 26],
+  [5, 28], [18, 28],
+];
+
+// Twinkle count scales with rarity. Common gets its first sparkle (was
+// flat slate before), king gets six.
+const TWINKLE_COUNT: Record<string, number> = {
+  commonbg: 1,
+  uncommonbg: 2,
+  rarebg: 3,
+  legendarybg: 4,
+  epicbg: 5,
+  diamondblue: 6,
+};
+
+// Per-rarity twinkle palette ([bright, dim] pairs). Keeps the existing
+// rarity-tier colour identity: yellow accents from rare up, orange + gold
+// for epic and king.
+const TWINKLE_PALETTES: Record<string, ReadonlyArray<readonly [string, string]>> = {
+  commonbg: [
+    ['#FFFFFF', '#A0A0B0'],
+  ],
+  uncommonbg: [
+    ['#FFFFFF', '#A0C0A8'],
+    ['#FFD84A', '#A88040'],
+  ],
+  rarebg: [
+    ['#FFD84A', '#A88040'],
+    ['#FFFFFF', '#A0B0D0'],
+  ],
+  legendarybg: [
+    ['#FFD84A', '#A88040'],
+    ['#FFFFFF', '#C0A0D8'],
+  ],
+  epicbg: [
+    ['#FFD84A', '#A88040'],
+    ['#FF6A1A', '#A04A18'],
+    ['#FFFFFF', '#D0B080'],
+  ],
+  diamondblue: [
+    ['#FFD84A', '#A88040'],
+    ['#FF6A1A', '#A04A18'],
+    ['#FFFFFF', '#A0C0E0'],
+  ],
+};
+
+function scatterTwinkles(cells: Cell[], scene: Scene, seed: number): void {
+  const count = TWINKLE_COUNT[scene];
+  if (!count) return;
+  const palette = TWINKLE_PALETTES[scene];
+  if (!palette || palette.length === 0) return;
+  const rng = twinkleRng(seed);
+  // Fisher-Yates shuffle of the pool, then take the first `count` entries.
+  const pool: Array<readonly [number, number]> = TWINKLE_POOL.slice();
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = rng() % (i + 1);
+    const tmp = pool[i]!;
+    pool[i] = pool[j]!;
+    pool[j] = tmp;
+  }
+  for (let i = 0; i < count && i < pool.length; i++) {
+    const [cx, cy] = pool[i]!;
+    const entry = palette[rng() % palette.length]!;
+    drawTwinkle(cells, cx, cy, entry[0], entry[1]);
+  }
 }
 
 function drawScene(cells: Cell[], scene: Scene): void {
@@ -2068,9 +2275,9 @@ function drawScene(cells: Cell[], scene: Scene): void {
     case 'none':
       return;
     case 'diamondblue': {
-      // King, diamond blue facet base + 4 yellow corner crosses + 2
-      // bright orange mid-side crosses (the orange anchors the regal
-      // pop above all other tiers).
+      // King, diamond blue facet base. Six twinkles painted on top by
+      // scatterTwinkles (see renderBrawlerArt). Replaces the previous
+      // static yellow + orange crosses with token-deterministic positions.
       const base = '#3FA5E0';
       const mid = '#6FCFFF';
       for (let y = 0; y < H; y++) {
@@ -2078,12 +2285,6 @@ function drawScene(cells: Cell[], scene: Scene): void {
           put(cells, x, y, ((x + y) & 3) === 0 ? mid : base);
         }
       }
-      drawPlus(cells, 2, 2, '#FFD84A');
-      drawPlus(cells, 21, 2, '#FFD84A');
-      drawPlus(cells, 2, 28, '#FFD84A');
-      drawPlus(cells, 21, 28, '#FFD84A');
-      drawPlus(cells, 2, 15, '#FF6A1A');
-      drawPlus(cells, 21, 15, '#FF6A1A');
       return;
     }
     case 'commonbg': {
@@ -2097,21 +2298,17 @@ function drawScene(cells: Cell[], scene: Scene): void {
       return;
     }
     case 'uncommonbg': {
-      // Uncommon, solid forest green with 2 small white sparkles in the
-      // opposite corners. First hint of "bling".
+      // Uncommon, solid forest green. Twinkles added by scatterTwinkles.
       const base = '#1A6A3A';
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
           put(cells, x, y, base);
         }
       }
-      put(cells, 2, 2, '#FFFFFF');
-      put(cells, 21, 28, '#FFFFFF');
       return;
     }
     case 'rarebg': {
-      // Rare, blue with a light facet pattern + 2 yellow crosses
-      // (top-right + bottom-left corners only).
+      // Rare, blue with a light facet pattern. Twinkles via scatterTwinkles.
       const base = '#3A5AAA';
       const mid = '#5A7ACA';
       for (let y = 0; y < H; y++) {
@@ -2119,13 +2316,10 @@ function drawScene(cells: Cell[], scene: Scene): void {
           put(cells, x, y, ((x + y) % 6 === 0) ? mid : base);
         }
       }
-      drawPlus(cells, 21, 2, '#FFD84A');   // top-right
-      drawPlus(cells, 2, 28, '#FFD84A');   // bottom-left
       return;
     }
     case 'legendarybg': {
-      // Legendary, royal purple with denser facets + 4 yellow crosses
-      // (one in each corner).
+      // Legendary, royal purple with denser facets. Twinkles via scatterTwinkles.
       const base = '#5A2A9A';
       const mid = '#8A4ACA';
       for (let y = 0; y < H; y++) {
@@ -2133,15 +2327,11 @@ function drawScene(cells: Cell[], scene: Scene): void {
           put(cells, x, y, ((x + y) % 4 === 0) ? mid : base);
         }
       }
-      drawPlus(cells, 2, 2, '#FFD84A');
-      drawPlus(cells, 21, 2, '#FFD84A');
-      drawPlus(cells, 2, 28, '#FFD84A');
-      drawPlus(cells, 21, 28, '#FFD84A');
       return;
     }
     case 'epicbg': {
-      // Epic, radiant orange/gold with dense facet pattern + 6 yellow
-      // crosses (4 corners + 2 mid-sides). One step under king in pop.
+      // Epic, radiant orange/gold with dense facet pattern. Twinkles via
+      // scatterTwinkles. One step under king in pop.
       const base = '#B85A1A';
       const mid = '#E08A2A';
       for (let y = 0; y < H; y++) {
@@ -2149,12 +2339,6 @@ function drawScene(cells: Cell[], scene: Scene): void {
           put(cells, x, y, ((x + y) & 3) === 0 ? mid : base);
         }
       }
-      drawPlus(cells, 2, 2, '#FFD84A');
-      drawPlus(cells, 21, 2, '#FFD84A');
-      drawPlus(cells, 2, 28, '#FFD84A');
-      drawPlus(cells, 21, 28, '#FFD84A');
-      drawPlus(cells, 2, 15, '#FFD84A');
-      drawPlus(cells, 21, 15, '#FFD84A');
       return;
     }
     case 'stars': {
@@ -2360,9 +2544,9 @@ function drawBling(cells: Cell[], f: Features): void {
 function drawPet(cells: Cell[], pet: Pet, _blingLevel: number): void {
   if (pet === 'none') return;
 
-  // Detailed pets 2026-04-26 v2, 6w × 6h, side-profile sitting position
-  // modeled on the Fantums-style dog reference. Eyes, muzzle, legs, tail
-  // markings all visible. Sits at the brawler's feet on the right.
+  // Detailed pets 2026-04-26 v2, 6w × 6h, side-profile sitting position.
+  // Eyes, muzzle, legs, tail markings all visible. Sits at the brawler's
+  // feet on the right.
   const px = 16;
   const py = 25;
 
@@ -2508,6 +2692,10 @@ export function renderBrawlerArt(opts: BrawlerArtOpts): string {
   // the scene that rolled with the brawler.
   const bgScene = bgRarity ? sceneForRarity(bgRarity) : working.scene;
   drawScene(bgCells, bgScene);
+  // Token-deterministic twinkle scatter (5-pixel shimmer stars). Replaces
+  // the previous static corner crosses with a per-token pattern that scales
+  // with rarity (1 / 2 / 3 / 4 / 5 / 6 from common up to king).
+  scatterTwinkles(bgCells, bgScene, tokenId);
 
   // Body, back-to-front.
   drawHead(cells, working);
