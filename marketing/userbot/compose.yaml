@@ -1,0 +1,18 @@
+services:
+  userbot:
+    build:
+      context: ./userbot
+    container_name: baseic-tg-userbot
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./userbot/data:/app/data
+    # stdin_open + tty: needed for the one-time interactive `login.py`
+    # (Telethon prompts for phone, code, optional 2FA on the TTY).
+    stdin_open: true
+    tty: true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
