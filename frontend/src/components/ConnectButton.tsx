@@ -4,14 +4,15 @@
  * Wallet connect button.
  *
  * Three display states:
- *   1. Not connected, shows "CONNECT WALLET", clicking triggers the injected
- *      wallet's connect flow (MetaMask, Rabby, etc).
+ *   1. Not connected, shows "CONNECT WALLET". Clicking opens a small picker
+ *      with one button per available connector (browser extension via
+ *      `injected` + Coinbase Wallet / Smart Wallet).
  *   2. Connected to wrong chain, shows "WRONG NETWORK" in red with a
  *      "SWITCH" button that prompts the wallet to switch.
  *   3. Connected to correct chain, shows the truncated address + ETH balance
  *      and a "DISCONNECT" button.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   useAccount,
   useBalance,
@@ -53,51 +54,113 @@ export function ConnectButton() {
     );
   }, []);
 
+  // Picker open/closed state for the multi-wallet dropdown. Closed by default.
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  // Close the picker on outside click + Escape.
+  useEffect(() => {
+    if (!pickerOpen) return;
+    function onDown(e: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setPickerOpen(false);
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setPickerOpen(false);
+    }
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [pickerOpen]);
+
   // State 1: not connected
   if (!isConnected) {
     const injected = connectors.find((c) => c.id === 'injected' || c.type === 'injected');
+    const coinbase = connectors.find((c) => c.id === 'coinbaseWalletSDK' || c.id === 'coinbaseWallet');
 
-    // Mobile Chrome/Safari path: no window.ethereum means the user doesn't
-    // have an extension. Instead of the SDK (which hijacks window.ethereum
-    // globally and breaks desktop), we render a deep-link that opens the
-    // MetaMask app and navigates its in-app browser to our dapp URL. Inside
-    // MM's browser, window.ethereum IS present and the injected connector
-    // works natively, same flow as desktop from that point.
+    // Build the picker option list. Order: browser extension first (fastest
+    // path for power users), then Coinbase Wallet / Smart Wallet (passkey),
+    // then MetaMask deeplink as a mobile fallback.
+    const options: { key: string; label: string; sub?: string; onClick: () => void }[] = [];
+    if (injected && hasInjected !== false) {
+      options.push({
+        key: 'injected',
+        label: 'Browser Wallet',
+        sub: 'MetaMask, Rabby, Brave, Frame…',
+        onClick: () => {
+          setPickerOpen(false);
+          connect({ connector: injected });
+        },
+      });
+    }
+    if (coinbase) {
+      options.push({
+        key: 'coinbase',
+        label: 'Coinbase Wallet',
+        sub: 'or Smart Wallet (passkey, no install)',
+        onClick: () => {
+          setPickerOpen(false);
+          connect({ connector: coinbase });
+        },
+      });
+    }
     if (hasInjected === false) {
-      // MetaMask's deeplink convention: strip protocol, keep host + path.
+      // Mobile Chrome/Safari users without an injected provider. Coinbase
+      // Smart Wallet handles them via passkeys, but keep the MetaMask
+      // deeplink for users who prefer their existing MM mobile install.
       const url =
         typeof window !== 'undefined' && window.location.hostname
           ? `${window.location.hostname}${window.location.pathname}`
           : 'baseicbrawlers.com';
       const mmLink = `https://metamask.app.link/dapp/${url}`;
-      return (
-        <a
-          href={mmLink}
-          className="brawl-btn"
-          // Force same-tab so MM takes over. Opening in a new tab on mobile
-          // tends to lose the user, they never find the original.
-          rel="noreferrer"
-        >
-          Open in MetaMask
-        </a>
-      );
+      options.push({
+        key: 'metamask-deeplink',
+        label: 'Open in MetaMask',
+        sub: 'Mobile app deeplink',
+        onClick: () => {
+          window.location.href = mmLink;
+        },
+      });
     }
 
-    // Desktop / in-app-browser path: inject connector is the right one.
-    // hasInjected === null means we haven't hydrated yet, render optimistic.
-    const disabled = isConnecting || !injected;
+    const disabled = isConnecting || options.length === 0;
     return (
-      <div className="flex flex-col items-end gap-1">
+      <div className="relative flex flex-col items-end gap-1" ref={pickerRef}>
         <button
           type="button"
           className="brawl-btn"
           disabled={disabled}
-          onClick={() => {
-            if (injected) connect({ connector: injected });
-          }}
+          onClick={() => setPickerOpen((v) => !v)}
+          aria-expanded={pickerOpen}
+          aria-haspopup="menu"
         >
           {isConnecting ? 'Connecting…' : 'Connect Wallet'}
         </button>
+        {pickerOpen && (
+          <div
+            role="menu"
+            className="absolute right-0 top-full mt-2 w-64 bg-brawl-panel border-2 border-brawl-border shadow-xl z-50 flex flex-col"
+          >
+            {options.map((o) => (
+              <button
+                key={o.key}
+                type="button"
+                role="menuitem"
+                className="text-left px-3 py-3 border-b border-brawl-border last:border-b-0 hover:bg-brawl-bg transition-colors"
+                onClick={o.onClick}
+              >
+                <span className="block text-sm text-brawl-text">{o.label}</span>
+                {o.sub && (
+                  <span className="block text-xs text-brawl-text-dim mt-0.5">{o.sub}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
         {connectError && (
           <span className="text-xs text-brawl-red max-w-xs text-right">
             {connectError.message}

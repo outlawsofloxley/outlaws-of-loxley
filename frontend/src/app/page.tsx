@@ -5,8 +5,9 @@ export default function HomePage() {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-6 md:p-8">
       <div className="max-w-3xl w-full text-center space-y-6 md:space-y-8">
         <div className="space-y-3 md:space-y-4">
-          <h1 className="brawl-header text-2xl sm:text-3xl md:text-5xl text-brawl-text leading-tight break-words">
-            <span className="text-brawl-orange">⚔</span> BASEic Brawlers
+          <h1 className="brawl-header text-2xl sm:text-3xl md:text-5xl text-brawl-text leading-tight break-words flex flex-col items-center gap-2 md:gap-3">
+            <span className="text-brawl-orange leading-none">⚔</span>
+            <span>BASEic Brawlers</span>
           </h1>
           <p className="brawl-header text-xs sm:text-xs md:text-sm text-brawl-text-dim">
             Basic art. Brutal arena. Built on Base.

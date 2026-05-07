@@ -155,7 +155,7 @@
 <div class="wrap">
 
 <header>
-  <div class="meta">launch playbook · v1 · base mainnet</div>
+  <div class="meta">launch playbook · v2 · base mainnet · v11 contracts</div>
   <h1>⚔ BASEic Brawlers</h1>
   <p class="dim">Single-file reference for deploy-day operations, LP economics, anti-sniper flow, marketing fire-order, and post-launch maintenance. Read top to bottom before touching the deployer key.</p>
 </header>
@@ -229,7 +229,7 @@
   <pre>cd /c/tools/brawlers
 forge test
 npm test</pre>
-  <p>Both must pass cleanly: 128 forge + 211 vitest. Any failure = stop. Investigate.</p>
+  <p>Both must pass cleanly: 133 forge + 211 vitest. Any failure = stop. Investigate.</p>
 </div>
 
 <div class="step">
@@ -271,14 +271,15 @@ git status --porcelain | grep -E '\.env'  # should return nothing</pre>
     <p>Phases:</p>
     <ol>
       <li><strong>Preflight</strong> — tools, env, RPC, balance, build, test</li>
-      <li><strong>Forge deploy</strong> — broadcasts BRAWL, Brawlers, Duel, Graveyard, MintDrop in one script</li>
-      <li><strong>Parse broadcast</strong> — extracts addresses</li>
+      <li><strong>Forge deploy</strong> — broadcasts BRAWL, Brawlers, Duel, Graveyard, MintDrop, <strong>Marketplace</strong> in one script. The Deploy.s.sol script also wires <code>duel.setMarketplace()</code> so listed brawlers can't be sent into duels.</li>
+      <li><strong>Parse broadcast</strong> — extracts addresses (<code>MARKETPLACE_ADDRESS</code> included)</li>
       <li><strong>Update .env</strong> — writes addresses into <code>.env.base-mainnet</code></li>
       <li><strong>Mint King</strong> — sends King NFT (#2001) to deployer</li>
-      <li><strong>Update Vercel env</strong> — production env vars set</li>
+      <li><strong>Update Vercel env</strong> — production env vars set (incl. <code>NEXT_PUBLIC_MARKETPLACE_ADDRESS</code>)</li>
       <li><strong>Vercel production deploy</strong> — frontend points at mainnet</li>
       <li><strong>Smoke test</strong> — read-only checks against deployed contracts</li>
     </ol>
+    <p class="dim">v11 change: Marketplace is folded into the main forge script. No separate <code>DeployMarketplace.s.sol</code> step needed.</p>
   </div>
 
   <div class="step">
@@ -415,6 +416,20 @@ cast send $BRAWL_ADDRESS "setWhitelistBulk(address[],bool)" \
   --private-key $DEPLOYER_KEY --rpc-url $MAINNET_RPC</pre>
 </div>
 
+<div class="step">
+  <h4>6d. Freeze the rarity table after the dev-mint window</h4>
+  <p>v11 ships <code>Brawlers.freezeRarity()</code>: once the dev wallet has taken its mints, this owner-only call locks the rarity table so subsequent buyers see no further skip-rare swaps. The shuffle is deterministic from <code>masterSeed</code>, so anyone can re-derive the post-shuffle hash off-chain and confirm <code>initialRarityHash</code> matches.</p>
+  <pre># Verify the on-chain table still matches the canonical shuffle:
+cast call $BRAWLERS_ADDRESS "initialRarityHash()(bytes32)" --rpc-url $MAINNET_RPC
+cast call $BRAWLERS_ADDRESS "rarityHash()(bytes32)"        --rpc-url $MAINNET_RPC
+# If they differ, dev-skip swaps have fired (expected if the dev wallet has minted).
+
+# Lock it in (idempotent):
+cast send $BRAWLERS_ADDRESS "freezeRarity()" \
+  --private-key $DEPLOYER_KEY --rpc-url $MAINNET_RPC</pre>
+  <p class="dim">After this tx, public buyers can be sure the rarity they pull is exactly what's at their tokenId in the now-frozen table. Call this before posting the rarity sheet to Discord/X.</p>
+</div>
+
 <h2 id="verify">7. Contract verification on Basescan</h2>
 
 <p>Etherscan multichain API key already stored in <code>.env.base-mainnet</code>. Run for each contract.</p>
@@ -437,8 +452,8 @@ forge verify-contract $BRAWLERS_ADDRESS contracts/Brawlers.sol:Brawlers \
     $DEPLOYER_ADDRESS) \
   --watch
 
-# Repeat for Duel, Graveyard, MintDrop with their respective constructor args.
-# Run once per contract; --watch polls until verified.</pre>
+# Repeat for Duel, Graveyard, MintDrop, Marketplace with their respective
+# constructor args. Run once per contract; --watch polls until verified.</pre>
 
 <p class="dim">All contracts verified ⇒ green checkmark on Basescan. People reading the source see real Solidity, not bytecode. Critical for trust.</p>
 
@@ -620,7 +635,7 @@ ssh truenas-discord docker logs -f baseic-brawlers-keeper</pre>
 
 <hr>
 
-<p class="dim" style="font-size: 12px; text-align: center;">BASEic Brawlers — Mainnet Launch Playbook · v1 · For internal operator reference only · Do not publish</p>
+<p class="dim" style="font-size: 12px; text-align: center;">BASEic Brawlers — Mainnet Launch Playbook · v2 (v11 contracts) · For internal operator reference only · Do not publish</p>
 
 </div>
 </body>

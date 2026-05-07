@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Providers } from './providers';
 import { NavBar } from '@/components/NavBar';
+import { Footer } from '@/components/Footer';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -40,15 +41,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head>
         {/*
-          Google Fonts preload. We pick "Press Start 2P" for the retro pixel
-          display font (used in headers) and "VT323" for long-form text, both
-          are free and served by Google Fonts.
+          Google Fonts preload. "Press Start 2P" is the chunky retro pixel
+          display font for headers; "Pixelify Sans" is the body font, a
+          modern pixel-sans designed for legibility at small sizes (the
+          previous VT323 ghosted out when dim-grey-on-black got under ~14px).
           preconnect on both google host + gstatic cuts ~200ms off first paint.
         */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;700&display=swap"
           rel="stylesheet"
         />
       </head>
@@ -58,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-7rem)]">
             {children}
           </main>
+          <Footer />
         </Providers>
       </body>
     </html>

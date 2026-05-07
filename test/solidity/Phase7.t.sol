@@ -211,6 +211,55 @@ contract Phase7Test is Test {
         revert("bad tier");
     }
 
+    // ─── Rarity freeze + commitment ─────────────────────────────────
+
+    function test_rarity_initialHash_setAtConstruction() public view {
+        // Hash is captured before any mint happens; equals current hash
+        // since no dev-skip swap has fired yet.
+        bytes32 initial = brawlers.initialRarityHash();
+        assertTrue(initial != bytes32(0), "initial hash unset");
+        assertEq(brawlers.rarityHash(), initial, "drift before any mint");
+    }
+
+    function test_rarity_initialHash_isDeterministicFromSeed() public {
+        // Two contracts with the same seed must produce the same hash.
+        Brawlers a = new Brawlers(owner, SEED, address(0));
+        Brawlers b = new Brawlers(owner, SEED, address(0));
+        assertEq(a.initialRarityHash(), b.initialRarityHash(), "seed determinism broken");
+        // A different seed must produce a different hash.
+        Brawlers c = new Brawlers(owner, SEED + 1, address(0));
+        assertTrue(a.initialRarityHash() != c.initialRarityHash(), "seed unused in shuffle");
+    }
+
+    function test_freezeRarity_disablesDevSkip() public {
+        // Spin up a fresh Brawlers with a real devWallet so _skipRareForDev
+        // is actually engaged.
+        address dev = address(0xDE7);
+        Brawlers b = new Brawlers(owner, SEED, dev);
+        bytes32 baseline = b.rarityHash();
+        b.freezeRarity();
+        assertTrue(b.rarityFrozen(), "freeze flag not set");
+        // Mint a few directly to dev wallet via owner path. With the freeze
+        // on, _skipRareForDev short-circuits and the rarity table is stable.
+        for (uint256 i = 0; i < 10; i++) {
+            b.mint(dev);
+        }
+        assertEq(b.rarityHash(), baseline, "frozen table mutated by dev mint");
+    }
+
+    function test_freezeRarity_onlyOwner() public {
+        vm.prank(alice);
+        vm.expectRevert();
+        brawlers.freezeRarity();
+    }
+
+    function test_freezeRarity_idempotent() public {
+        brawlers.freezeRarity();
+        // Second call is a no-op; must not revert.
+        brawlers.freezeRarity();
+        assertTrue(brawlers.rarityFrozen());
+    }
+
     // ─── MintDrop: ETH path ─────────────────────────────────────────
 
     function test_mintDrop_mintWithETH_transfersFeeAndAirdrop() public {

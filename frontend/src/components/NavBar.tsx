@@ -3,7 +3,7 @@
 /**
  * Top navigation. Two-row layout on desktop:
  *   Row 1: [logo] [BASEic Brawlers (centered)] [wallet]
- *   Row 2: [Browse] [Mint] [Market] [Duel] [Leaders] [History] [Graveyard] [About]
+ *   Row 2: [Mint] [Duel] [History] [Graveyard] [Market] [Leaders] [Ranks] [Browse] [Profile] [How to Play]
  *
  * Mobile (below md): single row with logo + brand + wallet + hamburger,
  * nav items collapse into a slide-down drop panel. Drop panel closes on
@@ -21,14 +21,14 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/browse', label: 'Browse' },
   { href: '/mint', label: 'Mint' },
-  { href: '/market', label: 'Market' },
   { href: '/duel', label: 'Duel' },
-  { href: '/leaderboard', label: 'Leaders' },
-  { href: '/ranks', label: 'Ranks' },
   { href: '/history', label: 'History' },
   { href: '/graveyard', label: 'Graveyard' },
+  { href: '/market', label: 'Market' },
+  { href: '/leaderboard', label: 'Leaders' },
+  { href: '/ranks', label: 'Ranks' },
+  { href: '/browse', label: 'Browse' },
   { href: '/me', label: 'Profile' },
   { href: '/about', label: 'How to Play' },
 ];

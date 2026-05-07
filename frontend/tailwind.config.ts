@@ -5,7 +5,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Fantums-inspired palette, distilled from the screenshots
+        // Retro-arcade palette: dark brick tones with orange/red accents.
         // Backgrounds
         'brawl-bg': '#0d0d0f', // Page background (near-black)
         'brawl-panel': '#1a1417', // Card / panel background (warm brick-dark)
@@ -23,7 +23,7 @@ const config: Config = {
         'brawl-red': '#c13e3e', // Destructive, dead, danger
         'brawl-red-dark': '#7a1f1f',
 
-        // Rarity tiers (mirrors the Fantums rarity colors in the screenshots)
+        // Rarity tiers: grey → blue → purple → orange.
         'rarity-common': '#9a9a9a',
         'rarity-uncommon': '#4a9eff',
         'rarity-rare': '#b866e8',
@@ -35,9 +35,12 @@ const config: Config = {
         'brawl-yellow': '#e6c200', // Warning, weapon highlights
       },
       fontFamily: {
-        // Pixel display font for headers/big text, monospace for body
+        // Pixel display font for headers/big text, modern monospace for body.
+        // JetBrains Mono is a high-contrast monospace designed for code/UI
+        // legibility — pairs cleanly with Press Start 2P headers without
+        // competing, and reads sharply at any size or dim grey shade.
         pixel: ['"Press Start 2P"', 'monospace'],
-        mono: ['"VT323"', '"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+        mono: ['"JetBrains Mono"', '"IBM Plex Mono"', 'ui-monospace', 'monospace'],
       },
       backgroundImage: {
         // Subtle brick texture for panels (pure CSS, no external file needed)

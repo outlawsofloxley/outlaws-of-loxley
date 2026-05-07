@@ -6,7 +6,7 @@
  * owner-only setter tx. All reads use useReadContract; writes use
  * writeContract from wagmi.
  *
- * No server-held keys involved. D must be connected with the owner wallet;
+ * No server-held keys involved. The owner wallet must be connected;
  * the tx will revert otherwise.
  */
 import { useEffect, useMemo, useState } from 'react';

@@ -346,7 +346,7 @@ async function phasePreflight() {
   // 1g. Run forge tests as a final gate
   log('  running forge test...');
   run('forge', ['test', '--silent']);
-  ok('forge test 128/128 pass');
+  ok('forge test pass');
 
   // 1h. Mainnet extra confirmations
   if (TARGET === 'mainnet' && !DRY_RUN && !YES) {

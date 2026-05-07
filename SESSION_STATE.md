@@ -5,7 +5,7 @@
 > Stable project context lives in `BASEicBrawlers.md`.
 
 ## Last updated
-2026-05-07: pre-mainnet readiness pass complete. All tokenomics locked, AI/beta scrub done, CLAUDE.md → BASEicBrawlers.md, fight-cost keeper built, LAUNCH-PLAYBOOK.html shipped. Awaiting funded deployer wallet + dev address to ship mainnet.
+2026-05-07: **v11 contracts deployed to Sepolia**, with Marketplace folded into the main forge script and `duel.setMarketplace()` auto-wired (prevents listed brawlers being sent into duels). Brawlers.sol now exposes `initialRarityHash()` (canonical post-shuffle commitment) + `rarityHash()` (live) + `freezeRarity()` (owner-only lock). 133 forge tests + LAUNCH-PLAYBOOK refreshed. Awaiting funded deployer wallet + dev address to ship mainnet.
 
 ## Mainnet readiness — locked decisions
 - BRAWL supply: **100,000** fixed
@@ -22,7 +22,18 @@
 ## Next gating action
 **Awaiting**: funded deployer wallet PKEY (~$400 ETH for LP + gas) and dev wallet address from operator. After those land, `npm run deploy:mainnet` ships. Full runbook: `LAUNCH-PLAYBOOK.html`.
 
-## Last live state (Sepolia v9, 2026-05-07)
+## Last live state (Sepolia v11, 2026-05-07)
+
+**v11 addresses (Sepolia, chain 84532)**:
+- `BRAWL       = 0xb2b0bdeda0e60840a36491b9510483dead0aa7eb`
+- `BRAWLERS    = 0x68b8d4f5bfe137ea27a98bb4f40cf6a23d37a912`
+- `DUEL        = 0x0b3c5eb40244892eb0560d2202f0cd0f954ff6b8`
+- `GRAVEYARD   = 0x9fc0db23ef6a7b9f01e342eb64aba15176a86d50`
+- `MINTDROP    = 0xcc5c247a0d64e88c7a851ef81a668a28ed8769d4`
+- `MARKETPLACE = 0xe6ac39dcb517cace685824cc2e14515b7d9902ce`
+- `MOCKUSDT    = 0x6d305dcc6b706cc77977f57ff669dbbd1a3d4f2c`
+- Vercel prod: `https://frontend-achxh8vge-ghubbers-projects.vercel.app`
+- `Brawlers.initialRarityHash()` = `0x0c580cfdfcdcb2b7de17fb9698e3e408eca8bafdc54e5cefdd8b5635dce8bf40`
 
 ## Where we are
 - **Art polish pass deployed 2026-05-05** to https://baseicbrawlers.com.
@@ -124,11 +135,11 @@
    deployer wallet hits the dev-rarity-cap (Common/Uncommon only), so the
    beta cohort needs to mint from fresh wallets to surface Epic/Rare
    on-chain.
-2. **Marketplace v6 redeploy** (deferred, not blocking). The Marketplace
-   contract is still pointed at the old Brawlers contract from v4. Per
-   the orchestrator design, redeploying the Marketplace is a separate
-   forge script (`script/DeployMarketplace.s.sol`). For mainnet day this
-   should be folded into the main deploy.
+2. **Marketplace v6 redeploy** — DONE in v11 (folded into `Deploy.s.sol`).
+   `duel.setMarketplace()` is auto-wired during deploy so listed brawlers
+   get blocked from duels via `Duel.applyDuelResult` reading
+   `Marketplace.isListed()`. `script/DeployMarketplace.s.sol` is now
+   redundant for mainnet day; can be deleted later.
 3. **CLI `mint-onchain` rewrite**. Still calls `brawlers.mint()` directly,
    reverts on testnets. Rewrite to use `MintDrop.mintWithETH`. UI unaffected.
 4. **Mainnet day**. Run `npm run deploy:mainnet` when launch ETH is in

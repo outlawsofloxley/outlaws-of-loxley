@@ -10,7 +10,7 @@
  * after the browser has mounted.
  */
 import { createConfig, http, fallback } from 'wagmi';
-import { injected } from 'wagmi/connectors';
+import { coinbaseWallet, injected } from 'wagmi/connectors';
 import { defineChain, type Chain } from 'viem';
 import { requireEnv } from './env';
 
@@ -119,6 +119,19 @@ export function getWagmiConfig() {
       // ConnectButton renders an "Open in MetaMask" deeplink that bounces
       // them into MM's in-app browser, where this same connector works.
       injected({ shimDisconnect: true }),
+      // Coinbase Wallet: covers two distinct user paths in one connector.
+      //   - "smartWalletOnly" preference => Coinbase Smart Wallet, a passkey-
+      //     based wallet that runs entirely in the browser. No app/extension
+      //     install required; great for first-time crypto users on a Base-
+      //     native dapp.
+      //   - Users with the Coinbase Wallet extension/mobile app keep working
+      //     because the SDK auto-detects and prefers the native provider when
+      //     present. Setting preference="all" gives both paths transparently.
+      coinbaseWallet({
+        appName: 'BASEic Brawlers',
+        appLogoUrl: 'https://baseicbrawlers.com/logo.svg',
+        preference: { options: 'all' },
+      }),
     ],
     transports: {
       // Fallback transport, viem rotates through these on RPC errors so a

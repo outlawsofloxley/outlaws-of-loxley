@@ -39,30 +39,26 @@ export default function AboutPage() {
       {/* ─── Wallet setup ─────────────────────────────────── */}
       <Section title="1. Set up your wallet">
         <p>
-          You need an Ethereum-compatible wallet with the Base network
-          configured. MetaMask is the easiest; Rabby, Coinbase Wallet, and most
-          others work too. Coinbase Wallet has Base built in by default.
+          Click <strong>Connect Wallet</strong> top-right and pick from:
         </p>
+        <ul className="list-disc pl-5 space-y-1 text-sm">
+          <li>
+            <strong>Browser Wallet</strong> &mdash; any EIP-1193 extension on your browser:
+            MetaMask, Rabby, Brave Wallet, Frame.
+          </li>
+          <li>
+            <strong>Coinbase Wallet</strong> &mdash; the Coinbase app/extension if you have it,
+            otherwise a Smart Wallet (passkey-based, nothing to install) opens in a new tab.
+            Base is built in either way.
+          </li>
+        </ul>
         <Callout>
-          <strong>On mobile?</strong> Mobile Chrome and Safari can&rsquo;t talk
-          to wallet apps directly. Instead, open this dapp inside MetaMask
-          mobile&rsquo;s built-in browser:
-          <ol className="mt-2 list-decimal pl-5 space-y-1 text-sm">
-            <li>Install the <strong>MetaMask</strong> app from the App Store / Play Store</li>
-            <li>
-              Tap the big orange <strong>Connect Wallet</strong> button on this page. On
-              mobile it becomes <strong>Open in MetaMask</strong> and deep-links to the
-              app automatically
-            </li>
-            <li>
-              MetaMask opens, loads this dapp in its in-app browser, prompts you to
-              approve the connection
-            </li>
-            <li>
-              You now have a full dapp experience: mint, duel, trade, everything works
-              the same as desktop
-            </li>
-          </ol>
+          <strong>On mobile without a wallet app?</strong> Pick{' '}
+          <strong>Coinbase Wallet</strong> in the picker; the Smart Wallet flow uses
+          your phone&rsquo;s passkey (Face ID / fingerprint) and skips the install
+          entirely. Or, if you already use MetaMask mobile, the picker offers an
+          <em> Open in MetaMask </em> deeplink that loads this dapp inside MM&rsquo;s
+          in-app browser.
         </Callout>
         <Callout>
           <strong>Add Base to MetaMask</strong>

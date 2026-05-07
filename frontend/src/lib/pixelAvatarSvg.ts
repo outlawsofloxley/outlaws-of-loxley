@@ -1,6 +1,6 @@
 /**
  * SVG string generator for brawler portraits. Thin wrapper around
- * renderBrawlerArt (Fantums-inspired 32×32 generator).
+ * renderBrawlerArt (the 32×32 procedural generator).
  *
  * Kept as a stable entry point so existing imports (`PixelAvatar`,
  * `/api/token/[id]/image`) don't need to change when the art pipeline

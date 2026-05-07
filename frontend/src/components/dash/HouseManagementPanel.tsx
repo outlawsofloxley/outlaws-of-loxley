@@ -6,8 +6,8 @@
  *
  * Adding a fighter that isn't yet owned by the keeper wallet is still
  * recorded, the HOUSE badge only shows once both conditions are true.
- * This lets D pre-populate the whitelist with newly-minted IDs and then
- * transfer them to the keeper wallet in a follow-up step.
+ * This lets the owner pre-populate the whitelist with newly-minted IDs
+ * and then transfer them to the keeper wallet in a follow-up step.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
@@ -55,8 +55,8 @@ export function HouseManagementPanel() {
   const isDevKeeper = !!(address && keeperAddr && address.toLowerCase() === keeperAddr.toLowerCase());
 
   // Split brawlers into "owned by keeper" (already HOUSE or candidate to enroll)
-  // vs "owned by dev (me)", D might add any of his wallet's brawlers to the
-  // whitelist and transfer them over in a follow-up step.
+  // vs "owned by the connected dev wallet", which can add any of its
+  // brawlers to the whitelist and transfer them over in a follow-up step.
   const keeperOwned = useMemo(
     () =>
       brawlers.filter(

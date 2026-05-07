@@ -3,7 +3,7 @@
 /**
  * LaunchChecklist, pre-launch + launch-day playbook for Base mainnet.
  * Read-only reference card. Doesn't track state on-chain (yet), just a
- * visible reminder for D so the launch ops aren't done from memory.
+ * visible reminder so the launch ops aren't done from memory.
  */
 
 interface Step {

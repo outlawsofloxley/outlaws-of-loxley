@@ -140,6 +140,20 @@ contract Brawlers is ERC721, Ownable, Pausable {
     ///           5 = King (the 1-of-1 at KING_TOKEN_ID)
     bytes private _rarity;
 
+    /// @notice keccak256 of `_rarity` as it stood the moment shuffling
+    ///         finished in the constructor — i.e. the canonical
+    ///         "deterministic from masterSeed" arrangement, before any
+    ///         dev-mint skip-rare swaps. Anyone can re-derive the shuffle
+    ///         off-chain from `masterSeed` and confirm the hash matches.
+    bytes32 public immutable initialRarityHash;
+
+    /// @notice Once true, `_skipRareForDev` no-ops and the rarity table is
+    ///         locked in place. `rarityHash()` returns a value that can be
+    ///         compared to `initialRarityHash` so any dev-skip swaps are
+    ///         publicly auditable. Owner sets this via `freezeRarity()` once
+    ///         the dev-mint window has closed.
+    bool public rarityFrozen;
+
     /// @notice Name pools for random first/last name rolls on mint. 50 × 50 =
     ///         2500 possible combinations. Populated in _initializeNames().
     string[50] private _firstNames;
@@ -177,6 +191,7 @@ contract Brawlers is ERC721, Ownable, Pausable {
     event GraveyardContractSet(address indexed oldContract, address indexed newContract);
     event MintDropContractSet(address indexed oldContract, address indexed newContract);
     event BaseURISet(string oldURI, string newURI);
+    event RarityFrozen(bytes32 finalHash);
 
     // ─── Errors ──────────────────────────────────────────────────────
 
@@ -220,6 +235,10 @@ contract Brawlers is ERC721, Ownable, Pausable {
         devWallet = _devWallet;
         _initializeWeapons();
         _initializeRarity();
+        // Capture the canonical post-shuffle hash before any mint-time
+        // mutations can run. Anyone can re-derive the shuffle off-chain
+        // from `masterSeed` alone and verify this matches.
+        initialRarityHash = keccak256(_rarity);
         _initializeNames();
     }
 
@@ -331,6 +350,7 @@ contract Brawlers is ERC721, Ownable, Pausable {
      *      within 50 slots is overwhelmingly likely.
      */
     function _skipRareForDev() private {
+        if (rarityFrozen) return;
         uint256 idx = uint256(nextTokenId) - 1;
         if (idx >= MAX_SUPPLY) return;
         bytes1 currentTier = _rarity[idx];
@@ -499,6 +519,25 @@ contract Brawlers is ERC721, Ownable, Pausable {
         if (tokenId == KING_TOKEN_ID) return 5;
         if (tokenId < 1 || tokenId > MAX_SUPPLY) revert InvalidTokenId(tokenId);
         return uint8(_rarity[tokenId - 1]);
+    }
+
+    /// @notice Live keccak256 of the on-chain rarity table. Equals
+    ///         `initialRarityHash` until the first dev-mint skip-rare swap
+    ///         lands; after that, dev-skip swaps shift the hash. Pair the
+    ///         two values to make any deviation publicly auditable.
+    function rarityHash() external view returns (bytes32) {
+        return keccak256(_rarity);
+    }
+
+    /// @notice Lock the rarity table in place: future dev-target mints stop
+    ///         skipping rare slots and just receive whatever's at the next
+    ///         index. Idempotent — calling twice is a no-op the second time.
+    ///         Intended to be called once the dev-mint window closes so
+    ///         public buyers see a fully fixed table.
+    function freezeRarity() external onlyOwner {
+        if (rarityFrozen) return;
+        rarityFrozen = true;
+        emit RarityFrozen(keccak256(_rarity));
     }
 
     /**
