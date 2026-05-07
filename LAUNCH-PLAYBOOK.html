@@ -212,7 +212,7 @@
   <tr><td><code>DEPLOYER</code></td><td>Deploys contracts, seeds LP, manages owner-only setters in the first 24-48h.</td><td>$300 ETH (LP) + ~0.05 ETH gas + ~$50 USD margin = <strong>~$400 ETH total</strong></td><td>Will hold BRAWL allocations briefly during deploy. Renounces ownership after limits lift.</td></tr>
   <tr><td><code>DEV</code> (treasury)</td><td>Receives 100% of mint ETH/USDC/USDT. Holds 5k BRAWL operating allocation. Holds the King NFT (#2001).</td><td>n/a (receives funds)</td><td>~5k BRAWL + accumulated mint revenue + King NFT</td></tr>
   <tr><td><code>SAFE</code> (governance)</td><td>2-of-3 Gnosis Safe. Holds 65k BRAWL governance treasury. Executes Snapshot vote results.</td><td>Tiny ETH for executions</td><td>65k BRAWL</td></tr>
-  <tr><td><code>KEEPER</code></td><td>Fight-cost rebalancer (5min loop). Owner of Duel contract for setFightEconomics.</td><td>~0.005 ETH (months of gas at Base prices)</td><td>Nothing — just gas</td></tr>
+  <tr><td><code>KEEPER</code></td><td>Fight-cost rebalancer (5min loop). Owner of Duel contract for setFightEconomics. Also holds the 10 house brawlers seeded at deploy so day-1 players have opponents — the auto-duel loop fights them on rotation.</td><td>~0.005 ETH (months of gas at Base prices)</td><td>10 house brawler NFTs (transferred in by Deploy.s.sol) + gas. No BRAWL allocation.</td></tr>
 </table>
 
 <div class="panel warn">
@@ -256,6 +256,16 @@ git status --porcelain | grep -E '\.env'  # should return nothing</pre>
   --include='*.{ts,tsx,sol,md,html,json}' \
   --exclude-dir=node_modules .
 # should return nothing user-facing</pre>
+</div>
+
+<div class="step">
+  <h4>3f. Confirm <code>HOUSE_KEEPER_ADDRESS</code> is the real keeper wallet</h4>
+  <p>The mainnet deploy auto-mints + flags + <strong>transfers</strong> 10 house brawlers to whatever address sits in <code>HOUSE_KEEPER_ADDRESS</code> at deploy time. If this env is unset, the brawlers stay on the deployer wallet and you have to move them manually with <code>cast send transferFrom</code> later (extra tx, extra failure surface).</p>
+  <pre>grep '^HOUSE_KEEPER_ADDRESS=' .env.base-mainnet
+# must print HOUSE_KEEPER_ADDRESS=0x... (the keeper EOA, NOT the deployer)
+# if missing or =0xDEADBEEF, STOP. Generate the keeper EOA first
+# (see step 10a) and paste its address here before running deploy:mainnet.</pre>
+  <p class="dim">The same env can target the dev wallet or any other address you want holding the house roster — just make sure it's the *final* destination so the auto-transfer at deploy time leaves nothing manual to clean up. Skipping this gate is the most common path to a half-done launch.</p>
 </div>
 
 <h2 id="deploy">4. Mainnet deploy sequence</h2>
@@ -507,7 +517,14 @@ REFRESH_PINS_ON_STARTUP: "true"  # safe to leave on; idempotent</pre>
 
 <div class="step">
   <h4>10a. Create keeper EOA + fund</h4>
-  <p>Generate a fresh EOA (e.g. <code>cast wallet new</code>). Fund it with ~0.005 ETH on Base. This wallet's only job is to call <code>setFightEconomics</code> every few minutes.</p>
+  <p>Generate a fresh EOA (e.g. <code>cast wallet new</code>). Fund it with ~0.005 ETH on Base. This wallet's two jobs:</p>
+  <ol>
+    <li>Call <code>setFightEconomics</code> every few minutes (the original keeper purpose).</li>
+    <li>Hold the 10 house brawlers seeded at deploy and run the auto-duel loop so day-1 players always have an opponent.</li>
+  </ol>
+  <div class="panel warn">
+    <strong>Do this BEFORE running <code>npm run deploy:mainnet</code>.</strong> The keeper address must be in <code>.env.base-mainnet</code> as <code>HOUSE_KEEPER_ADDRESS</code> at deploy time so Deploy.s.sol auto-transfers the 10 house brawlers to it in the same forge tx. If the env is unset, brawlers stay with the deployer and you have to manually <code>cast send transferFrom</code> 10 times after the fact.
+  </div>
 </div>
 
 <div class="step">
