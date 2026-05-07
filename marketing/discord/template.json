@@ -40,10 +40,11 @@
       "name": "ARENA",
       "verifiedOnly": true,
       "channels": [
-        { "name": "duel-talk",      "type": "text", "topic": "Brag about wins. Mourn losses. Trash-talk in moderation.", "slowModeSeconds": 5 },
-        { "name": "leaderboard",    "type": "text", "topic": "Daily standings post here automatically.",                 "moderatorPostOnly": true },
-        { "name": "graveyard",      "type": "text", "topic": "RIP. Resurrection costs and survivor stories.",             "slowModeSeconds": 5 },
-        { "name": "strategy",       "type": "text", "topic": "Stat builds, weapon picks, matchmaking tips.",              "slowModeSeconds": 10, "seedFile": "messages/seed-strategy.md" }
+        { "name": "duels",          "type": "text", "topic": "Auto-posted duel outcomes — bot only. Talk in #duel-talk.",     "moderatorPostOnly": true },
+        { "name": "duel-talk",      "type": "text", "topic": "Brag about wins. Mourn losses. Trash-talk in moderation.",       "slowModeSeconds": 5 },
+        { "name": "leaderboard",    "type": "text", "topic": "Daily standings — bot only.",                                    "moderatorPostOnly": true },
+        { "name": "graveyard",      "type": "text", "topic": "RIP — auto-posted on every death. Bot only.",                    "moderatorPostOnly": true },
+        { "name": "strategy",       "type": "text", "topic": "Stat builds, weapon picks, matchmaking tips.",                   "slowModeSeconds": 10, "seedFile": "messages/seed-strategy.md" }
       ]
     },
     {

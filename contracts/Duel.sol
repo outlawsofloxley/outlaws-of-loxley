@@ -10,6 +10,13 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {Brawlers} from "./Brawlers.sol";
 
+/// @dev Minimal Marketplace interface — Duel needs `isListed` to block
+///      duels involving brawlers currently on sale. Defined here to avoid
+///      a circular import (Marketplace already references Brawlers).
+interface IMarketplaceListedRead {
+    function isListed(uint256 tokenId) external view returns (bool);
+}
+
 /**
  * @title Duel
  * @notice Accepts backend-signed duel results and applies them to Brawlers.
@@ -94,6 +101,13 @@ contract Duel is Ownable, Pausable, ReentrancyGuard, EIP712 {
     /// @notice The Graveyard contract (may reset streaks on resurrection).
     address public graveyardContract;
 
+    /// @notice Marketplace contract. When set, listed brawlers are blocked
+    ///         from fighting (prevents the "owner sends a listed brawler
+    ///         into combat, dies, buyer is stuck with a corpse" race).
+    ///         Zero-address = check disabled (back-compat for fresh deploys
+    ///         where Marketplace ships separately).
+    address public marketplace;
+
     /// @notice Consumed nonces (replay protection).
     mapping(uint256 => bool) public usedNonces;
 
@@ -126,6 +140,7 @@ contract Duel is Ownable, Pausable, ReentrancyGuard, EIP712 {
     event BrawlerDied(uint256 indexed tokenId);
     event TrustedSignerChanged(address indexed oldSigner, address indexed newSigner);
     event GraveyardContractSet(address indexed oldContract, address indexed newContract);
+    event MarketplaceSet(address indexed oldContract, address indexed newContract);
     event StreakReset(uint256 indexed tokenId);
     event BRAWLTokenChanged(address indexed oldToken, address indexed newToken);
     event FightEconomicsChanged(uint256 fightCost, uint16 devShareBps, address devTreasury);
@@ -144,6 +159,9 @@ contract Duel is Ownable, Pausable, ReentrancyGuard, EIP712 {
     error Expired();
     error InvalidWinnerId();
     error BrawlerNotAlive(uint256 tokenId);
+    /// @notice Brawler is currently listed on the marketplace. Cancel the
+    ///         listing first, then duel.
+    error BrawlerIsListed(uint256 tokenId);
     error NotOwnerOfEither();
     error SelfFight();
     error SignerMustBeNonZero();
@@ -197,6 +215,14 @@ contract Duel is Ownable, Pausable, ReentrancyGuard, EIP712 {
     function setGraveyardContract(address _graveyard) external onlyOwner {
         emit GraveyardContractSet(graveyardContract, _graveyard);
         graveyardContract = _graveyard;
+    }
+
+    /// @notice Wire the Marketplace contract. Once set (non-zero), listed
+    ///         brawlers can't fight. Owner can re-point if Marketplace is
+    ///         redeployed; setting back to zero disables the check.
+    function setMarketplace(address _marketplace) external onlyOwner {
+        emit MarketplaceSet(marketplace, _marketplace);
+        marketplace = _marketplace;
     }
 
     /**
@@ -406,6 +432,16 @@ contract Duel is Ownable, Pausable, ReentrancyGuard, EIP712 {
         // Liveness
         if (!brawlers.isAlive(result.tokenA)) revert BrawlerNotAlive(result.tokenA);
         if (!brawlers.isAlive(result.tokenB)) revert BrawlerNotAlive(result.tokenB);
+
+        // Marketplace lock-out: if a brawler is currently listed, owner
+        // must cancel the listing before fighting. Prevents the "fight,
+        // die, buyer purchases corpse" race. Skipped when marketplace is
+        // zero (allows fresh deploys to wire it later).
+        if (marketplace != address(0)) {
+            IMarketplaceListedRead m = IMarketplaceListedRead(marketplace);
+            if (m.isListed(result.tokenA)) revert BrawlerIsListed(result.tokenA);
+            if (m.isListed(result.tokenB)) revert BrawlerIsListed(result.tokenB);
+        }
 
         // Authorization: caller must own at least one side
         if (

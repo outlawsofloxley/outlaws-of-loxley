@@ -49,7 +49,11 @@ export default function MarketPage() {
   }, [listings, brawlers]);
 
   const filtered = useMemo(() => {
-    let out = joined;
+    // Dead brawlers can't be played, so we hide them from the marketplace.
+    // The contract still allows the listing to exist, but a buyer would only
+    // be acquiring a corpse — not useful until resurrected. Hide from the UI
+    // to avoid confusion. (Mainnet should also enforce this on `list()`.)
+    let out = joined.filter((j) => !j.brawler?.isDead);
     if (rarityFilter !== 'all') {
       out = out.filter((j) => {
         if (!j.brawler) return false;

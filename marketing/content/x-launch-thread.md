@@ -1,213 +1,216 @@
-# X launch thread, @BASEicBrawlers
+# X launch thread @BASEicBrawlers
 
-12 tweets. Tweet 1 fires the moment LP is seeded + trading enabled. Subsequent
-tweets every ~30 min — schedule them up front so the thread builds itself
-while you handle launch ops.
+12 tweets. tweet 1 fires the moment LP is seeded + trading is enabled. then ~30 min between tweets. schedule them in advance so the thread builds while you handle launch ops.
 
-Replace `[BRAWLERS_ADDR]`, `[BRAWL_ADDR]`, `[PAIR_ADDR]`, `[UNICRYPT_LOCK_URL]`
-before scheduling.
+replace [BRAWLERS_ADDR], [BRAWL_ADDR], [PAIR_ADDR], [UNICRYPT_LOCK_URL] before scheduling.
 
----
 
-## 1/12, Launch announce
+## 1/12 launch
 
 ```
-⚔️ THE ARENA IS OPEN ⚔️
+⚔ THE ARENA IS OPEN
 
-BASEic BRAWLERS is live on @base.
+BASEic BRAWLERS live on @base.
 
-2,000 pixel-art warriors.
-1 King.
-On-chain combat. ELO. Prize pools. Death. Resurrection.
+2000 pixel-art warriors. 1 king. on-chain combat, ELO, prize pools, death, resurrection.
 
-Tier 1 mint (slots 1-50): $20 — claim a founder slot before they're gone.
+slots 1-50: $20 (founder)
+51-100: $25 (founder)
+ramps to $50 by the last 500
 
-Mint: https://baseicbrawlers.com/mint
+mint: https://baseicbrawlers.com/mint
 
-🧵👇
+🧵
 ```
 
-## 2/12, What it is
+
+## 2/12 what it is
 
 ```
 2/
 
-Every Brawler is a fighter, not just a JPEG.
+every brawler is a fighter, not a JPEG.
 
-→ Stats, weapon, ELO, win/loss record. All on-chain.
-→ Auto-matched 1v1 duels for $BRAWL stakes
-→ 3 losses = your brawler dies
-→ Resurrect with ETH (or stay dead, becomes graveyard art)
+stats, weapon, ELO, win/loss, all on-chain.
+duels for $BRAWL stakes.
+3 losses in a row, your brawler dies.
+resurrect with ETH or leave em in the graveyard.
 
-Real game. Real stakes. Real chain.
+real loop.
 ```
 
-## 3/12, Founder perks (token IDs 1-100)
+
+## 3/12 founders
 
 ```
 3/
 
-👑 FOUNDER PERKS: token IDs 1-100 only
+👑 founder perks. token IDs 1-100 only.
 
-★ FOUNDER 50  (gold badge, IDs 1-50)
-★ FOUNDER 100 (cyan badge, IDs 51-100)
+★ FOUNDER 50 (gold badge, 1-50)
+★ FOUNDER 100 (cyan badge, 51-100)
 
-For LIFE:
-✅ Cheapest mint tier ($20 for 1-50, $25 for 51-100)
-✅ 25% off every fight cost
-✅ Free first resurrect
-✅ Permanent founder badge on every card
+for life:
+✅ cheapest mint tiers ($20/$25)
+✅ 25% off every fight stake
+✅ free first resurrect
+✅ permanent badge on every card
 
-Mint early. The first 100 are non-replaceable.
+100 slots. once they're gone they're gone.
 ```
 
-## 4/12, Tiered mint pricing
+
+## 4/12 mint pricing
 
 ```
 4/
 
-📊 PRICING SCALES AS THE DROP FILLS
+📊 pricing scales as the drop fills
 
-Tier 1 (1-50):     $20  ⚡ founder
-Tier 2 (51-100):   $25  ⚡ founder
-Tier 3 (101-500):  $30
-Tier 4 (501-1000): $35
-Tier 5 (1001-1500): $40
-Tier 6 (1501-2000): $50
+slots 1-50: $20  ⚡ founder
+slots 51-100: $25  ⚡ founder
+slots 101-500: $30
+slots 501-1000: $35
+slots 1001-1500: $40
+slots 1501-2000: $50
 
-Bulk: 5+ → 1 free, 10+ → 3 free, 20 → 7 free.
-Lottery: every paid mint has a 1-in-2000 shot at a free bonus.
+bulk: 5+ → 1 free, 10+ → 3 free, 20 → 7 free
+lottery: every paid mint, 1-in-2000 chance of a free bonus
 
-Earlier = cheaper. Always.
+earlier is cheaper. always.
 ```
 
-## 5/12, $BRAWL token
+
+## 5/12 $BRAWL
 
 ```
 5/
 
-$BRAWL is the arena fuel.
+$BRAWL: 100k fixed supply. no mint after deploy.
 
-→ 100,000 fixed supply (no more, ever)
-→ Fight entry = $1 USD equivalent in $BRAWL (auto-rebalanced every 5min as $BRAWL price moves)
-→ Winner takes the pot minus a small dev cut
-→ Full anti-sniping at launch: 1-block bot trap, max-tx 0.5%, max-wallet 1%
-→ Ownership renounced once limits lift
+fight entry = $1 USD worth of $BRAWL. auto-rebalanced every 5 min as price moves.
+winner takes the pot minus a tiny dev cut.
+anti-sniper armed at launch (1-block bot trap, max-tx 0.5%, max-wallet 1%).
+ownership renounced after limits lift.
 
 CA: [BRAWL_ADDR]
 ```
 
-## 6/12, LP + lock proof
+
+## 6/12 LP lock
 
 ```
 6/
 
-⚖️ FAIR LAUNCH
+⚖ fair launch.
 
-→ LP seeded on @AerodromeFi (BRAWL/ETH)
-→ Locked 90 DAYS on @UNCX_token → [UNICRYPT_LOCK_URL]
-→ 100% of mint payments go to the dev wallet — no auto-LP siphon
-→ BRAWL ownership renounced after the 24-48h soak
+LP seeded on @AerodromeFi (BRAWL/ETH).
+locked 90 days on @UNCX_token: [UNICRYPT_LOCK_URL]
+mint money: 100% to dev wallet, no LP siphon.
+BRAWL ownership renounced after 24-48h soak.
 
-No presale. No team alloc. No tax.
+no presale. no team alloc. no buy/sell tax.
 
 [PAIR_ADDR]
 ```
 
-## 7/12, Treasury & governance
+
+## 7/12 community treasury
 
 ```
 7/
 
-🏛️ COMMUNITY-CONTROLLED TREASURY
+🏛 65k $BRAWL in a community treasury.
 
-100k $BRAWL split:
-→ 30k LP (locked)
-→ 5k dev (operating)
-→ 65k governance treasury
+dev can't touch it solo. all withdrawals go through a snapshot vote, executed by a 2-of-3 multisig that has to honour the result.
 
-The treasury can't be touched without a $BRAWL holder vote on @SnapshotLabs.
-Holders propose, holders vote, withdrawals require 2-of-3 multisig matching the result.
+if MC hits $250k we migrate to fully on-chain governance (compound-style governor + timelock).
 
-On-chain Governor migration when MC hits $250k.
+your token, your call.
 ```
 
-## 8/12, Game mechanics
+
+## 8/12 game mechanics
 
 ```
 8/
 
-How a duel actually plays out:
+a duel goes:
 
-→ You + opponent both stake $BRAWL
-→ On-chain combat sim: stats × weapon × RNG seed
-→ Frontend animates the fight round-by-round
-→ Winner's ELO goes up, loser's down
-→ 3 consecutive losses → brawler dies
-→ Resurrect or rest in the graveyard (still browsable)
+both fighters stake $BRAWL.
+combat sim runs on-chain (stats × weapon × seed).
+frontend animates round by round.
+winner ELO up, loser down.
+3 consecutive losses → brawler dies.
+resurrect or stay rotting in the graveyard. up to you.
 ```
 
-## 9/12, The King
+
+## 9/12 the king
 
 ```
 9/
 
-There is exactly 1 KING (token #2001).
+1 king. token #2001.
 
-Untradeable. Top-tier stats always.
-Ours. Forever.
+untradeable. top stats always. ours forever.
 
-He's not for sale. He's the boss the brawlers are fighting under.
-The arena has its god, and its god has a name.
+he's not for sale. he's the boss the brawlers are fighting under.
+
+the arena has its god, and its god has a name.
 ```
 
-## 10/12, Tech receipts
+
+## 10/12 receipts
 
 ```
 10/
 
-🛠️ Receipts, not vibes.
+🛠 receipts:
 
-→ 128 Foundry tests passing
-→ Full Solidity ↔ frontend combat-sim parity (47 dedicated tests)
-→ Sepolia rehearsal: 50 mints + 80 duels broadcast clean
-→ All contracts open-source, verified on basescan
-→ EIP-712 signatures, one-time-set pointers, owner-cap audit fixes shipped
+128 foundry tests pass.
+TS ↔ solidity ↔ frontend combat sim parity (47 dedicated tests).
+sepolia rehearsal: 50 mints + 80 duels broadcast clean.
+all contracts verified on @basescan.
+audit fixes shipped: EIP-712 sigs, one-time-set pointers, owner caps, refund overpay.
 
-Verify everything. Trust nothing.
+verify it yourself.
 ```
 
-## 11/12, How to get in
+
+## 11/12 how to get in
 
 ```
 11/
 
-⚔️ GET YOUR FIGHTER
+⚔ get a fighter.
 
 🌐 https://baseicbrawlers.com/mint
-💬 Telegram: https://t.me/baseicbrawlers
-🎮 Discord: https://discord.gg/RjvBEA5CVd
-📈 Chart: https://dexscreener.com/base/[PAIR_ADDR]
+💬 https://t.me/baseicbrawlers
+🎮 https://discord.gg/RjvBEA5CVd
+📈 https://dexscreener.com/base/[PAIR_ADDR]
 
-📜 Contracts:
+📜
 NFT: [BRAWLERS_ADDR]
 $BRAWL: [BRAWL_ADDR]
 
-Always verify the CA in the pinned TG message before you ape.
+verify the CA against the pinned TG message before you ape.
 ```
 
-## 12/12, Call to action
+
+## 12/12 cta
 
 ```
 12/
 
-ENGAGE TO ARM THE ARENA:
-🔄 RT this thread
-👑 Mint a brawler, claim a founder slot if you're early
-⚔️ Duel someone in your ELO band
-💀 Try to die before sundown
+if you want in:
 
-The brawlers are awake.
+🔄 RT this thread
+👑 mint, claim a founder slot if you're early
+⚔ duel someone in your ELO band
+💀 try to die before sundown
+
+the brawlers are awake.
 
 baseicbrawlers.com
 ```

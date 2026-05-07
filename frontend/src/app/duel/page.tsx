@@ -21,6 +21,7 @@ import {
 import { formatUnits } from 'viem';
 import { useAllBrawlers } from '@/hooks/useAllBrawlers';
 import { useHouseWhitelist } from '@/hooks/useHouseWhitelist';
+import { useMarketListings } from '@/hooks/useMarketListings';
 import type { Brawler as UIBrawler } from '@/hooks/useBrawler';
 import { PixelAvatar } from '@/components/PixelAvatar';
 import { BRAWL_ABI, DUEL_ABI } from '@/lib/abi';
@@ -87,7 +88,20 @@ export default function DuelPage() {
     void fetch('/api/house/sync', { method: 'POST' }).catch(() => {});
   }, []);
 
-  const aliveBrawlers = useMemo(() => brawlers.filter((br) => !br.isDead), [brawlers]);
+  // Active marketplace listings — listed brawlers can't fight (they're up
+  // for sale, the owner has set them aside; matching them in would risk
+  // a buyer racing to acquire a corpse if the brawler dies during a duel).
+  const { listings: marketListings } = useMarketListings();
+  const listedTokenIds = useMemo(() => {
+    const set = new Set<number>();
+    for (const l of marketListings) set.add(l.tokenId);
+    return set;
+  }, [marketListings]);
+
+  const aliveBrawlers = useMemo(
+    () => brawlers.filter((br) => !br.isDead && !listedTokenIds.has(br.tokenId)),
+    [brawlers, listedTokenIds],
+  );
   const mine = useMemo(() => {
     if (!address) return [] as UIBrawler[];
     const lower = address.toLowerCase();

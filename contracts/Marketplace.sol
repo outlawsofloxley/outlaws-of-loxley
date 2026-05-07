@@ -7,6 +7,13 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
+/// @dev Minimal Brawlers fragment we need beyond ERC-721. Lets us guard
+///      `list()` against listing dead brawlers without dragging in the
+///      whole Brawlers contract type.
+interface IBrawlersDeadRead {
+    function isDead(uint256 tokenId) external view returns (bool);
+}
+
 /**
  * @title Brawlers Marketplace
  * @notice Peer-to-peer marketplace for Brawler NFTs. Sellers list at a price
@@ -70,6 +77,8 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable, IERC721Receiver {
     error InsufficientPayment(uint256 expected, uint256 received);
     error TransferFailed();
     error FeeTooHigh(uint16 requested);
+    /// @notice Dead brawlers can't be listed. Resurrect first, then list.
+    error BrawlerIsDead(uint256 tokenId);
 
     constructor(
         address _brawlers,
@@ -116,6 +125,11 @@ contract Marketplace is Ownable, ReentrancyGuard, Pausable, IERC721Receiver {
         if (brawlers.ownerOf(tokenId) != msg.sender) revert NotOwner();
         if (!isApprovedForMarketplace(tokenId, msg.sender)) revert NotApproved();
         if (_listings[tokenId].seller != address(0)) revert AlreadyListed();
+        // v11: dead brawlers can't be listed. Buyers shouldn't have to
+        // discover post-purchase that they bought a corpse.
+        if (IBrawlersDeadRead(address(brawlers)).isDead(tokenId)) {
+            revert BrawlerIsDead(tokenId);
+        }
 
         _listings[tokenId] = Listing({
             seller: msg.sender,

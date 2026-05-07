@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 /*
- * Pixel-art / retro-game aesthetic inspired by Fantums of Opera.
- * Fonts loaded from Google Fonts via the <link> tags in layout.tsx for
- * the fastest possible first paint (no @import FOUT).
+ * Pixel-art / retro-game aesthetic. Fonts loaded from Google Fonts via the
+ * <link> tags in layout.tsx for the fastest possible first paint (no
+ * @import FOUT).
  */
 
 @layer base {
@@ -15,10 +15,14 @@
     background-color: theme('colors.brawl-bg');
     color: theme('colors.brawl-text');
     font-family: theme('fontFamily.mono');
+    /* Bump global body baseline for readability (was browser default 16px;
+     * 17px helps the mono font feel less squished without breaking layout). */
+    font-size: 17px;
+    line-height: 1.55;
     /* Crisper pixel rendering on high-DPI screens */
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    /* Hard-stop horizontal overflow on mobile — no page should scroll sideways. */
+    /* Hard-stop horizontal overflow on mobile (no page should scroll sideways). */
     overflow-x: hidden;
   }
   body {
@@ -37,8 +41,8 @@
 
 @layer components {
   /*
-   * A bordered card that matches the Fantums "content panel" look: dark
-   * brick-tinted background with a subtle warm-brown border.
+   * A bordered card with a dark brick-tinted background and a subtle
+   * warm-brown border.
    */
   .brawl-card {
     background-color: theme('colors.brawl-panel');
@@ -54,8 +58,7 @@
   }
 
   /*
-   * Primary button — solid orange with no gradient, matching Fantums
-   * "FIND GOTHUMS" and similar big CTAs.
+   * Primary button. Solid orange with no gradient, used for the main CTAs.
    */
   .brawl-btn {
     display: inline-flex;
@@ -108,7 +111,7 @@
 
   /*
    * Pixel-font header (used for page titles, section titles).
-   * Wide letter-spacing & uppercase because that's Fantums' signature look.
+   * Wide letter-spacing & uppercase to match the retro-arcade aesthetic.
    */
   .brawl-header {
     font-family: theme('fontFamily.pixel');

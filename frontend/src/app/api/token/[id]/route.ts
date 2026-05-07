@@ -18,6 +18,7 @@ import { NextResponse } from 'next/server';
 import { createPublicClient, defineChain, http } from 'viem';
 import { BRAWLERS_ABI } from '@/lib/abi';
 import { validateEnv } from '@/lib/env';
+import { rankForToken } from '@/lib/rankCache';
 
 export const runtime = 'nodejs';
 
@@ -134,11 +135,21 @@ export async function GET(
   const rarity = rarityFor(onchainWeapon.weight);
   const record = `${onchainBrawler.wins}W/${onchainBrawler.losses}L/${onchainBrawler.ties}T`;
 
+  // Rarity rank — empirical trait-frequency score against currently
+  // minted brawlers. May shift slightly as more brawlers mint.
+  // Failure here is non-fatal: token metadata still serves without rank.
+  let rankInfo: { rank: number; rankOf: number; score: number } | null = null;
+  try {
+    const r = await rankForToken(tokenId);
+    if (r) rankInfo = { rank: r.rank, rankOf: r.rankOf, score: r.score };
+  } catch { /* swallow — rank is best-effort */ }
+
   const body = {
     name: `Brawler #${tokenId}, ${onchainBrawler.name}`,
     description:
       `${onchainBrawler.name} wields a ${onchainWeapon.name} (${weaponTypeLabel}, ${rarity}). ` +
       `Record ${record}, Rating ${onchainBrawler.elo}, level ${onchainBrawler.level}. ` +
+      (rankInfo ? `Rarity rank ${rankInfo.rank} of ${rankInfo.rankOf}. ` : '') +
       (onchainBrawler.isDead ? 'Currently in the graveyard.' : 'Alive and fighting.'),
     external_url: externalUrl,
     image: imageUrl,
@@ -146,6 +157,13 @@ export async function GET(
       { trait_type: 'Weapon', value: onchainWeapon.name },
       { trait_type: 'Weapon Type', value: weaponTypeLabel },
       { trait_type: 'Rarity', value: rarity },
+      ...(rankInfo
+        ? [
+            { trait_type: 'Rarity Rank', value: rankInfo.rank, display_type: 'number' },
+            { trait_type: 'Rank Of', value: rankInfo.rankOf, display_type: 'number' },
+            { trait_type: 'Rarity Score', value: rankInfo.score, display_type: 'number' },
+          ]
+        : []),
       { trait_type: 'Status', value: onchainBrawler.isDead ? 'Dead' : 'Alive' },
       { trait_type: 'Level', value: onchainBrawler.level, display_type: 'number' },
       { trait_type: 'Rating', value: onchainBrawler.elo, display_type: 'number' },

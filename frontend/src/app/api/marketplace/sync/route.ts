@@ -14,6 +14,7 @@
 import { createPublicClient, defineChain, http, parseAbi, parseAbiItem, type Log, type PublicClient } from 'viem';
 import { validateEnv } from '@/lib/env';
 import {
+  clearMarketLastSyncedBlock,
   deleteListing,
   ensureMarketSchema,
   getAllCachedTokenIds,
@@ -154,7 +155,9 @@ async function syncImpl(request?: Request): Promise<Response> {
       if (sessionPayload || keyOk) {
         await ensureMarketSchema();
         forcedWipe = await wipeAllListings();
-        await setMarketLastSyncedBlock(0n);
+        // Clear (NOT zero) so the next sync triggers backfill from
+        // latest - INITIAL_BACKFILL_BLOCKS instead of walking from genesis.
+        await clearMarketLastSyncedBlock();
       } else {
         return Response.json(
           { ok: false, error: 'wipe requires dash session or DASH_SESSION_SECRET key' },
@@ -178,7 +181,9 @@ async function syncImpl(request?: Request): Promise<Response> {
   } else if (tracked !== configured) {
     wipedRows += await wipeAllListings();
     await setTrackedMarketplaceAddress(configured);
-    await setMarketLastSyncedBlock(0n);
+    // Clear cursor so the next sync backfills from latest - INITIAL_BACKFILL_BLOCKS
+    // instead of walking from genesis (the bug we hit on v10 rehearsal).
+    await clearMarketLastSyncedBlock();
     console.warn(
       `[marketplace/sync] tracked addr ${tracked} != configured ${configured}, wiped ${wipedRows} stale rows`,
     );
@@ -235,16 +240,36 @@ async function syncImpl(request?: Request): Promise<Response> {
     return Response.json({ ok: false, error: 'All RPC endpoints failed' }, { status: 502 });
   }
 
-  // Auto-reset stale cursor (cursor > head = chain switch happened).
+  // Auto-reset stale cursor in three scenarios:
+  //  1. chain switched (cursor > head) — fast-forward to recent
+  //  2. cursor is null or zero (fresh / address change wipe) — backfill window
+  //  3. cursor is absurdly behind (>100k blocks) — implies a previous bug
+  //     left it at near-zero. Fast-forward instead of walking from there.
+  //     Self-heal so the same bug can't bite again on future address swaps.
+  const HEAVILY_LAGGED = 100_000n;
   const staleCursor = state.lastBlock !== null && state.lastBlock > latest;
-  let from = staleCursor || state.lastBlock === null
-    ? latest > INITIAL_BACKFILL_BLOCKS
-      ? latest - INITIAL_BACKFILL_BLOCKS
-      : 0n
-    : state.lastBlock + 1n;
+  const freshOrZero = state.lastBlock === null || state.lastBlock === 0n;
+  const heavilyLagged =
+    state.lastBlock !== null &&
+    state.lastBlock > 0n &&
+    latest > state.lastBlock + HEAVILY_LAGGED;
+  let from: bigint;
+  if (staleCursor || freshOrZero || heavilyLagged) {
+    from = latest > INITIAL_BACKFILL_BLOCKS ? latest - INITIAL_BACKFILL_BLOCKS : 0n;
+  } else {
+    from = (state.lastBlock as bigint) + 1n;
+  }
   if (staleCursor) {
     console.warn(
       `[marketplace/sync] cursor ${state.lastBlock} > head ${latest}, resetting to ${from}`,
+    );
+  } else if (freshOrZero) {
+    console.warn(
+      `[marketplace/sync] cursor=${state.lastBlock} treated as fresh, backfilling from ${from}`,
+    );
+  } else if (heavilyLagged) {
+    console.warn(
+      `[marketplace/sync] cursor ${state.lastBlock} is ${latest - (state.lastBlock as bigint)} behind head, fast-forwarding to ${from}`,
     );
   }
 

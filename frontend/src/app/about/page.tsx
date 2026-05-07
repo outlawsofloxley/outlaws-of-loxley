@@ -16,24 +16,23 @@ export default function AboutPage() {
         <h1 className="brawl-header text-3xl md:text-4xl text-brawl-orange mb-3">
           ⚔ BASEic Brawlers
         </h1>
-        <p className="brawl-header text-xs md:text-sm text-brawl-text mb-3">
+        <p className="brawl-header text-base md:text-lg text-brawl-text mb-3">
           Basic art. Brutal arena. Built on Base.
         </p>
-        <p className="text-sm md:text-base text-brawl-text-dim leading-relaxed">
-          We don&rsquo;t do photorealistic. We don&rsquo;t do generic stock-art slop. We do{' '}
-          <strong className="text-brawl-text">crayon-simple, deterministic
+        <p className="text-base md:text-lg text-brawl-text-dim leading-relaxed">
+          Not photorealistic. Not stock-art. Just{' '}
+          <strong className="text-brawl-text">crayon-simple deterministic
           pixel art</strong> rolled fresh on every mint by a 32×24 procedural
           generator. Same seed in, same warrior out. <strong>2000</strong>{' '}
-          fighters in the drop, one 1-of-1 King reserved for the dev. Mint, stake
-          BRAWL, brawl other players for a 90 / 10 pot split, climb the
-          leaderboard, dodge the graveyard. Fully on-chain on{' '}
+          fighters in the drop, one 1-of-1 King for the dev. Mint, stake
+          BRAWL, fight other players for a 90/10 pot split, climb the
+          leaderboard, try not to end up in the graveyard. All on-chain on{' '}
           <strong className="text-brawl-text">Base</strong>. Backend-signed
           duels for replay safety. Chainlink VRF for the rarity shuffle so
-          nobody can pre-compute their roll. That&rsquo;s the whole pitch.
+          nobody can pre-compute their roll.
         </p>
         <div className="mt-3 text-sm text-brawl-text-faint italic">
-          BASEic by name, brutal by nature. The art is simple on purpose. The
-          brawls aren&rsquo;t.
+          BASEic by name. Not by attitude.
         </div>
       </header>
 
@@ -48,7 +47,7 @@ export default function AboutPage() {
           <strong>On mobile?</strong> Mobile Chrome and Safari can&rsquo;t talk
           to wallet apps directly. Instead, open this dapp inside MetaMask
           mobile&rsquo;s built-in browser:
-          <ol className="mt-2 list-decimal pl-5 space-y-1 text-xs">
+          <ol className="mt-2 list-decimal pl-5 space-y-1 text-sm">
             <li>Install the <strong>MetaMask</strong> app from the App Store / Play Store</li>
             <li>
               Tap the big orange <strong>Connect Wallet</strong> button on this page. On
@@ -81,7 +80,7 @@ export default function AboutPage() {
         </Callout>
         <Callout>
           <strong>Want to try without spending?</strong> Point your wallet at{' '}
-          <Mono>Base Sepolia</Mono> (chain <Mono>84532</Mono>) — a separate
+          <Mono>Base Sepolia</Mono> (chain <Mono>84532</Mono>). A separate
           deployment runs there with the same code, fake money, no risk.
           <ul className="mt-2 list-disc pl-5 space-y-1 font-mono text-sm">
             <li>RPC URL: <Mono>https://sepolia.base.org</Mono></li>
@@ -152,7 +151,7 @@ export default function AboutPage() {
           per transaction). Pricing is tiered, payable in{' '}
           <Mono>ETH</Mono>, <Mono>USDC</Mono>, or <Mono>USDT</Mono> on Base:
         </p>
-        <ul className="text-sm space-y-0.5 ml-4">
+        <ul className="text-base space-y-1 ml-4">
           <li><strong>Slots 1-50</strong>: $20 (founder)</li>
           <li><strong>Slots 51-100</strong>: $25 (founder)</li>
           <li><strong>Slots 101-500</strong>: $30</li>
@@ -161,12 +160,11 @@ export default function AboutPage() {
           <li><strong>Slots 1501-2000</strong>: $50</li>
         </ul>
         <p>
-          Every mint splits transparently: <strong>33.33% routes into the
-          BRAWL/ETH liquidity pool</strong> (paired with 50 BRAWL from the
-          MintDrop reserve), the rest goes to the dev wallet to cover ops
-          and treasury. Every minter also gets <strong>50 BRAWL airdropped</strong>
-          to their wallet on top of the brawler itself. Founders 1-100 get
-          a bonus +20 BRAWL (so 70 total) on mint.
+          Mint money goes 100% to the dev wallet. No LP siphon, no buy/sell tax.
+          The LP gets seeded once at launch (30k BRAWL paired with the dev&rsquo;s ETH)
+          and then locked on Unicrypt for 90 days. Fight stakes are about $1
+          worth of BRAWL each, auto-rebalanced as the price moves. Founders 1-100
+          pay 25% less per fight and get a free first resurrect.
         </p>
         <p>
           Every brawler is randomly generated with a name, stats, a weapon, and
@@ -179,7 +177,7 @@ export default function AboutPage() {
           your card forever. Top of the trophy case. Plus all FOUNDER 100 perks
           below.
           <div className="mt-2"><strong className="text-brawl-cyan">★ FOUNDER 100</strong> (token IDs 1–100):
-            <ul className="mt-1 list-disc pl-5 space-y-1 text-xs">
+            <ul className="mt-1 list-disc pl-5 space-y-1 text-sm">
               <li>Cheapest tier on the mint (slots 1-50 at $20, 51-100 at $25), never repeated</li>
               <li>Bonus <Mono>+20 BRAWL</Mono> airdropped on mint (on top of the standard 50, so 70 total)</li>
               <li><strong>25% discount</strong> on every duel stake (7.5 BRAWL/fight instead of 10)</li>
@@ -190,7 +188,7 @@ export default function AboutPage() {
         </Callout>
         <Callout>
           <strong>Bulk-mint discount</strong>. Buy in volume, get bonus brawlers free:
-          <ul className="mt-2 list-disc pl-5 space-y-1 text-xs">
+          <ul className="mt-2 list-disc pl-5 space-y-1 text-sm">
             <li>Mint <strong>5</strong> → get <strong>1 bonus</strong> = 6 brawlers for the price of 5</li>
             <li>Mint <strong>10</strong> → get <strong>3 bonus</strong> = 13 brawlers for the price of 10</li>
             <li>Mint <strong>20</strong> → get <strong>7 bonus</strong> = 27 brawlers for the price of 20</li>
@@ -204,7 +202,7 @@ export default function AboutPage() {
         <Callout>
           <strong>Rarity distribution</strong>. 2000 brawlers in the drop plus
           1 King:
-          <ul className="mt-2 list-disc pl-5 space-y-1 text-xs">
+          <ul className="mt-2 list-disc pl-5 space-y-1 text-sm">
             <li>
               <span className="text-rarity-common">Common</span>: 1240 brawlers
               (Knife, Baseball Bat, Crowbar)
@@ -334,7 +332,7 @@ export default function AboutPage() {
             7× Epic, 15× King. Base cost is set at deploy time to ~$10 worth
             of <Mono>ETH</Mono> on Base.
           </p>
-          <ul className="mt-2 list-disc pl-5 space-y-1 text-xs">
+          <ul className="mt-2 list-disc pl-5 space-y-1 text-sm">
             <li>A fresh Common at 0 wins: ~$10</li>
             <li>Uncommon at 3 wins: ~$20</li>
             <li>Legendary at 5 wins: ~$60</li>
@@ -379,7 +377,7 @@ export default function AboutPage() {
         </p>
         <Callout>
           <strong>How selling works</strong>
-          <ol className="mt-2 list-decimal pl-5 space-y-1 text-xs">
+          <ol className="mt-2 list-decimal pl-5 space-y-1 text-sm">
             <li>Go to your brawler&rsquo;s detail page.</li>
             <li>In the Marketplace panel, enter a price in ETH.</li>
             <li>
@@ -454,7 +452,7 @@ export default function AboutPage() {
         <Callout>
           <strong>No team allocation, no presale, no VC round.</strong>{' '}
           100k BRAWL supply, fully transparent allocation:
-          <ul className="mt-1 list-disc pl-5 space-y-1 text-xs">
+          <ul className="mt-1 list-disc pl-5 space-y-1 text-sm">
             <li><strong>Initial LP seed</strong>: 2,500 BRAWL + ~$500 ETH (dev funds).</li>
             <li><strong>Auto-paired BRAWL</strong>: 50k locked in MintDrop, drips into LP as people mint.</li>
             <li><strong>Founder airdrops</strong>: 2,000 BRAWL to first 100 minters.</li>

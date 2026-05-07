@@ -26,6 +26,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/market', label: 'Market' },
   { href: '/duel', label: 'Duel' },
   { href: '/leaderboard', label: 'Leaders' },
+  { href: '/ranks', label: 'Ranks' },
   { href: '/history', label: 'History' },
   { href: '/graveyard', label: 'Graveyard' },
   { href: '/me', label: 'Profile' },

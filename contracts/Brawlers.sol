@@ -447,6 +447,15 @@ contract Brawlers is ERC721, Ownable, Pausable {
         return _brawlers[tokenId];
     }
 
+    /// @notice Cheap dead-state read for cross-contract guards (Marketplace
+    ///         blocks listing dead, Duel blocks fights on dead — same fact,
+    ///         no need to load the whole Brawler struct).
+    /// @dev Returns false for non-existent tokens. Callers that care about
+    ///      existence should check ownerOf separately.
+    function isDead(uint256 tokenId) external view returns (bool) {
+        return _brawlers[tokenId].isDead;
+    }
+
     function getStats(uint256 tokenId) external view returns (Stats.StatBlock memory) {
         if (_ownerOf(tokenId) == address(0)) revert BrawlerDoesNotExist(tokenId);
         Brawler storage b = _brawlers[tokenId];

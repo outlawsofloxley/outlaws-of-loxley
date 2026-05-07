@@ -78,6 +78,13 @@ export async function setMarketLastSyncedBlock(block: bigint): Promise<void> {
   `;
 }
 
+/// Wipe the cursor entirely so the next sync triggers the
+/// `latest - INITIAL_BACKFILL_BLOCKS` backfill path. Used after marketplace
+/// address swaps to avoid replaying from genesis.
+export async function clearMarketLastSyncedBlock(): Promise<void> {
+  await sql`DELETE FROM market_sync_state WHERE key = 'last_block'`;
+}
+
 /// Reads the marketplace contract address the cache was built against. Used
 /// to detect "operator swapped Marketplace contracts" and trigger a wipe.
 export async function getTrackedMarketplaceAddress(): Promise<string | null> {

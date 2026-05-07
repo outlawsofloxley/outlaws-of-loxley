@@ -55,8 +55,13 @@ services:
       LEADERBOARD_AUTO_UPDATE: "true"
       # Block-range filter to drop legacy duel rows (BSC Testnet + earlier
       # Sepolia versions). Set to the current Duel contract deploy block.
-      # v9 redeploy 2026-05-07 with ethnic-surnames naming.
-      DUEL_BLOCK_MIN: "41172007"
+      # v10 launch-rehearsal 2026-05-07.
+      DUEL_BLOCK_MIN: "41177645"
+      # Marketplace watcher — Sold events post to #marketplace.
+      # On mainnet day, set MARKETPLACE_ADDRESS to the real Marketplace
+      # contract and RPC_URL to https://mainnet.base.org.
+      MARKETPLACE_ADDRESS: "0xdf6caa8d648ded9f01669f8ebf6d4695072081fe"
+      RPC_URL: "https://base-sepolia-rpc.publicnode.com"
       # One-shot wipe + backfill ran 2026-05-07 to repair v9 sim death
       # posts. Both off now — every future death posts via the live
       # death-watcher (token-deduped + cache-bypass).

@@ -53,6 +53,12 @@ const GUILD_ID = process.env.DISCORD_GUILD_ID;
 const API_BASE = process.env.BRAWLERS_API_BASE || 'https://baseicbrawlers.com';
 const TX_BASE = process.env.BASESCAN_TX_BASE || 'https://sepolia.basescan.org/tx/';
 const DUEL_POLL_SEC = Number(process.env.DUEL_POLL_SEC || '60');
+// Marketplace watcher — reads Sold events directly from chain via JSON-RPC.
+// Set MARKETPLACE_ADDRESS + RPC_URL on launch day to enable.
+const MARKETPLACE_ADDRESS = (process.env.MARKETPLACE_ADDRESS || '').toLowerCase();
+const RPC_URL = process.env.RPC_URL || 'https://base-sepolia-rpc.publicnode.com';
+const MARKETPLACE_POLL_SEC = Number(process.env.MARKETPLACE_POLL_SEC || '60');
+const MARKETPLACE_CHANNEL = process.env.MARKETPLACE_CHANNEL || 'marketplace';
 const LEADERBOARD_INTERVAL_HOURS = Number(process.env.LEADERBOARD_INTERVAL_HOURS || '24');
 const LEADERBOARD_ON_STARTUP = /^(1|true|yes)$/i.test(process.env.LEADERBOARD_ON_STARTUP || '');
 const DUEL_BACKFILL_COUNT = Math.max(0, Number(process.env.DUEL_BACKFILL_COUNT || '0'));
@@ -93,7 +99,9 @@ const VERIFY_CHANNEL = tpl.verification?.channel || 'verify';
 const VERIFY_EMOJI = tpl.verification?.reaction || '⚔️';
 const VERIFIED_ROLE = tpl.verification?.grantsRole || 'Verified';
 const RULES_CHANNEL = tpl.guildPointers?.rulesChannel || 'rules';
-const DUEL_TALK_CHANNEL = process.env.DUEL_TALK_CHANNEL || 'duel-talk';
+// #duels = bot-only auto-posts of duel outcomes (admin posting locked).
+// #duel-talk = community chat about duels (free posting).
+const DUEL_TALK_CHANNEL = process.env.DUEL_TALK_CHANNEL || 'duels';
 const LEADERBOARD_CHANNEL = process.env.LEADERBOARD_CHANNEL || 'leaderboard';
 const GRAVEYARD_CHANNEL = process.env.GRAVEYARD_CHANNEL || 'graveyard';
 
@@ -123,10 +131,14 @@ let rulesChannelId = null;
 let duelTalkChannelId = null;
 let leaderboardChannelId = null;
 let graveyardChannelId = null;
+let marketplaceChannelId = null;
 const seenDuelKeys = new Set();
 // Death dedup is by tokenId only — a brawler dies once. If they later
 // resurrect (returns to Alive), we drop the entry so a future death posts.
 const seenDeathTokens = new Set();
+// Marketplace sales dedup by tx_hash:log_index.
+const seenSaleKeys = new Set();
+let marketplaceLastBlock = null;
 function duelKey(d) { return `${d.tx_hash}:${d.log_index}`; }
 
 // Leaderboard repost tracking — fingerprint of the top-N positions and
@@ -629,6 +641,131 @@ async function buildLeaderboardMessage() {
   return { embeds: [embed], files };
 }
 
+// ─── marketplace Sold watcher ────────────────────────────────────
+// Reads Sold events directly from chain via JSON-RPC eth_getLogs. No new
+// dependency — just fetch. Stores last-processed block in memory; on bot
+// restart, watermarks at current head so historical sales don't re-spam.
+//
+// Sold(tokenId indexed, seller indexed, buyer indexed, price, fee)
+// keccak256("Sold(uint256,address,address,uint256,uint256)") =
+//   0xa70b1a854695e7921b122988e216d3a6cd10ed799017c67b1ff231967e6bf56d
+const SOLD_TOPIC0 = '0xa70b1a854695e7921b122988e216d3a6cd10ed799017c67b1ff231967e6bf56d';
+
+async function rpcCall(method, params) {
+  const res = await fetch(RPC_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+  });
+  const j = await res.json();
+  if (j.error) throw new Error(`${method}: ${j.error.message}`);
+  return j.result;
+}
+
+function paddedAddress(topic) {
+  // 32-byte topic → 0x + 24 zero hex chars + 40 addr hex chars.
+  return '0x' + topic.slice(-40);
+}
+
+function shortAddr(a) { return `${a.slice(0, 6)}…${a.slice(-4)}`; }
+
+async function pollMarketplaceSales() {
+  if (!marketplaceChannelId || !MARKETPLACE_ADDRESS) return;
+  let head;
+  try {
+    head = parseInt(await rpcCall('eth_blockNumber', []), 16);
+  } catch (e) {
+    console.error('marketplace poll: head fetch error:', e.message);
+    return;
+  }
+  if (marketplaceLastBlock === null) {
+    // First poll: watermark to current head minus a small buffer so any
+    // sale in the last 30s isn't missed if RPC was slightly behind.
+    marketplaceLastBlock = Math.max(0, head - 50);
+    console.log(`  marketplace watermark set at block ${marketplaceLastBlock}`);
+    return;
+  }
+  if (head <= marketplaceLastBlock) return;
+  let logs;
+  try {
+    logs = await rpcCall('eth_getLogs', [{
+      address: MARKETPLACE_ADDRESS,
+      fromBlock: '0x' + (marketplaceLastBlock + 1).toString(16),
+      toBlock: '0x' + head.toString(16),
+      topics: [SOLD_TOPIC0],
+    }]);
+  } catch (e) {
+    console.error('marketplace poll: getLogs error:', e.message);
+    return;
+  }
+  for (const log of logs || []) {
+    const key = `${log.transactionHash}:${log.logIndex}`;
+    if (seenSaleKeys.has(key)) continue;
+    seenSaleKeys.add(key);
+    try {
+      const tokenId = parseInt(log.topics[1], 16);
+      const seller = paddedAddress(log.topics[2]);
+      const buyer = paddedAddress(log.topics[3]);
+      // data: price (32 bytes) + fee (32 bytes)
+      const data = log.data.slice(2); // strip 0x
+      const price = BigInt('0x' + data.slice(0, 64));
+      const fee = BigInt('0x' + data.slice(64, 128));
+      const blockNumber = parseInt(log.blockNumber, 16);
+      const meta = await getMetadata(tokenId);
+      const png = await getPortraitPng(tokenId);
+      const m = /^Brawler #\d+,\s*(.+)$/.exec(meta?.name || '');
+      const shortName = m ? m[1] : `Brawler #${tokenId}`;
+      const attrMap = Object.fromEntries((meta?.attributes || []).map((a) => [a.trait_type, a.value]));
+      const rarity = attrMap.Rarity || 'Common';
+      const weapon = attrMap.Weapon || 'Unknown';
+      const priceEth = (Number(price) / 1e18).toFixed(6).replace(/\.?0+$/, '');
+      const sellerNet = (Number(price - fee) / 1e18).toFixed(6).replace(/\.?0+$/, '');
+      const feeEth = (Number(fee) / 1e18).toFixed(6).replace(/\.?0+$/, '');
+
+      const embed = new EmbedBuilder()
+        .setColor(rarityColor(rarity))
+        .setTitle(`💸 ${shortName} sold for ${priceEth} ETH`)
+        .setDescription(`A new owner steps into the arena. Welcome **${shortAddr(buyer)}** — bring the heat.`)
+        .addFields(
+          {
+            name: '⚔ Brawler',
+            value: `\`#${tokenId}\` · ${rarity}\n${weaponEmoji(attrMap['Weapon Type'])} ${weapon}`,
+            inline: true,
+          },
+          {
+            name: '💰 Sale',
+            value: `**${priceEth} ETH**\nSeller net: ${sellerNet} ETH\nFee: ${feeEth} ETH`,
+            inline: true,
+          },
+          {
+            name: '🤝 Wallets',
+            value: `Seller: \`${shortAddr(seller)}\`\nBuyer: \`${shortAddr(buyer)}\``,
+            inline: false,
+          },
+          {
+            name: 'On chain',
+            value: `[\`${shortHash(log.transactionHash)}\`](${TX_BASE}${log.transactionHash}) · block ${blockNumber}`,
+            inline: false,
+          },
+        )
+        .setURL(`${API_BASE}/market`)
+        .setFooter({ text: 'BASEic Brawlers · marketplace' })
+        .setTimestamp(new Date());
+      const files = [];
+      if (png) {
+        files.push(new AttachmentBuilder(png, { name: `sold-${tokenId}.png` }));
+        embed.setThumbnail(`attachment://sold-${tokenId}.png`);
+      }
+      const channel = await client.channels.fetch(marketplaceChannelId);
+      await channel.send({ embeds: [embed], files });
+      console.log(`+ posted sale #${tokenId} → #${MARKETPLACE_CHANNEL} (${priceEth} ETH)`);
+    } catch (e) {
+      console.error(`marketplace post #${log.topics[1]}:`, e.message);
+    }
+  }
+  marketplaceLastBlock = head;
+}
+
 async function postLeaderboard() {
   if (!leaderboardChannelId) return false;
   try {
@@ -782,6 +919,8 @@ async function bootstrap() {
   if (lb) { leaderboardChannelId = lb.id; console.log(`  resolved #${LEADERBOARD_CHANNEL} → ${lb.id}`); }
   const gy = findText(GRAVEYARD_CHANNEL);
   if (gy) { graveyardChannelId = gy.id; console.log(`  resolved #${GRAVEYARD_CHANNEL} → ${gy.id}`); }
+  const mp = findText(MARKETPLACE_CHANNEL);
+  if (mp) { marketplaceChannelId = mp.id; console.log(`  resolved #${MARKETPLACE_CHANNEL} → ${mp.id}`); }
 
   const roles = await guild.roles.fetch();
   const verified = roles.find((r) => r.name === VERIFIED_ROLE);
@@ -820,7 +959,7 @@ client.once(Events.ClientReady, async (c) => {
   }
 
   console.log(
-    `✓ Watching: ⚔ in #${VERIFY_CHANNEL}, joins, new duels in #${DUEL_TALK_CHANNEL}, deaths in #${GRAVEYARD_CHANNEL}, leaderboard digest every ${LEADERBOARD_INTERVAL_HOURS}h.`,
+    `✓ Watching: ⚔ in #${VERIFY_CHANNEL}, joins, new duels in #${DUEL_TALK_CHANNEL}, deaths in #${GRAVEYARD_CHANNEL}, sales in #${MARKETPLACE_CHANNEL}${MARKETPLACE_ADDRESS ? '' : ' (DISABLED — MARKETPLACE_ADDRESS unset)'}, leaderboard digest every ${LEADERBOARD_INTERVAL_HOURS}h.`,
   );
   console.log(
     `✓ Slash: /leaderboard, /refresh-pins (Manage-Guild gated). Auto-update on top-${LEADERBOARD_FP_DEPTH} change: ${LEADERBOARD_AUTO_UPDATE ? `ON (≥${LEADERBOARD_MIN_INTERVAL_MIN}m gap)` : 'OFF'}.`,
@@ -828,6 +967,11 @@ client.once(Events.ClientReady, async (c) => {
 
   setInterval(() => { void pollDuels(); }, Math.max(15, DUEL_POLL_SEC) * 1000);
   setInterval(() => { void postLeaderboard(); }, Math.max(1, LEADERBOARD_INTERVAL_HOURS) * 3600 * 1000);
+  if (MARKETPLACE_ADDRESS) {
+    setInterval(() => { void pollMarketplaceSales(); }, Math.max(15, MARKETPLACE_POLL_SEC) * 1000);
+    // Run once immediately so the watermark sets without waiting a full poll cycle.
+    void pollMarketplaceSales();
+  }
 
   if (LEADERBOARD_ON_STARTUP) void postLeaderboard();
 

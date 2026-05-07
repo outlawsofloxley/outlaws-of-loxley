@@ -7,6 +7,7 @@ import {Duel} from "../contracts/Duel.sol";
 import {Graveyard} from "../contracts/Graveyard.sol";
 import {BRAWL} from "../contracts/BRAWL.sol";
 import {MintDrop} from "../contracts/MintDrop.sol";
+import {Marketplace} from "../contracts/Marketplace.sol";
 import {MockUSDT} from "../contracts/mocks/MockUSDT.sol";
 
 /**
@@ -202,11 +203,29 @@ contract Deploy is Script {
         );
         console2.log("MintDrop:             ", address(mintDrop));
 
+        // ─── 6b. Deploy Marketplace (peer-to-peer NFT sales, 5% fee) ─
+        // Folded into the main deploy as of v11 so `npm run deploy:mainnet`
+        // is one shot and the orchestrator picks up the address. Default
+        // fee = 5% (capped at 10% by MAX_FEE_BPS in Marketplace itself).
+        // Overridable via FEE_BPS / FEE_TREASURY env.
+        uint16 feeBps = uint16(vm.envOr("FEE_BPS", uint256(500)));
+        address feeTreasury = vm.envOr("FEE_TREASURY", devTreasury);
+        Marketplace marketplace = new Marketplace(
+            address(brawlers),
+            feeTreasury,
+            feeBps,
+            deployer
+        );
+        console2.log("Marketplace:          ", address(marketplace));
+
         // ─── 7. Wire authorizations ──────────────────────────────────
         brawlers.setDuelContract(address(duel));
         brawlers.setGraveyardContract(address(graveyard));
         brawlers.setMintDrop(address(mintDrop));
         duel.setGraveyardContract(address(graveyard));
+        // v11: Duel queries Marketplace.isListed before applying duel
+        // results, blocking listed brawlers from being sent into combat.
+        duel.setMarketplace(address(marketplace));
 
         // ─── 7b. Whitelist game contracts in BRAWL (anti-sniping bypass) ──
         // These addresses MUST move BRAWL freely (game txs would otherwise

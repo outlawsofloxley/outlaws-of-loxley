@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { PixelAvatar } from './PixelAvatar';
 import type { Brawler } from '@/hooks/useAllBrawlers';
 import { rarityFromWeight, rarityLabel, rarityTextClass } from '@/lib/rarity';
+import { useBrawlerRanks } from '@/hooks/useBrawlerRanks';
 
 interface BrawlerCardProps {
   brawler: Brawler;
@@ -13,6 +14,8 @@ export function BrawlerCard({ brawler }: BrawlerCardProps) {
   const isDead = brawler.isDead;
   const record = `${brawler.wins}W / ${brawler.losses}L / ${brawler.ties}T`;
   const tier = rarityFromWeight(brawler.weapon.weight);
+  const { rankFor } = useBrawlerRanks();
+  const rank = rankFor(brawler.tokenId);
   // Founder badges, purely cosmetic flex for the early minters. Token IDs
   // 1..50 = "FOUNDER 50" gold badge; 51..100 = "FOUNDER 100" silver.
   // No stat / weapon / ELO impact, earned by being early.
@@ -24,15 +27,12 @@ export function BrawlerCard({ brawler }: BrawlerCardProps) {
       href={`/brawler/${brawler.tokenId}`}
       className="brawl-card brawl-card-hover block p-3 group"
     >
-      {/* Top row: token id + rarity badge. HOUSE label hidden in browse view
-          per D's 2026-04-27 callout, looked cluttered. The arena-roster
-          status is still tracked under the hood for matchmaking, just not
-          surfaced visually here. */}
+      {/* Top row: token id + rarity badge. */}
       <div className="flex items-center justify-between mb-1">
-        <div className="text-sm font-mono text-brawl-text-faint">
+        <div className="text-base font-mono text-brawl-text-faint">
           #{brawler.tokenId}
         </div>
-        <div className={`text-xs brawl-header tracking-wider ${rarityTextClass(tier)}`}>
+        <div className={`text-sm brawl-header tracking-wider ${rarityTextClass(tier)}`}>
           {rarityLabel(tier)}
         </div>
       </div>
@@ -72,7 +72,7 @@ export function BrawlerCard({ brawler }: BrawlerCardProps) {
       {/* Name */}
       <div
         className={
-          'brawl-header text-xs leading-tight mb-1 truncate ' +
+          'brawl-header text-sm leading-tight mb-1 truncate ' +
           (isDead ? 'text-brawl-text-faint line-through' : 'text-brawl-text')
         }
         title={brawler.name}
@@ -81,18 +81,32 @@ export function BrawlerCard({ brawler }: BrawlerCardProps) {
       </div>
 
       {/* Weapon */}
-      <div className="text-xs text-brawl-yellow truncate mb-2" title={brawler.weapon.name}>
+      <div className="text-sm text-brawl-yellow truncate mb-2" title={brawler.weapon.name}>
         {brawler.weapon.name}
       </div>
 
       {/* Stats row: rating + record */}
-      <div className="flex items-baseline justify-between text-xs">
+      <div className="flex items-baseline justify-between text-sm">
         <span className="font-mono">
           <span className="text-brawl-text-dim">RATING </span>
           <span className="text-brawl-cyan font-bold">{brawler.elo}</span>
         </span>
         <span className="font-mono text-brawl-text-dim">{record}</span>
       </div>
+
+      {/* Rarity rank — separate from duel rating. Lower = rarer. */}
+      {rank && (
+        <div className="mt-1 flex items-baseline justify-between text-sm">
+          <span className="font-mono">
+            <span className="text-brawl-text-dim">RANK </span>
+            <span className="text-brawl-yellow font-bold">#{rank.rank}</span>
+            <span className="text-brawl-text-dim"> / {rank.rankOf}</span>
+          </span>
+          <span className="font-mono text-brawl-text-dim text-xs">
+            {rank.score.toFixed(0)} pts
+          </span>
+        </div>
+      )}
 
       {/* Status badge */}
       {isDead && (

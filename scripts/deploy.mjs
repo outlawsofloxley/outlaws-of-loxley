@@ -75,8 +75,10 @@ const TARGETS = {
     rpcEnv: 'TESTNET_RPC',
     envFile: '.env.base-sepolia',
     explorer: 'https://sepolia.basescan.org',
-    // Past v5 deploy cost ~0.0001 ETH. 0.002 leaves 20x headroom for spikes.
-    minDeployerEth: 0.002,
+    // Sepolia gas is dirt cheap (~6 mwei) — actual deploy uses ~0.0001 ETH.
+    // 0.0015 still leaves ~15x headroom for spikes and is what we have on
+    // hand for the v10 rehearsal. Mainnet check (below) stays at 0.2 ETH.
+    minDeployerEth: 0.0015,
     siteUrl: 'https://baseicbrawlers.com',
     tieredPricing: false,
     usdcEnvKey: 'USDC_ADDRESS_SEPOLIA',
@@ -469,7 +471,7 @@ function phaseParseBroadcast() {
   const data = JSON.parse(readFileSync(latestPath, 'utf8'));
   state.deployedAt = new Date(data.timestamp * 1000).toISOString();
 
-  const wantedNames = ['BRAWL', 'Brawlers', 'Duel', 'Graveyard', 'MintDrop', 'MockUSDT'];
+  const wantedNames = ['BRAWL', 'Brawlers', 'Duel', 'Graveyard', 'MintDrop', 'Marketplace', 'MockUSDT'];
   for (const tx of data.transactions ?? []) {
     if (!tx.contractName || !tx.contractAddress) continue;
     if (wantedNames.includes(tx.contractName)) {
@@ -477,6 +479,7 @@ function phaseParseBroadcast() {
         : tx.contractName === 'Duel' ? 'DUEL'
         : tx.contractName === 'Graveyard' ? 'GRAVEYARD'
         : tx.contractName === 'MintDrop' ? 'MINTDROP'
+        : tx.contractName === 'Marketplace' ? 'MARKETPLACE'
         : tx.contractName === 'MockUSDT' ? 'MOCKUSDT'
         : tx.contractName;
       state.addresses[key] = tx.contractAddress;
@@ -485,11 +488,11 @@ function phaseParseBroadcast() {
     }
   }
 
-  for (const k of ['BRAWL', 'BRAWLERS', 'DUEL', 'GRAVEYARD', 'MINTDROP']) {
+  for (const k of ['BRAWL', 'BRAWLERS', 'DUEL', 'GRAVEYARD', 'MINTDROP', 'MARKETPLACE']) {
     if (!state.addresses[k]) { fail(`missing ${k} address in broadcast`); process.exit(1); }
-    ok(`${k.padEnd(10)} = ${state.addresses[k]}`);
+    ok(`${k.padEnd(11)} = ${state.addresses[k]}`);
   }
-  if (state.addresses.MOCKUSDT) ok(`MOCKUSDT   = ${state.addresses.MOCKUSDT}`);
+  if (state.addresses.MOCKUSDT) ok(`MOCKUSDT    = ${state.addresses.MOCKUSDT}`);
 }
 
 // ─── Phase: update-env-file ──────────────────────────────────────────
@@ -502,6 +505,7 @@ function phaseUpdateEnvFile() {
     DUEL_ADDRESS: state.addresses.DUEL,
     GRAVEYARD_ADDRESS: state.addresses.GRAVEYARD,
     MINTDROP_ADDRESS: state.addresses.MINTDROP,
+    MARKETPLACE_ADDRESS: state.addresses.MARKETPLACE,
   };
   if (state.addresses.MOCKUSDT) updates.MOCKUSDT_ADDRESS = state.addresses.MOCKUSDT;
   if (state.usdcAddr) updates.USDC_ADDRESS = state.usdcAddr;
@@ -561,6 +565,7 @@ async function phaseUpdateVercel() {
     NEXT_PUBLIC_DUEL_ADDRESS: state.addresses.DUEL,
     NEXT_PUBLIC_GRAVEYARD_ADDRESS: state.addresses.GRAVEYARD,
     NEXT_PUBLIC_MINTDROP_ADDRESS: state.addresses.MINTDROP,
+    NEXT_PUBLIC_MARKETPLACE_ADDRESS: state.addresses.MARKETPLACE,
     NEXT_PUBLIC_USDT_ADDRESS: state.addresses.MOCKUSDT ?? '',
     NEXT_PUBLIC_USDC_ADDRESS: state.usdcAddr ?? '',
     NEXT_PUBLIC_CHAIN_ID: String(T.chainId),
