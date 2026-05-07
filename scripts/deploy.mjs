@@ -75,10 +75,11 @@ const TARGETS = {
     rpcEnv: 'TESTNET_RPC',
     envFile: '.env.base-sepolia',
     explorer: 'https://sepolia.basescan.org',
-    // Sepolia gas is dirt cheap (~6 mwei) — actual deploy uses ~0.0001 ETH.
-    // 0.0015 still leaves ~15x headroom for spikes and is what we have on
-    // hand for the v10 rehearsal. Mainnet check (below) stays at 0.2 ETH.
-    minDeployerEth: 0.0015,
+    // Sepolia gas is dirt cheap (~6 mwei) — actual deploy uses ~0.0001 ETH
+    // (v11 measured 0.000117). 0.001 still leaves ~10x headroom for spikes
+    // and the +10 mints the house-brawler step now adds. Mainnet check
+    // (below) stays at 0.2 ETH.
+    minDeployerEth: 0.001,
     siteUrl: 'https://baseicbrawlers.com',
     tieredPricing: false,
     usdcEnvKey: 'USDC_ADDRESS_SEPOLIA',
@@ -399,6 +400,17 @@ async function phaseForgeDeploy() {
   };
   if (state.usdcAddr) deployEnv.USDC_ADDRESS = state.usdcAddr;
 
+  // House brawlers (optional): forward to the forge script so the deploy
+  // mints + flags + transfers them in one shot. Defaults to 0 (off). When
+  // set, the orchestrator also seeds the dash whitelist via the matching
+  // NEXT_PUBLIC_HOUSE_BRAWLER_IDS Vercel env in phase 6.
+  if (process.env.HOUSE_BRAWLERS_COUNT) {
+    deployEnv.HOUSE_BRAWLERS_COUNT = process.env.HOUSE_BRAWLERS_COUNT;
+  }
+  if (process.env.HOUSE_KEEPER_ADDRESS) {
+    deployEnv.HOUSE_KEEPER_ADDRESS = process.env.HOUSE_KEEPER_ADDRESS;
+  }
+
   if (TARGET === 'mainnet') {
     // Mainnet tokenomics (locked 2026-05-07):
     //   - 100k BRAWL fixed supply: 30k LP / 5k dev / 65k governance treasury
@@ -559,6 +571,16 @@ async function phaseUpdateVercel() {
   if (DRY_RUN || SKIP_FRONTEND) { warn('skipping (dry-run or --skip-frontend)'); return; }
 
   const frontendDir = join(ROOT, 'frontend');
+
+  // If the deploy minted house brawlers, expose their tokenIds to the dash
+  // via NEXT_PUBLIC_HOUSE_BRAWLER_IDS so seedHouseWhitelistFromEnv() picks
+  // them up on first /api/house/whitelist access. The on-chain
+  // isHouseBrawler flag has already been set inside the forge script.
+  const houseCount = Number(process.env.HOUSE_BRAWLERS_COUNT ?? 0);
+  const houseIds = houseCount > 0
+    ? Array.from({ length: houseCount }, (_, i) => i + 1).join(',')
+    : '';
+
   const vercelEnv = {
     NEXT_PUBLIC_BRAWL_ADDRESS: state.addresses.BRAWL,
     NEXT_PUBLIC_BRAWLERS_ADDRESS: state.addresses.BRAWLERS,
@@ -570,6 +592,7 @@ async function phaseUpdateVercel() {
     NEXT_PUBLIC_USDC_ADDRESS: state.usdcAddr ?? '',
     NEXT_PUBLIC_CHAIN_ID: String(T.chainId),
     NEXT_PUBLIC_RPC_URL: state.rpc,
+    NEXT_PUBLIC_HOUSE_BRAWLER_IDS: houseIds,
   };
 
   for (const [key, val] of Object.entries(vercelEnv)) {
@@ -579,8 +602,13 @@ async function phaseUpdateVercel() {
     spawnSync('vercel', ['env', 'rm', key, 'production', '--yes'], {
       cwd: frontendDir, encoding: 'utf8', shell: process.platform === 'win32',
     });
-    const r = spawnSync('vercel', ['env', 'add', key, 'production'], {
-      cwd: frontendDir, encoding: 'utf8', input: `${val}\n`, shell: process.platform === 'win32',
+    // Vercel CLI 52+ requires --value for non-interactive env add; stdin
+    // piping no longer works reliably (especially under shell:true on Win32
+    // where args get concatenated and the CLI interactive prompt isn't
+    // detected). --yes skips the "this looks like a token" sensitive
+    // confirmation.
+    const r = spawnSync('vercel', ['env', 'add', key, 'production', '--value', String(val), '--yes'], {
+      cwd: frontendDir, encoding: 'utf8', shell: process.platform === 'win32',
     });
     if (r.status !== 0) {
       fail(`vercel env add ${key} failed: ${r.stderr ?? ''}`);
@@ -792,6 +820,7 @@ const PHASES = [
       state.addresses.DUEL = state.addresses.DUEL ?? env.DUEL_ADDRESS;
       state.addresses.GRAVEYARD = state.addresses.GRAVEYARD ?? env.GRAVEYARD_ADDRESS;
       state.addresses.MINTDROP = state.addresses.MINTDROP ?? env.MINTDROP_ADDRESS;
+      state.addresses.MARKETPLACE = state.addresses.MARKETPLACE ?? env.MARKETPLACE_ADDRESS;
       state.addresses.MOCKUSDT = state.addresses.MOCKUSDT ?? env.MOCKUSDT_ADDRESS;
     }
     await phase[1]();

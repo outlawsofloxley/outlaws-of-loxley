@@ -260,6 +260,84 @@ contract Phase7Test is Test {
         assertTrue(brawlers.rarityFrozen());
     }
 
+    // ─── House brawler founder override ─────────────────────────────
+
+    function test_setHouseBrawler_onlyOwner() public {
+        vm.prank(alice);
+        vm.expectRevert();
+        brawlers.setHouseBrawler(1, true);
+    }
+
+    function test_setHouseBrawler_rejectsInvalidId() public {
+        vm.expectRevert(abi.encodeWithSelector(Brawlers.InvalidTokenId.selector, 0));
+        brawlers.setHouseBrawler(0, true);
+        vm.expectRevert(abi.encodeWithSelector(Brawlers.InvalidTokenId.selector, 2002));
+        brawlers.setHouseBrawler(2002, true);
+        // King (2001) and 1..2000 are valid.
+        brawlers.setHouseBrawler(2001, true);
+        brawlers.setHouseBrawler(2000, true);
+        assertTrue(brawlers.isHouseBrawler(2001));
+        assertTrue(brawlers.isHouseBrawler(2000));
+    }
+
+    function test_setHouseBrawlersBulk_togglesAll() public {
+        uint256[] memory ids = new uint256[](5);
+        for (uint256 i = 0; i < 5; i++) ids[i] = i + 1;
+        brawlers.setHouseBrawlersBulk(ids, true);
+        for (uint256 i = 0; i < 5; i++) assertTrue(brawlers.isHouseBrawler(ids[i]));
+        brawlers.setHouseBrawlersBulk(ids, false);
+        for (uint256 i = 0; i < 5; i++) assertFalse(brawlers.isHouseBrawler(ids[i]));
+    }
+
+    function test_houseBrawler_paysFullDuelCost() public {
+        // Token 1 is in the founder discount range. Without the house flag,
+        // fighterCost(1) returns the discounted rate. With the flag, it pays
+        // full price like a non-founder.
+        uint256 discounted = duel.fighterCost(1);
+        assertLt(discounted, FIGHT_COST, "founder should be discounted by default");
+
+        brawlers.setHouseBrawler(1, true);
+        assertEq(duel.fighterCost(1), FIGHT_COST, "house brawler pays full");
+
+        // Non-house founder still gets the discount.
+        assertLt(duel.fighterCost(2), FIGHT_COST, "non-house founder still discounted");
+    }
+
+    function test_houseBrawler_paysFullResurrectCost() public {
+        // Mint token 1 to alice, kill it, then check costFor in two states.
+        vm.prank(address(mintDrop));
+        brawlers.mint(alice);
+        assertEq(brawlers.ownerOf(1), alice);
+
+        // Without house flag, founder freebie = 0.
+        assertEq(graveyard.costFor(1), 0, "default founder freebie");
+
+        // Flag as house, freebie no longer applies.
+        brawlers.setHouseBrawler(1, true);
+        assertGt(graveyard.costFor(1), 0, "house brawler must pay");
+    }
+
+    function test_houseBrawler_skipsFounderAirdrop() public {
+        // Set founder airdrop to a real amount so the test has signal.
+        mintDrop.setFounderAirdrop(20e18);
+
+        // Non-house founder mint (token 1): receives base + founder airdrop.
+        vm.prank(alice);
+        mintDrop.mintWithETH{value: ETH_PRICE}(alice);
+        assertEq(brawl.balanceOf(alice), AIRDROP + 20e18, "non-house gets founder bonus");
+
+        // Pre-flag token 2 as house BEFORE the mint so the airdrop check sees it.
+        uint256[] memory houseIds = new uint256[](1);
+        houseIds[0] = 2;
+        brawlers.setHouseBrawlersBulk(houseIds, true);
+
+        vm.prank(bob);
+        mintDrop.mintWithETH{value: ETH_PRICE}(bob);
+        // House brawler still gets the base per-mint airdrop (it's a public
+        // promo, not a founder perk), but skips the founder bonus.
+        assertEq(brawl.balanceOf(bob), AIRDROP, "house gets base only");
+    }
+
     // ─── MintDrop: ETH path ─────────────────────────────────────────
 
     function test_mintDrop_mintWithETH_transfersFeeAndAirdrop() public {

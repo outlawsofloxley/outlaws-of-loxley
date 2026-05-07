@@ -5,7 +5,9 @@
 > Stable project context lives in `BASEicBrawlers.md`.
 
 ## Last updated
-2026-05-07: **v11 contracts deployed to Sepolia**, with Marketplace folded into the main forge script and `duel.setMarketplace()` auto-wired (prevents listed brawlers being sent into duels). Brawlers.sol now exposes `initialRarityHash()` (canonical post-shuffle commitment) + `rarityHash()` (live) + `freezeRarity()` (owner-only lock). 133 forge tests + LAUNCH-PLAYBOOK refreshed. Awaiting funded deployer wallet + dev address to ship mainnet.
+2026-05-07: **v12 contracts deployed to Sepolia**, adds `isHouseBrawler` mapping override on Brawlers so deploy-time keeper fighters in the 1..100 founder range get NO founder discount / freebie / airdrop. Deploy.s.sol gained optional `HOUSE_BRAWLERS_COUNT` + `HOUSE_KEEPER_ADDRESS` env-driven step (mints + flags + transfers in one shot). 139 forge tests pass. v12 Sepolia rehearsal: 10 house brawlers seeded at IDs 1-10, isHouseBrawler=true verified, dash whitelist auto-seeded via NEXT_PUBLIC_HOUSE_BRAWLER_IDS.
+
+Earlier today (also 2026-05-07): v11 contracts shipped Marketplace folded into Deploy.s.sol + `duel.setMarketplace()` auto-wire + `initialRarityHash()`/`rarityHash()`/`freezeRarity()` rarity commitments. Body font swapped VT323 → JetBrains Mono. Coinbase Wallet connector wired. Discord/X/Telegram footer added. Awaiting funded deployer wallet + dev address to ship mainnet.
 
 ## Mainnet readiness — locked decisions
 - BRAWL supply: **100,000** fixed
@@ -22,18 +24,18 @@
 ## Next gating action
 **Awaiting**: funded deployer wallet PKEY (~$400 ETH for LP + gas) and dev wallet address from operator. After those land, `npm run deploy:mainnet` ships. Full runbook: `LAUNCH-PLAYBOOK.html`.
 
-## Last live state (Sepolia v11, 2026-05-07)
+## Last live state (Sepolia v12, 2026-05-07)
 
-**v11 addresses (Sepolia, chain 84532)**:
-- `BRAWL       = 0xb2b0bdeda0e60840a36491b9510483dead0aa7eb`
-- `BRAWLERS    = 0x68b8d4f5bfe137ea27a98bb4f40cf6a23d37a912`
-- `DUEL        = 0x0b3c5eb40244892eb0560d2202f0cd0f954ff6b8`
-- `GRAVEYARD   = 0x9fc0db23ef6a7b9f01e342eb64aba15176a86d50`
-- `MINTDROP    = 0xcc5c247a0d64e88c7a851ef81a668a28ed8769d4`
-- `MARKETPLACE = 0xe6ac39dcb517cace685824cc2e14515b7d9902ce`
-- `MOCKUSDT    = 0x6d305dcc6b706cc77977f57ff669dbbd1a3d4f2c`
-- Vercel prod: `https://frontend-achxh8vge-ghubbers-projects.vercel.app`
-- `Brawlers.initialRarityHash()` = `0x0c580cfdfcdcb2b7de17fb9698e3e408eca8bafdc54e5cefdd8b5635dce8bf40`
+**v12 addresses (Sepolia, chain 84532)**:
+- `BRAWL       = 0x0e373387f6fd51f9b6ce0d73e1576fd97d3f62a5`
+- `BRAWLERS    = 0x72aa4d388dc833b2daba00bf6b1127f2a15ec9a8`
+- `DUEL        = 0xd02191ad301340afad6dfed9659f7600209d04b5`
+- `GRAVEYARD   = 0x16c4df3061032fad401797da9cecc934eba3b39f`
+- `MINTDROP    = 0x7570f91c39524c89039bcf7fa96b8548ab2b86c8`
+- `MARKETPLACE = 0x868a890bdde7f2d6f3e9401a383d045ca72b1942`
+- `MOCKUSDT    = 0xe251805dc49b1752aaa603159c65cffb8d9f22c9`
+- House brawlers: tokenIds 1..10 (all C/U via `_skipRareForDev`), all `isHouseBrawler=true`
+- Dash whitelist auto-seeds from `NEXT_PUBLIC_HOUSE_BRAWLER_IDS=1,2,...,10`
 
 ## Where we are
 - **Art polish pass deployed 2026-05-05** to https://baseicbrawlers.com.

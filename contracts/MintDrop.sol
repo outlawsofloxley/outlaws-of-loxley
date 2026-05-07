@@ -675,7 +675,13 @@ contract MintDrop is Ownable, Pausable, ReentrancyGuard {
      */
     function _maybeAirdrop(address to, uint256 tokenId) private returns (uint256 airdropped) {
         uint256 base = airdropPerMint;
-        uint256 founder = (tokenId <= FOUNDER_AIRDROP_CAP) ? founderAirdropAmount : 0;
+        // House brawlers (flagged via Brawlers.isHouseBrawler) skip the
+        // founder bonus even when their tokenId sits in the founder range.
+        // The base per-mint airdrop still applies — that one's a public
+        // promo, not a founder perk.
+        uint256 founder = (tokenId <= FOUNDER_AIRDROP_CAP && !brawlers.isHouseBrawler(tokenId))
+            ? founderAirdropAmount
+            : 0;
         uint256 want = base + founder;
         if (want == 0) return 0;
         uint256 bal = brawl.balanceOf(address(this));

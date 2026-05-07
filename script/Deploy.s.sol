@@ -292,6 +292,35 @@ contract Deploy is Script {
         // ─── 8. Base URI ─────────────────────────────────────────────
         brawlers.setBaseURI(baseUri);
 
+        // ─── 8b. House brawlers (optional) ───────────────────────────
+        // If `HOUSE_BRAWLERS_COUNT` env is set, mint that many brawlers
+        // directly to the deployer (devWallet) so `_skipRareForDev` lands
+        // them all on C/U slots. Flag every minted ID as `isHouseBrawler`
+        // so the founder discount / freebie / airdrop are NOT applied even
+        // though they sit in the 1..100 founder range. Optionally transfer
+        // to `HOUSE_KEEPER_ADDRESS` for the keeper bot.
+        //
+        // Day-1 UX: gives every public minter someone to fight from block 1.
+        uint256 houseCount = vm.envOr("HOUSE_BRAWLERS_COUNT", uint256(0));
+        if (houseCount > 0) {
+            address keeperAddr = vm.envOr("HOUSE_KEEPER_ADDRESS", deployer);
+            uint256[] memory houseIds = new uint256[](houseCount);
+            for (uint256 i = 0; i < houseCount; i++) {
+                // owner-path mint goes through `_skipRareForDev`, so dev
+                // mints land on Common/Uncommon only. Skips MintDrop entirely
+                // so no founder airdrop ever fires.
+                houseIds[i] = brawlers.mint(deployer);
+            }
+            brawlers.setHouseBrawlersBulk(houseIds, true);
+            console2.log("House brawlers minted + flagged:", houseCount);
+            if (keeperAddr != deployer) {
+                for (uint256 i = 0; i < houseCount; i++) {
+                    brawlers.transferFrom(deployer, keeperAddr, houseIds[i]);
+                }
+                console2.log("House brawlers transferred to keeper:", keeperAddr);
+            }
+        }
+
         vm.stopBroadcast();
 
         // ─── 9. BRAWL distribution (from the initial holder, not deployer) ──

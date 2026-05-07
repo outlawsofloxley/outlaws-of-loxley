@@ -340,9 +340,15 @@ contract Duel is Ownable, Pausable, ReentrancyGuard, EIP712 {
 
     /// @notice Per-fighter stake, full `fightCost` for non-founders, less
     ///         (per `founderDiscountBps`) for any brawler with tokenId in
-    ///         1..FOUNDER_FIGHT_DISCOUNT_CAP.
+    ///         1..FOUNDER_FIGHT_DISCOUNT_CAP. House brawlers (flagged via
+    ///         `Brawlers.isHouseBrawler`) always pay full price even if their
+    ///         tokenId sits in the founder range.
     function fighterCost(uint256 tokenId) public view returns (uint256) {
-        if (tokenId >= 1 && tokenId <= FOUNDER_FIGHT_DISCOUNT_CAP) {
+        if (
+            tokenId >= 1 &&
+            tokenId <= FOUNDER_FIGHT_DISCOUNT_CAP &&
+            !brawlers.isHouseBrawler(tokenId)
+        ) {
             return (fightCost * (10000 - founderDiscountBps)) / 10000;
         }
         return fightCost;

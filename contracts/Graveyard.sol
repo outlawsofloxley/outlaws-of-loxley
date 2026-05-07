@@ -155,7 +155,13 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
 
     function costFor(uint256 tokenId) public view returns (uint256) {
         // Founder freebie, first resurrect ever for tokenId 1..100 is free.
-        if (tokenId <= FOUNDER_FREE_RESURRECT_CAP && !hasUsedFreeResurrect[tokenId]) {
+        // House brawlers (deploy-time keeper fighters) are excluded from the
+        // freebie even if their tokenId sits in the founder range.
+        if (
+            tokenId <= FOUNDER_FREE_RESURRECT_CAP &&
+            !hasUsedFreeResurrect[tokenId] &&
+            !brawlers.isHouseBrawler(tokenId)
+        ) {
             return 0;
         }
         uint8 tier = brawlers.rarityOf(tokenId);
@@ -183,8 +189,14 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
         }
 
         // Mark founder's free-revive used BEFORE forwarding funds so the
-        // second revive pays normally even if the first was free.
-        if (tokenId <= FOUNDER_FREE_RESURRECT_CAP && !hasUsedFreeResurrect[tokenId]) {
+        // second revive pays normally even if the first was free. Mirrors the
+        // exclusion in `costFor` so the flag is only stamped when the freebie
+        // actually applies.
+        if (
+            tokenId <= FOUNDER_FREE_RESURRECT_CAP &&
+            !hasUsedFreeResurrect[tokenId] &&
+            !brawlers.isHouseBrawler(tokenId)
+        ) {
             hasUsedFreeResurrect[tokenId] = true;
         }
 

@@ -155,7 +155,7 @@
 <div class="wrap">
 
 <header>
-  <div class="meta">launch playbook · v2 · base mainnet · v11 contracts</div>
+  <div class="meta">launch playbook · v3 · base mainnet · v12 contracts</div>
   <h1>⚔ BASEic Brawlers</h1>
   <p class="dim">Single-file reference for deploy-day operations, LP economics, anti-sniper flow, marketing fire-order, and post-launch maintenance. Read top to bottom before touching the deployer key.</p>
 </header>
@@ -229,7 +229,7 @@
   <pre>cd /c/tools/brawlers
 forge test
 npm test</pre>
-  <p>Both must pass cleanly: 133 forge + 211 vitest. Any failure = stop. Investigate.</p>
+  <p>Both must pass cleanly: 139 forge + 211 vitest. Any failure = stop. Investigate.</p>
 </div>
 
 <div class="step">
@@ -267,19 +267,21 @@ git status --porcelain | grep -E '\.env'  # should return nothing</pre>
 <div class="steps">
   <div class="step">
     <h4>4a. Run the orchestrator</h4>
-    <pre>npm run deploy:mainnet</pre>
+    <pre>HOUSE_BRAWLERS_COUNT=10 \
+HOUSE_KEEPER_ADDRESS=0x&lt;keeper-address&gt; \
+npm run deploy:mainnet</pre>
     <p>Phases:</p>
     <ol>
       <li><strong>Preflight</strong> — tools, env, RPC, balance, build, test</li>
-      <li><strong>Forge deploy</strong> — broadcasts BRAWL, Brawlers, Duel, Graveyard, MintDrop, <strong>Marketplace</strong> in one script. The Deploy.s.sol script also wires <code>duel.setMarketplace()</code> so listed brawlers can't be sent into duels.</li>
+      <li><strong>Forge deploy</strong> — broadcasts BRAWL, Brawlers, Duel, Graveyard, MintDrop, <strong>Marketplace</strong> in one script. Deploy.s.sol also wires <code>duel.setMarketplace()</code> so listed brawlers can't be sent into duels, and (when <code>HOUSE_BRAWLERS_COUNT</code> is set) mints N house brawlers to the deployer, flags them as <code>isHouseBrawler</code> on-chain, and transfers them to <code>HOUSE_KEEPER_ADDRESS</code>.</li>
       <li><strong>Parse broadcast</strong> — extracts addresses (<code>MARKETPLACE_ADDRESS</code> included)</li>
       <li><strong>Update .env</strong> — writes addresses into <code>.env.base-mainnet</code></li>
       <li><strong>Mint King</strong> — sends King NFT (#2001) to deployer</li>
-      <li><strong>Update Vercel env</strong> — production env vars set (incl. <code>NEXT_PUBLIC_MARKETPLACE_ADDRESS</code>)</li>
+      <li><strong>Update Vercel env</strong> — production env vars set (incl. <code>NEXT_PUBLIC_MARKETPLACE_ADDRESS</code> + <code>NEXT_PUBLIC_HOUSE_BRAWLER_IDS</code> when house count &gt; 0)</li>
       <li><strong>Vercel production deploy</strong> — frontend points at mainnet</li>
       <li><strong>Smoke test</strong> — read-only checks against deployed contracts</li>
     </ol>
-    <p class="dim">v11 change: Marketplace is folded into the main forge script. No separate <code>DeployMarketplace.s.sol</code> step needed.</p>
+    <p class="dim">v11 change: Marketplace folded into the main forge script. v12 change: <code>HOUSE_BRAWLERS_COUNT</code> env now seeds house fighters at deploy time so day-1 players always have someone to brawl. House-flagged brawlers in the 1..100 founder range get NO founder discount / freebie / airdrop.</p>
   </div>
 
   <div class="step">
@@ -635,7 +637,7 @@ ssh truenas-discord docker logs -f baseic-brawlers-keeper</pre>
 
 <hr>
 
-<p class="dim" style="font-size: 12px; text-align: center;">BASEic Brawlers — Mainnet Launch Playbook · v2 (v11 contracts) · For internal operator reference only · Do not publish</p>
+<p class="dim" style="font-size: 12px; text-align: center;">BASEic Brawlers — Mainnet Launch Playbook · v3 (v12 contracts) · For internal operator reference only · Do not publish</p>
 
 </div>
 </body>

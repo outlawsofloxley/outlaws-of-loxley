@@ -154,6 +154,15 @@ contract Brawlers is ERC721, Ownable, Pausable {
     ///         the dev-mint window has closed.
     bool public rarityFrozen;
 
+    /// @notice Per-token override that exempts a brawler from every founder
+    ///         perk (Duel discount, Graveyard free first resurrect, MintDrop
+    ///         founder airdrop). Set by the owner at deploy time for the
+    ///         keeper-bot's "house" brawlers so a token in the 1..100 founder
+    ///         range that just exists to give players an opponent on day 1
+    ///         doesn't also pocket the founder benefits intended for real
+    ///         human founders.
+    mapping(uint256 => bool) public isHouseBrawler;
+
     /// @notice Name pools for random first/last name rolls on mint. 50 × 50 =
     ///         2500 possible combinations. Populated in _initializeNames().
     string[50] private _firstNames;
@@ -192,6 +201,7 @@ contract Brawlers is ERC721, Ownable, Pausable {
     event MintDropContractSet(address indexed oldContract, address indexed newContract);
     event BaseURISet(string oldURI, string newURI);
     event RarityFrozen(bytes32 finalHash);
+    event HouseBrawlerSet(uint256 indexed tokenId, bool flag);
 
     // ─── Errors ──────────────────────────────────────────────────────
 
@@ -538,6 +548,32 @@ contract Brawlers is ERC721, Ownable, Pausable {
         if (rarityFrozen) return;
         rarityFrozen = true;
         emit RarityFrozen(keccak256(_rarity));
+    }
+
+    /// @notice Flag (or unflag) a brawler as a "house" fighter. House
+    ///         brawlers are excluded from every founder-tier perk by
+    ///         Duel / Graveyard / MintDrop even when their tokenId sits in
+    ///         the 1..100 founder range. Owner-only.
+    function setHouseBrawler(uint256 tokenId, bool flag) external onlyOwner {
+        if (tokenId == 0 || (tokenId > MAX_SUPPLY && tokenId != KING_TOKEN_ID)) {
+            revert InvalidTokenId(tokenId);
+        }
+        isHouseBrawler[tokenId] = flag;
+        emit HouseBrawlerSet(tokenId, flag);
+    }
+
+    /// @notice Bulk variant of `setHouseBrawler` for the deploy-time house
+    ///         seed. Cheaper than N individual txs and emits one event per
+    ///         tokenId so the dash + indexers stay in sync.
+    function setHouseBrawlersBulk(uint256[] calldata tokenIds, bool flag) external onlyOwner {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            uint256 tokenId = tokenIds[i];
+            if (tokenId == 0 || (tokenId > MAX_SUPPLY && tokenId != KING_TOKEN_ID)) {
+                revert InvalidTokenId(tokenId);
+            }
+            isHouseBrawler[tokenId] = flag;
+            emit HouseBrawlerSet(tokenId, flag);
+        }
     }
 
     /**
