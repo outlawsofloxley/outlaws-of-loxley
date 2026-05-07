@@ -22,11 +22,12 @@ DUEL → DIE → RESURRECT. All on Base.
 🎮 HOW IT WORKS
 ━━━━━━━━━━━━━━━━━━━
 1. Mint a Brawler at https://baseicbrawlers.com/mint
-   • TIER 1 (1-100):  FREE, founder slots
-   • TIER 2 (101-500): $40
-   • TIER 3 (501-1000): $45
-   • TIER 4 (1001-1500): $50
-   • TIER 5 (1501-2000): $60
+   • TIER 1 (1-50):     $20  (founder)
+   • TIER 2 (51-100):   $25  (founder)
+   • TIER 3 (101-500):  $30
+   • TIER 4 (501-1000): $35
+   • TIER 5 (1001-1500):$40
+   • TIER 6 (1501-2000):$50
    ETH / USDC / USDT all accepted at every tier.
 2. Approve $BRAWL → fight in the arena
 3. Win = +ELO + $BRAWL prize pool. Lose = -ELO. 3 losses = death.
@@ -37,10 +38,9 @@ DUEL → DIE → RESURRECT. All on Base.
 ━━━━━━━━━━━━━━━━━━━
 ★ FOUNDER 50 (gold badge, IDs 1-50)
 ★ FOUNDER 100 (cyan badge, IDs 51-100)
-✅ FREE mint, first 100 only, never repeated
+✅ Cheapest tiers ever offered ($20 for 1-50, $25 for 51-100). Never repeated.
 ✅ 25% off every fight cost, forever
 ✅ Free first resurrect, forever
-✅ +20 $BRAWL airdrop on mint
 ✅ Lifetime visible badge on your card
 
 ━━━━━━━━━━━━━━━━━━━
@@ -54,11 +54,11 @@ DUEL → DIE → RESURRECT. All on Base.
 ━━━━━━━━━━━━━━━━━━━
 ⚖️ FAIR LAUNCH PROOF
 ━━━━━━━━━━━━━━━━━━━
-✅ LP locked 6 months on Unicrypt, proof posted in announce
+✅ LP locked 90 days on Unicrypt, proof URL posted in announce
 ✅ BRAWL trading limits liftable + ownership renounceable post-launch
-✅ 110+ Foundry tests passing, open-source contracts
+✅ 128 Foundry tests passing, all contracts verified on Basescan
 ✅ No presale, no team allocation, no tax
-✅ Auto-paired liquidity, $10 of every mint + 50 $BRAWL goes to LP
+✅ 65k $BRAWL community-governance treasury (Snapshot vote-gated)
 
 ━━━━━━━━━━━━━━━━━━━
 📜 HOUSE RULES

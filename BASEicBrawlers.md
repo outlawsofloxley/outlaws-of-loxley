@@ -8,12 +8,12 @@
 ## What this project is
 
 **BASEic Brawlers** (rebranded from "Brawlers" 2026-04-27). On-chain NFT
-battle game on Base. Owner is **D**, building solo for personal use.
+battle game on Base.
 
 - Pixel-art NFT warriors duel for ELO ($BRAWL stakes)
 - Three losses in a row, brawler dies, resurrect with ETH
 - 2000 supply + 1-of-1 King. **VRF-based rarity shuffle planned for mainnet**
-- $30 mint price ($20 dev, $10 + matched BRAWL into LP)
+- 6-tier mint pricing: $20/$25/$30/$35/$40/$50 across slots 1-50/51-100/101-500/501-1000/1001-1500/1501-2000 (33.33% of every mint into LP, rest to dev)
 - Target chain: **Base mainnet** for v1. Currently running on **Base Sepolia** (chain 84532)
 
 ## Current state, 2026-04-28 (v4 + custom domain)
@@ -33,7 +33,8 @@ battle game on Base. Owner is **D**, building solo for personal use.
 - Two-row centred nav (logo, BASEic Brawlers, wallet)
 
 LP launch script (`script/SeedAndLockLP.s.sol`) ready for mainnet day. Seeds
-the Aerodrome v2 BRAWL/ETH pool and locks LP on Unicrypt for 6 months.
+the Aerodrome v2 BRAWL/ETH pool and locks LP on Unicrypt for 90 days. Full
+mainnet runbook in `LAUNCH-PLAYBOOK.html` at repo root.
 
 **Socials (live, set 2026-04-28)**:
 - Site:     https://baseicbrawlers.com
@@ -62,12 +63,9 @@ Re-run `python3 marketing/art/gen.py` to regenerate.
   Pure JS, JSON file persistence (`bots-state.json`). No native deps so
   `npm install` is clean on Node 25 + Windows. Boot with `npm run all` after
   filling `.env` (template at `.env.example`).
-- **Bot tokens stored in `marketing/bots/.env`** (gitignored). RAID +
-  LEADERBOARD tokens are wired (created via @BotFather 2026-04-28). Welcome
-  bot token still pending. D needs to re-create
-  `@baseicbrawlers_welcome_bot` via /newbot.
-- Outstanding: `PUBLIC_GROUP_ID` (add @RawDataBot to `@baseicbrawlers`,
-  copy the negative integer ID, drop in `.env`).
+- **Bot tokens stored in `marketing/bots/.env`** (gitignored). All three
+  (WELCOME / RAID / LEADERBOARD) wired; PUBLIC_GROUP_ID + ANNOUNCE_CHANNEL_ID
+  also filled. Telegram side is done.
 
 **Renounce playbook for BRAWL** (after mainnet launch settles):
 1. Whitelist game contracts + LP router, seed LP.
@@ -80,9 +78,7 @@ Game contracts (Duel/MintDrop/Marketplace/Graveyard) **stay dev-controlled**
 for game tuning. No rug-able functions in those.
 
 For the full iteration history (phases 1 through 7-iter-14), see
-`docs/PHASE_HISTORY.md`. For the in-flight work pinned to memory, check
-`brawlers_phase7_bsctestnet_live.md` and `brawlers_dashboard_built.md` in
-`C:\Users\darre\.claude\projects\C--tools\memory\`.
+`docs/PHASE_HISTORY.md`.
 
 ### Known loose ends (not blocking)
 
@@ -95,9 +91,10 @@ For the full iteration history (phases 1 through 7-iter-14), see
 - **Git re-root**: repo was `git init`d at `C:\tools\` (parent dir). No
   commits yet, safe to re-init at `C:\tools\brawlers\`. Needed before first
   push to GitHub.
-- **500-mint test on BSC Testnet** with mates. Art is ready, contracts
-  unchanged. Just mint, eyeball `/audit` live tab, verify rarity distribution.
-- **Deferred features** (waiting on D's next greenlight):
+- **500-mint test on BSC Testnet** with a closed beta cohort. Art is ready,
+  contracts unchanged. Just mint, eyeball `/audit` live tab, verify rarity
+  distribution.
+- **Deferred features** (waiting on operator greenlight):
   - House-brawler keeper with auto-dueling cron
   - Level-up mechanic (currently all brawlers stuck at level 1)
   - Real commissioned pixel art (replace `renderBrawlerArt` or swap
@@ -137,7 +134,7 @@ C:\tools\brawlers\
 │   ├── src/core/           DUPLICATE of root src/core/* (server-side sim)
 │   └── src/sim/combat.ts   DUPLICATE of root sim. See PARITY note below.
 ├── docs/PHASE_HISTORY.md   Full iteration history (1 through 7-iter-14)
-├── foundry.toml, remappings.txt, .env, .env.example, CLAUDE.md, README.md
+├── foundry.toml, remappings.txt, .env, .env.example, BASEicBrawlers.md, README.md
 └── package.json            Root project (CLI, vitest, tsx, ethers 6.16)
 ```
 
@@ -161,7 +158,7 @@ Deployed 2026-04-29 (v5, env source-of-truth in `.env.base-sepolia`):
 - `BRAWLERS    = 0x936ae7d74930d52ef460b77d34e9947dd8c8bb4d`   (2000 supply + king at 2001 + 8 mouth fixes)
 - `DUEL        = 0xf4dfb5f21c9c11623d79fc360747f83f34e57d35`   (founder discount editable, default 25%)
 - `GRAVEYARD   = 0x43cd05987ab4528f2332a9e9aabaf90a8bd9c9c7`   (free first resurrect for founders)
-- `MINTDROP    = 0xc58d5f6cf1659100a1476eeec5f3c7f0d074372f`   (TIERED pricing: 100 free / 400 @$40 / 500 @$45 / 500 @$50 / 500 @$60)
+- `MINTDROP    = 0xc58d5f6cf1659100a1476eeec5f3c7f0d074372f`   (TIERED pricing: 50 @$20 / 50 @$25 / 400 @$30 / 500 @$35 / 500 @$40 / 500 @$50)
 - `MARKETPLACE = 0xEeab07c9CE7EaEFCfa378619b61d97fbCBbFDB4d`   (still v4. Redeploy if needed.)
 - `MOCKUSDT    = 0x54b36bb51f20f9ca446024a092b46b5136a01ec2`
 - `USDC (real) = 0x036CbD53842c5426634e7929541eC2318f3dCF7e`
@@ -171,29 +168,33 @@ Deployed 2026-04-29 (v5, env source-of-truth in `.env.base-sepolia`):
 - BRAWL: 25k airdrop pool + 50k LP-pair pool seeded to MintDrop. Trading enabled, limits lifted.
 - `baseURI = https://baseicbrawlers.com/api/token/` (set 2026-04-28 via `setBaseURI`, tx `0xb54dbfedba5450b1900c8970c7ae153cfa760458c07a9df55cf945293d48377b`).
 - Sepolia micro prices: 0.0001 ETH mint, 0.01 USDT/USDC (v4 still flat).
-- **Mainnet pricing locked in 2026-04-28. TIERED in MintDrop v5+**:
-  - Tier 1 (1-100):    FREE (founder slot)
-  - Tier 2 (101-500):  $40
-  - Tier 3 (501-1000): $45
-  - Tier 4 (1001-1500): $50
-  - Tier 5 (1501-2000): $60
-  - Set via `setPriceTiers` post-deploy or `TIERED_PRICING=true` env at deploy.
-  - ETH-equivalents calibrated to $4k ETH. Per-tier override via `TIER2_ETH..TIER5_ETH`.
+- **Mainnet pricing locked 2026-05-06 (supersedes the 2026-04-28 plan that included free founder slots — those are not free, see memory `project_baseic_brawlers_pricing_locked`):**
+  - Tier 1 (1-50):     **$20**  (50 brawlers · $1,000)
+  - Tier 2 (51-100):   **$25**  (50 brawlers · $1,250)
+  - Tier 3 (101-500):  **$30**  (400 brawlers · $12,000)
+  - Tier 4 (501-1000): **$35**  (500 brawlers · $17,500)
+  - Tier 5 (1001-1500):**$40**  (500 brawlers · $20,000)
+  - Tier 6 (1501-2000):**$50**  (500 brawlers · $25,000)
+  - **No free mints.** Sellout = $76,750. 2,000 supply + 1 King.
+  - Set via `MintDrop.setPriceTiers(...)` post-deploy or via deploy-time
+    env (`TIER1_ETH..TIER6_ETH` calibrated against current ETH price).
+  - LP share unchanged: `lpShareBps = 3333` (33.33%) of every mint goes
+    to lpTreasury, paired with BRAWL.
 - Fight cost: 10 BRAWL/fighter (founders pay 25% less = 7.5).
   Founder discount tunable post-deploy: `Duel.setFounderDiscountBps(uint256)`.
   Default `founderDiscountBps = 2500` (25%), cap 10000.
 - Resurrection: `base × tierMult/10 × (10 + wins)/10`. Founders 1-100 get 1 free.
 
-**v5 SHIPPED 2026-04-29.** Tiered pricing (100 free / $40 / $45 / $50 / $60),
+**v5 SHIPPED 2026-04-29.** Tiered pricing (the old plan: 100 free / $40 / $45 / $50 / $60 — superseded 2026-05-06 by the locked $20-$50 6-tier table above; deploy-time env vars in `scripts/deploy.mjs` need a corresponding update before mainnet),
 tunable founder discount (default 25%, was 50%), and the brawlerArt mouth
 fixes (8 more combos in RAISE_MOUTH; pirate:uncommon offset corrected from
 +2 to -1) are all live on Sepolia. Vercel env updated, frontend redeployed.
 
-D mints with the deployer wallet still hit the dev-rarity-cap (Common/Uncommon
-only). Epic/Rare have to be minted from a different address to surface them
-on-chain. For marketing art we use the LOCAL brawlerArt module to generate
-sprites deterministically per (archetype, rarity, tokenId) without minting.
-Same algorithm, same visual.
+Mints from the deployer wallet hit the dev-rarity-cap (Common/Uncommon only).
+Epic/Rare have to be minted from a different address to surface them on-chain.
+For marketing art the LOCAL brawlerArt module generates sprites
+deterministically per (archetype, rarity, tokenId) without minting. Same
+algorithm, same visual.
 
 **Frontend already v5-ready (defensive, works against both v4 and v5):**
 - `mint/page.tsx` reads `MintDrop.batchCost(count)` for tx value. Falls back
@@ -215,7 +216,7 @@ broadcast and dapp reads.
 For prior BSC Testnet deploys, BSC Sepolia v1/v2 deploys, and Anvil
 addresses, see `docs/PHASE_HISTORY.md`.
 
-## Working style, D's preferences
+## Working style
 
 - **"/effort max"**. Produce exhaustive, complete output. Full files, no
   snippets. Full instructions, no delegated steps. Self-audit before delivery.
@@ -364,7 +365,7 @@ above all. Internal contract tiers stay 0 to 4 for the shuffled drop, plus
 
 ## Design language
 
-Visually inspired by Fantums of Opera:
+Retro-arcade pixel-art aesthetic:
 
 - Dark brick-tinted background (`#0d0d0f` page, `#1a1417` panels)
 - Orange `#f5a623` primary CTA, red `#c13e3e` destructive/danger/dead
@@ -399,18 +400,14 @@ copy. Until then, treat the duplication as gospel and mirror by hand.
 ## File of last resort
 
 If you're confused about something that happened before this session:
-- `git log --oneline --all`. Once git is properly initialised. The repo
-  currently has its first commit on `main`.
-- `docs/PHASE_HISTORY.md`. Full iteration log archived from CLAUDE.md.
-- Transcript `.txt` files in the project root (preserved from past compaction).
+- `git log --oneline --all`. The repo's commit history.
+- `docs/PHASE_HISTORY.md`. Full iteration log archived from BASEicBrawlers.md.
 - `broadcast/Deploy.s.sol/<chainId>/run-latest.json`. Canonical record of
   the last forge script deploy.
-- `C:\Users\darre\.claude\projects\C--tools\memory\MEMORY.md`. Claude's
-  persistent memory index.
 
-## Final note for the next Claude
+## Final note for whoever picks this up next
 
-D is careful, technical, and doesn't tolerate sloppy work. When in doubt:
+The bar is high: don't tolerate sloppy work. When in doubt:
 **run the tests, read the error, fix it, run the tests again.** Don't
 hand-wave. Don't apologise excessively when something breaks. Own it, fix
 it, move on.

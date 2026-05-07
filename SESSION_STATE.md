@@ -2,10 +2,27 @@
 
 > Live handoff doc. Update at the end of every session. New sessions read this
 > first to skip context-rebuild. Long history lives in `docs/PHASE_HISTORY.md`.
-> Stable project context lives in `CLAUDE.md`.
+> Stable project context lives in `BASEicBrawlers.md`.
 
 ## Last updated
-2026-05-05 evening (art polish pass deployed: faces / weapons / twinkles / palettes)
+2026-05-07: pre-mainnet readiness pass complete. All tokenomics locked, AI/beta scrub done, CLAUDE.md → BASEicBrawlers.md, fight-cost keeper built, LAUNCH-PLAYBOOK.html shipped. Awaiting funded deployer wallet + dev address to ship mainnet.
+
+## Mainnet readiness — locked decisions
+- BRAWL supply: **100,000** fixed
+- Allocations: **30k LP / 5k dev / 65k governance treasury** (Snapshot-vote-gated 2-of-3 Safe)
+- LP seed: **30k BRAWL + $300 ETH** → BRAWL @ $0.010, MC $1,000
+- LP lock: **90 days on Unicrypt**
+- Mint pricing: **$20/$25/$30/$35/$40/$50** across 6 tiers (1-50 / 51-100 / 101-500 / 501-1000 / 1001-1500 / 1501-2000)
+- Mint proceeds: **100% to dev wallet** (no LP-from-mints, no airdrops on mint)
+- Fight cost: **~$1 USD in BRAWL**, auto-rebalanced every 5min by `marketing/keeper/`
+- Anti-sniper: existing BRAWL.sol mechanics (tradingEnabled gate + auto-blacklist + 0.5% maxTx + 1% maxWallet)
+- Governance graduation: Snapshot+Safe at launch → on-chain Governor at $250k MC milestone
+- Etherscan multichain key stored in `.env.base-mainnet` for `forge verify-contract`
+
+## Next gating action
+**Awaiting**: funded deployer wallet PKEY (~$400 ETH for LP + gas) and dev wallet address from operator. After those land, `npm run deploy:mainnet` ships. Full runbook: `LAUNCH-PLAYBOOK.html`.
+
+## Last live state (Sepolia v9, 2026-05-07)
 
 ## Where we are
 - **Art polish pass deployed 2026-05-05** to https://baseicbrawlers.com.
@@ -82,7 +99,7 @@
   address never lands in history.
 - **Language sweep done 2026-04-30**: every em-dash across 166 first-party
   text files swapped for plain punctuation, AI-style phrasing rewritten in
-  the docs (README, CLAUDE.md, SESSION_STATE.md, about page, marketing
+  the docs (README, BASEicBrawlers.md, SESSION_STATE.md, about page, marketing
   copy). Australian English spellings used in prose. Code identifiers
   untouched.
 - **Security audit done 2026-04-30** (Solidity + frontend agents). Findings
@@ -107,26 +124,25 @@
    deployer wallet hits the dev-rarity-cap (Common/Uncommon only), so the
    beta cohort needs to mint from fresh wallets to surface Epic/Rare
    on-chain.
-2. **Telegram welcome bot token**. The operator needs to re-create
-   `@baseicbrawlers_welcome_bot` via @BotFather /newbot. RAID and
-   LEADERBOARD tokens are already wired in `marketing/bots/.env`.
-3. **`PUBLIC_GROUP_ID`**. Add @RawDataBot to `@baseicbrawlers`, copy the
-   negative integer ID, drop in `marketing/bots/.env`.
-4. **Marketplace v6 redeploy** (deferred, not blocking). The Marketplace
+2. **Marketplace v6 redeploy** (deferred, not blocking). The Marketplace
    contract is still pointed at the old Brawlers contract from v4. Per
    the orchestrator design, redeploying the Marketplace is a separate
    forge script (`script/DeployMarketplace.s.sol`). For mainnet day this
    should be folded into the main deploy.
-5. **CLI `mint-onchain` rewrite**. Still calls `brawlers.mint()` directly,
+3. **CLI `mint-onchain` rewrite**. Still calls `brawlers.mint()` directly,
    reverts on testnets. Rewrite to use `MintDrop.mintWithETH`. UI unaffected.
-6. **Mainnet day**. Run `npm run deploy:mainnet` when launch ETH is in
+4. **Mainnet day**. Run `npm run deploy:mainnet` when launch ETH is in
    the deployer wallet and marketing is primed. Orchestrator handles
    contracts + Vercel + smoke. Manual follow-ups: SeedAndLockLP.s.sol
    (Aerodrome LP + Unicrypt lock), 24-48h soak, BRAWL renounce sequence,
    manual BRAWL allocations (50k LP / 10k dev / 15k reserve).
 
+**Comms/bots — DONE:**
+- Discord live (`discord.gg/RjvBEA5CVd`, BB#4251 on TrueNAS, ⚔ verification gate working)
+- Telegram bots fully wired in `marketing/bots/.env`: WELCOME / RAID / LEADERBOARD tokens, PUBLIC_GROUP_ID, ANNOUNCE_CHANNEL_ID
+
 ## Mainnet-day playbook (locked)
-- Tiered pricing: 100 free / 400 @$40 / 500 @$45 / 500 @$50 / 500 @$60
+- Tiered pricing (locked 2026-05-06, NO free mints): 50 @$20 / 50 @$25 / 400 @$30 / 500 @$35 / 500 @$40 / 500 @$50 (sellout = $76,750)
 - Founder discount: 25% (Duel.setFounderDiscountBps, default 2500)
 - Founders 1-100 get 1 free resurrect
 - Run `script/SeedAndLockLP.s.sol`. Seeds Aerodrome v2 BRAWL/ETH pool and
@@ -178,7 +194,7 @@ git push                              # subsequent pushes
 ```
 
 ## How to use this file
-- New session: read this first, then skim CLAUDE.md for stable context.
+- New session: read this first, then skim BASEicBrawlers.md for stable context.
 - End of session: update "Last updated" + "Where we are" + adjust
   "Pending / next actions" so the next Claude opens cold-ready.
 - Never let this file sprawl. Long history goes to `docs/PHASE_HISTORY.md`.

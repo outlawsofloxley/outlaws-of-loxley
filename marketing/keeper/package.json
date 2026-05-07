@@ -1,0 +1,14 @@
+{
+  "name": "baseic-brawlers-keeper",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "fight-cost-keeper.mjs",
+  "scripts": {
+    "start": "node fight-cost-keeper.mjs",
+    "dry-run": "DRY_RUN=true node fight-cost-keeper.mjs"
+  },
+  "dependencies": {
+    "ethers": "6.16.0"
+  }
+}

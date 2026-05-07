@@ -13,10 +13,12 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * @custom:website  https://baseicbrawlers.com
  * @custom:telegram https://t.me/baseicbrawlers
  * @custom:twitter  https://x.com/BASEicBrawlers
+ * @custom:discord  https://discord.gg/RjvBEA5CVd
  *
  *  Website:  https://baseicbrawlers.com
  *  Telegram: https://t.me/baseicbrawlers
  *  X:        https://x.com/BASEicBrawlers
+ *  Discord:  https://discord.gg/RjvBEA5CVd
  *
  * @dev Fixed supply, no mint after construction. Fixed-supply minted to the
  *      initial holder; ownership held by `initialOwner` for limit-management

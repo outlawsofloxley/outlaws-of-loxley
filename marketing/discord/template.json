@@ -1,0 +1,129 @@
+{
+  "$comment": "Declarative Discord server template for BASEic Brawlers. Consumed by setup.mjs. Re-running is idempotent — existing roles/channels are matched by name; permissions, slow-modes, and pins are reapplied.",
+  "guildName": "BASEic Brawlers",
+  "verificationLevel": 1,
+  "explicitContentFilter": 2,
+  "defaultMessageNotifications": 1,
+  "afkTimeoutSeconds": 300,
+  "roles": [
+    { "name": "Admin",       "colour": "#f5a623", "hoist": true,  "mentionable": false, "permissions": "ADMINISTRATOR" },
+    { "name": "Mod",         "colour": "#4bc9d4", "hoist": true,  "mentionable": true,  "permissions": ["MANAGE_MESSAGES", "MANAGE_CHANNELS", "KICK_MEMBERS", "MUTE_MEMBERS", "MOVE_MEMBERS"] },
+    { "name": "Founder 50",  "colour": "#e6c200", "hoist": true,  "mentionable": true,  "permissions": [] },
+    { "name": "Founder 100", "colour": "#4bc9d4", "hoist": true,  "mentionable": true,  "permissions": [] },
+    { "name": "Holder",      "colour": "#52c055", "hoist": true,  "mentionable": true,  "permissions": [] },
+    { "name": "King Holder", "colour": "#b866e8", "hoist": true,  "mentionable": true,  "permissions": [] },
+    { "name": "Verified",    "colour": "#9a9a9a", "hoist": false, "mentionable": false, "permissions": [] },
+    { "name": "Bots",        "colour": "#5a5a5a", "hoist": false, "mentionable": false, "permissions": [] }
+  ],
+  "categories": [
+    {
+      "name": "INFO",
+      "$comment": "Public — visible to @everyone so unverified users can read rules and click verify.",
+      "channels": [
+        { "name": "rules",          "type": "text", "topic": "Read before you post.",                                                "everyoneCanRead": true, "everyoneCanSend": false, "pinFile": "messages/rules.md" },
+        { "name": "announcements",  "type": "text", "topic": "Official updates only.",                                               "everyoneCanRead": true, "moderatorPostOnly": true, "seedFile": "messages/seed-announcements.md" },
+        { "name": "links",          "type": "text", "topic": "Site, X, Telegram, marketplace, contracts.",                           "everyoneCanRead": true, "moderatorPostOnly": true, "pinFile": "messages/links.md" },
+        { "name": "verify",         "type": "text", "topic": "React to the welcome message to unlock the rest of the server.",      "everyoneCanRead": true, "everyoneCanSend": false, "pinFile": "messages/welcome.md", "verificationGate": true }
+      ]
+    },
+    {
+      "name": "COMMUNITY",
+      "verifiedOnly": true,
+      "channels": [
+        { "name": "general",        "type": "text", "topic": "Hang out. No spam, no shilling other projects.",     "slowModeSeconds": 5,  "seedFile": "messages/seed-general.md" },
+        { "name": "introductions",  "type": "text", "topic": "Drop your wallet, your favourite brawler, GM.",      "slowModeSeconds": 10, "seedFile": "messages/seed-introductions.md" },
+        { "name": "art-show",       "type": "text", "topic": "Show off your brawlers. Memes welcome.",             "slowModeSeconds": 10 },
+        { "name": "off-topic",      "type": "text", "topic": "Anything that isn't BASEic Brawlers, but keep it civil.", "slowModeSeconds": 5 }
+      ]
+    },
+    {
+      "name": "ARENA",
+      "verifiedOnly": true,
+      "channels": [
+        { "name": "duel-talk",      "type": "text", "topic": "Brag about wins. Mourn losses. Trash-talk in moderation.", "slowModeSeconds": 5 },
+        { "name": "leaderboard",    "type": "text", "topic": "Daily standings post here automatically.",                 "moderatorPostOnly": true },
+        { "name": "graveyard",      "type": "text", "topic": "RIP. Resurrection costs and survivor stories.",             "slowModeSeconds": 5 },
+        { "name": "strategy",       "type": "text", "topic": "Stat builds, weapon picks, matchmaking tips.",              "slowModeSeconds": 10, "seedFile": "messages/seed-strategy.md" }
+      ]
+    },
+    {
+      "name": "MARKET",
+      "verifiedOnly": true,
+      "channels": [
+        { "name": "marketplace",    "type": "text", "topic": "WTS / WTB. Use the in-app /market for actual listings.",   "slowModeSeconds": 15 },
+        { "name": "brawl-token",    "type": "text", "topic": "BRAWL/ETH chat. No price-pumping, no FUD spam.",            "slowModeSeconds": 10 }
+      ]
+    },
+    {
+      "name": "SUPPORT",
+      "verifiedOnly": true,
+      "channels": [
+        { "name": "help",           "type": "text", "topic": "Stuck? Mods and the wider community can help.",   "slowModeSeconds": 5 },
+        { "name": "bug-reports",    "type": "text", "topic": "Repro steps, expected vs actual, wallet + tx hash if relevant.", "slowModeSeconds": 30 }
+      ]
+    },
+    {
+      "name": "ADMIN",
+      "private": true,
+      "viewerRoles": ["Admin", "Mod"],
+      "channels": [
+        { "name": "mod-chat",       "type": "text", "topic": "Internal moderation discussion." },
+        { "name": "logs",           "type": "text", "topic": "Audit log mirror for moderation actions." }
+      ]
+    }
+  ],
+  "automod": [
+    { "name": "Block invite links",       "type": "keyword",  "patterns": ["discord.gg/", "discord.com/invite/"], "action": "block" },
+    { "name": "Block crypto-scam phrases","type": "keyword",  "patterns": ["wallet drainer", "send your seed phrase", "claim your free mint", "verify your wallet here", "double your eth", "send me 0.1 eth"], "action": "block" },
+    { "name": "Mass mention guard",       "type": "mentions", "limit": 5,                                          "action": "block" },
+    { "name": "Suspicious-keyword alert", "type": "keyword",  "patterns": ["airdrop", "free mint"],                "action": "alert", "alertChannel": "mod-chat" }
+  ],
+  "verification": {
+    "channel": "verify",
+    "messagePath": "messages/welcome.md",
+    "reaction": "⚔️",
+    "grantsRole": "Verified"
+  },
+  "art": {
+    "$comment": "Setup tries each path in order and picks the first that exists. Drop any of these into discord/art/ via WinSCP.",
+    "iconPaths":   ["art/icon.png",   "art/main-pfp.png",      "art/pfp.png"],
+    "bannerPaths": ["art/banner.png", "art/tg-cover.png",      "art/x-banner.png"],
+    "splashPaths": ["art/splash.png", "art/rarity-showcase.png","art/x-banner.png"]
+  },
+  "guildPointers": {
+    "rulesChannel": "rules",
+    "publicUpdatesChannel": "announcements",
+    "systemChannel": "general"
+  },
+  "welcomeScreen": {
+    "$comment": "Requires Community feature enabled. Script tries to enable it; if it can't, this section is skipped with a warning.",
+    "description": "Pixel-art warriors duel for ELO with $BRAWL stakes. Lose three in a row, you die. React ⚔ in #verify to unlock the server.",
+    "channels": [
+      { "channel": "rules",        "description": "Read first.",                  "emoji": "📜" },
+      { "channel": "verify",       "description": "Tap ⚔ to unlock the server.", "emoji": "⚔" },
+      { "channel": "links",        "description": "Site, X, Telegram, contracts.", "emoji": "🔗" },
+      { "channel": "general",      "description": "Say GM.",                       "emoji": "💬" },
+      { "channel": "leaderboard",  "description": "Daily ELO standings.",          "emoji": "🏆" }
+    ]
+  },
+  "onboarding": {
+    "$comment": "Requires Community. Script will attempt; degrades gracefully if not enabled.",
+    "mode": 0,
+    "defaultChannels": ["rules", "verify", "announcements", "links"],
+    "prompts": [
+      {
+        "title": "What brings you here?",
+        "type": "multiple_choice",
+        "singleSelect": false,
+        "required": false,
+        "inOnboarding": true,
+        "options": [
+          { "title": "I want to mint a brawler", "description": "Take me to the mint info.",   "emoji": "⚔",  "channels": ["links", "general"] },
+          { "title": "I'm here to duel",         "description": "Strategy and matchmaking.",   "emoji": "🥊", "channels": ["duel-talk", "strategy"] },
+          { "title": "Just lurking",             "description": "Show me the community feed.", "emoji": "👀", "channels": ["general", "art-show"] },
+          { "title": "I'm a holder",             "description": "Trading and tokenomics.",     "emoji": "💰", "channels": ["marketplace", "brawl-token"] }
+        ]
+      }
+    ]
+  }
+}

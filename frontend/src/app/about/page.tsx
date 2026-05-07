@@ -3,9 +3,9 @@
 /**
  * /about. How to Play / About page.
  *
- * Public-facing onboarding for mates. Covers wallet setup (Base), faucet
- * links for Sepolia testing, minting, matchmaking, BRAWL stakes, rarity
- * tiers, the resurrection curve, leaderboard/history, and the King.
+ * Public onboarding. Covers wallet setup (Base), faucet links for Sepolia
+ * testing, minting, matchmaking, BRAWL stakes, rarity tiers, the
+ * resurrection curve, leaderboard/history, and the King.
  */
 import Link from 'next/link';
 
@@ -20,7 +20,7 @@ export default function AboutPage() {
           Basic art. Brutal arena. Built on Base.
         </p>
         <p className="text-sm md:text-base text-brawl-text-dim leading-relaxed">
-          We don&rsquo;t do photorealistic. We don&rsquo;t do AI-slop. We do{' '}
+          We don&rsquo;t do photorealistic. We don&rsquo;t do generic stock-art slop. We do{' '}
           <strong className="text-brawl-text">crayon-simple, deterministic
           pixel art</strong> rolled fresh on every mint by a 32×24 procedural
           generator. Same seed in, same warrior out. <strong>2000</strong>{' '}
@@ -80,9 +80,9 @@ export default function AboutPage() {
           </p>
         </Callout>
         <Callout>
-          <strong>Just testing?</strong> The dapp is currently pointed at{' '}
-          <Mono>Base Sepolia</Mono> (chain <Mono>84532</Mono>) for the public
-          beta. Same wallet, fake money, no risk.
+          <strong>Want to try without spending?</strong> Point your wallet at{' '}
+          <Mono>Base Sepolia</Mono> (chain <Mono>84532</Mono>) — a separate
+          deployment runs there with the same code, fake money, no risk.
           <ul className="mt-2 list-disc pl-5 space-y-1 font-mono text-sm">
             <li>RPC URL: <Mono>https://sepolia.base.org</Mono></li>
             <li>Block explorer: <Mono>https://sepolia.basescan.org</Mono></li>
@@ -135,8 +135,9 @@ export default function AboutPage() {
           </li>
         </ul>
         <p className="text-sm text-brawl-text-dim">
-          A mint costs ~$20 of ETH (whatever the Base mint price calibrates
-          to). Duels cost pennies of gas. On Sepolia, everything is free.
+          Mint prices range $20-$50 in ETH-equivalent depending on which
+          slot you grab (cheapest tier is the founders, slots 1-50 at $20).
+          Duels cost pennies of gas. On Sepolia, everything is free.
         </p>
       </Section>
 
@@ -148,12 +149,24 @@ export default function AboutPage() {
             /mint
           </Link>{' '}
           and pick how many you want (1, 2, 5, 10, or 20 at a time, up to 20
-          per transaction). Each mint costs <strong>~$30</strong>, payable in{' '}
-          <Mono>ETH</Mono>, <Mono>USDC</Mono>, or <Mono>USDT</Mono> on Base.
-          Every <Mono>$30</Mono> mint splits transparently:
-          <strong> $20 to the dev wallet</strong> (covers ops + treasury) and
-          <strong> $10 + matching BRAWL to the BRAWL/ETH liquidity pool</strong>
-         , so the LP grows as more people mint.
+          per transaction). Pricing is tiered, payable in{' '}
+          <Mono>ETH</Mono>, <Mono>USDC</Mono>, or <Mono>USDT</Mono> on Base:
+        </p>
+        <ul className="text-sm space-y-0.5 ml-4">
+          <li><strong>Slots 1-50</strong>: $20 (founder)</li>
+          <li><strong>Slots 51-100</strong>: $25 (founder)</li>
+          <li><strong>Slots 101-500</strong>: $30</li>
+          <li><strong>Slots 501-1000</strong>: $35</li>
+          <li><strong>Slots 1001-1500</strong>: $40</li>
+          <li><strong>Slots 1501-2000</strong>: $50</li>
+        </ul>
+        <p>
+          Every mint splits transparently: <strong>33.33% routes into the
+          BRAWL/ETH liquidity pool</strong> (paired with 50 BRAWL from the
+          MintDrop reserve), the rest goes to the dev wallet to cover ops
+          and treasury. Every minter also gets <strong>50 BRAWL airdropped</strong>
+          to their wallet on top of the brawler itself. Founders 1-100 get
+          a bonus +20 BRAWL (so 70 total) on mint.
         </p>
         <p>
           Every brawler is randomly generated with a name, stats, a weapon, and
@@ -167,10 +180,11 @@ export default function AboutPage() {
           below.
           <div className="mt-2"><strong className="text-brawl-cyan">★ FOUNDER 100</strong> (token IDs 1–100):
             <ul className="mt-1 list-disc pl-5 space-y-1 text-xs">
-              <li>Bonus <Mono>20 BRAWL</Mono> airdropped to your wallet (enough for 2 fights)</li>
-              <li><strong>50% discount</strong> on every duel stake (5 BRAWL/fight instead of 10)</li>
+              <li>Cheapest tier on the mint (slots 1-50 at $20, 51-100 at $25), never repeated</li>
+              <li>Bonus <Mono>+20 BRAWL</Mono> airdropped on mint (on top of the standard 50, so 70 total)</li>
+              <li><strong>25% discount</strong> on every duel stake (7.5 BRAWL/fight instead of 10)</li>
               <li><strong>First resurrection FREE</strong>. Your first death doesn&rsquo;t cost ETH.</li>
-              <li>Cyan founder badge on every card</li>
+              <li>Cyan founder badge on every card (gold for IDs 1-50)</li>
             </ul>
           </div>
         </Callout>
@@ -503,11 +517,11 @@ export default function AboutPage() {
         />
         <FAQ
           q="Why does the art look so basic?"
-          a="On purpose. We're not chasing AI-generated photorealism. Every brawler is rolled by a 32×24 procedural pixel-art generator: same seed in, same warrior out, no off-chain assets, no cloud. Crayon-simple, deterministic, basically Base."
+          a="On purpose. We're not chasing photorealism. Every brawler is rolled by a 32×24 procedural pixel-art generator: same seed in, same warrior out, no off-chain assets, no cloud. Crayon-simple, deterministic, basically Base."
         />
         <FAQ
           q="Who built this?"
-          a="D, solo, with an AI pair programmer. Spiritual successor to Fantums of Opera (RIP). Source will be open once we're past this mates' test."
+          a="An independent dev team building on Base. Source will be opened progressively as the project matures."
         />
       </Section>
 

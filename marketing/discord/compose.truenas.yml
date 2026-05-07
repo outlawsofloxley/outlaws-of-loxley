@@ -1,0 +1,57 @@
+# BASEic Brawlers — TrueNAS Custom App compose.
+#
+# Standalone variant of docker-compose.yml for use with:
+#   TrueNAS → Apps → Discover Apps → Custom App → YAML tab
+#
+# Differences from docker-compose.yml:
+# - Absolute host paths instead of `./` bind mounts (TrueNAS Apps don't
+#   know the working directory of a paste-in YAML).
+# - References a pre-built image; no `build:` step.
+# - No `read_only` / cap_drop hardening (Custom App reapplies its own
+#   defaults; restoring the hardening makes the YAML reject).
+#
+# BEFORE PASTING:
+# 1. ssh into TrueNAS.
+# 2. cd to your marketing/discord directory (somewhere under /mnt/...).
+# 3. Run `docker compose build` once. This bakes the image as
+#    `baseicbrawlers/discord:latest` into the local registry.
+# 4. Replace EVERY occurrence of `__BASE_PATH__` below with the absolute
+#    path to your marketing/discord directory, e.g.
+#       /mnt/tank/apps/baseicbrawlers/marketing/discord
+#    A quick way: open this file on TrueNAS shell, run
+#       sed -i "s|__BASE_PATH__|$(pwd)|g" compose.truenas.yml
+#    while in the marketing/discord dir.
+# 5. Paste the resulting YAML into the Custom App YAML tab.
+# 6. Add Environment Variables in the Custom App UI:
+#       DISCORD_BOT_TOKEN  = <your bot token>
+#       DISCORD_GUILD_ID   = <your server id>
+#    (env_file isn't read inside Custom App; it sets env vars via UI.)
+
+services:
+  discord-setup:
+    image: baseicbrawlers/discord:latest
+    container_name: baseic-discord-setup
+    environment:
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID}
+    # Image entrypoint is `node setup.mjs`; we just supply args.
+    command: ["--guild", "${DISCORD_GUILD_ID}"]
+    restart: "no"
+    volumes:
+      - __BASE_PATH__/template.json:/app/template.json:ro
+      - __BASE_PATH__/messages:/app/messages:ro
+      - __BASE_PATH__/art:/app/art:ro
+      - __BASE_PATH__/setup.mjs:/app/setup.mjs:ro
+
+  discord-bot:
+    image: baseicbrawlers/discord:latest
+    container_name: baseic-discord-bot
+    environment:
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID}
+    entrypoint: ["node", "bot.mjs"]
+    command: []
+    restart: unless-stopped
+    volumes:
+      - __BASE_PATH__/template.json:/app/template.json:ro
+      - __BASE_PATH__/bot.mjs:/app/bot.mjs:ro

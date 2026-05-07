@@ -2,8 +2,8 @@
  * Core type definitions for Brawlers.
  *
  * NOTE: this is a duplicate of root src/core/types.ts. Phase 6 keeps the
- * frontend standalone per CLAUDE.md; a Phase 7 workspace refactor will
- * deduplicate. Keep both copies in sync if either changes.
+ * frontend standalone (per project notes); a Phase 7 workspace refactor
+ * will deduplicate. Keep both copies in sync if either changes.
  */
 
 // ─── Weapons ─────────────────────────────────────────────────────────────

@@ -1,0 +1,18 @@
+{
+  "name": "baseicbrawlers-discord",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "BASEic Brawlers Discord setup + long-running community bot.",
+  "scripts": {
+    "setup": "node setup.mjs",
+    "bot": "node bot.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "discord.js": "^14.16.3"
+  }
+}

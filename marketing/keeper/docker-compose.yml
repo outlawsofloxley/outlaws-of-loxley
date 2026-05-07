@@ -1,0 +1,26 @@
+# BASEic Brawlers fight-cost keeper.
+# Long-running. Polls every 5min, retunes Duel.fightCost when BRAWL/USD moves
+# ≥5% from $1 target. Lives alongside the Discord bot on TrueNAS.
+#
+# Setup:
+#   1. Copy .env.example to .env and fill in mainnet values
+#   2. docker compose up --build -d
+#   3. docker logs -f baseic-brawlers-keeper
+services:
+  keeper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: baseicbrawlers/keeper:latest
+    container_name: baseic-brawlers-keeper
+    env_file:
+      - .env
+    restart: unless-stopped
+    network_mode: bridge
+    read_only: true
+    tmpfs:
+      - /tmp:size=8m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

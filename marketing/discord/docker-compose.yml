@@ -1,0 +1,85 @@
+# BASEic Brawlers — Discord stack.
+#
+# Two services, one image:
+#   discord-setup  — one-shot. Applies template.json to your guild,
+#                    idempotent. Run with: docker compose run --rm
+#                    discord-setup --guild <serverId>
+#   discord-bot    — long-running. Verification reaction listener +
+#                    welcome DMs. Start with: docker compose up -d
+#                    discord-bot
+#
+# Designed for TrueNAS Scale (Dragonfish 24.04+) but works on any host
+# with Docker + docker compose. .env holds DISCORD_BOT_TOKEN and (for
+# the bot) DISCORD_GUILD_ID.
+
+services:
+  discord-setup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: baseicbrawlers/discord:latest
+    container_name: baseic-discord-setup
+    env_file:
+      - .env
+    restart: "no"
+    network_mode: bridge
+    # Bind-mounted content lets you tweak template.json / messages / art /
+    # the script itself without rebuilding the image. Re-run is a single
+    # `docker compose run --rm discord-setup` away.
+    volumes:
+      - ./template.json:/app/template.json:ro
+      - ./messages:/app/messages:ro
+      - ./art:/app/art:ro
+      - ./setup.mjs:/app/setup.mjs:ro
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  discord-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: baseicbrawlers/discord:latest
+    container_name: baseic-discord-bot
+    env_file:
+      - .env
+    environment:
+      # Auto-sync canonical pinned/seed messages from disk on boot. Idempotent
+      # (no edit if content matches), so leaving it on is harmless.
+      REFRESH_PINS_ON_STARTUP: "true"
+      # Auto-repost the leaderboard when the top-5 materially changes (≥30m gap).
+      LEADERBOARD_AUTO_UPDATE: "true"
+      # Block-range filter to drop legacy duel rows (BSC Testnet + earlier
+      # Sepolia versions). Set to the current Duel contract deploy block.
+      # v9 redeploy 2026-05-07 with ethnic-surnames naming.
+      DUEL_BLOCK_MIN: "41172007"
+      # One-shot wipe + backfill ran 2026-05-07 to repair v9 sim death
+      # posts. Both off now — every future death posts via the live
+      # death-watcher (token-deduped + cache-bypass).
+      WIPE_GRAVEYARD_ON_STARTUP: "false"
+      BACKFILL_DEATHS_ON_STARTUP: "false"
+    # Override the image's setup entrypoint to run the long-running bot.
+    entrypoint: ["node", "bot.mjs"]
+    command: []
+    restart: unless-stopped
+    network_mode: bridge
+    # Bind-mount script + content so edits only need a container restart
+    # (no image rebuild) for messages/art/template/bot tweaks.
+    volumes:
+      - ./template.json:/app/template.json:ro
+      - ./bot.mjs:/app/bot.mjs:ro
+      - ./messages:/app/messages:ro
+      - ./art:/app/art:ro
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - discord-setup

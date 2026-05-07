@@ -19,10 +19,12 @@ import {Xorshift} from "./lib/Xorshift.sol";
  * @custom:website  https://baseicbrawlers.com
  * @custom:telegram https://t.me/baseicbrawlers
  * @custom:twitter  https://x.com/BASEicBrawlers
+ * @custom:discord  https://discord.gg/RjvBEA5CVd
  *
  *  Website:  https://baseicbrawlers.com
  *  Telegram: https://t.me/baseicbrawlers
  *  X:        https://x.com/BASEicBrawlers
+ *  Discord:  https://discord.gg/RjvBEA5CVd
  *
  * @dev Minting is deterministic from (masterSeed, tokenId). This means every
  *      brawler's traits are known in advance of mint, which is fine for this
@@ -142,6 +144,11 @@ contract Brawlers is ERC721, Ownable, Pausable {
     ///         2500 possible combinations. Populated in _initializeNames().
     string[50] private _firstNames;
     string[50] private _lastNames;
+    /// @notice Pre-shuffled permutation of last-name indices [0..49]. Mints
+    ///         pull `_lastNames[_lastsShuffle[(tokenId - 1) % 50]]` so the
+    ///         first 50 mints (and every 50-block thereafter) hit all 50 lasts
+    ///         exactly once each. Computed once in `_initializeNames()`.
+    uint8[50] private _lastsShuffle;
 
     /// @notice Flag for whether the 1-of-1 King token has been minted. Only
     ///         the contract owner can mint it, and only once.
@@ -637,10 +644,15 @@ contract Brawlers is ERC721, Ownable, Pausable {
      *      Deterministic from (masterSeed, tokenId). Names are immutable after
      *      mint, no rename function exists.
      */
-    function _rollName(uint256 seed, uint256 /*tokenId*/) private view returns (string memory) {
+    function _rollName(uint256 seed, uint256 tokenId) private view returns (string memory) {
         Xorshift.State memory rng = Xorshift.create(seed);
         uint8 firstIdx = uint8(uint256(Xorshift.nextInt(rng, 0, 49)));
-        uint8 lastIdx = uint8(uint256(Xorshift.nextInt(rng, 0, 49)));
+        // Last names cycle through a pre-shuffled permutation by tokenId, so
+        // any 50-mint block has ALL 50 lasts unique. Trade-off: across the
+        // full 2,000 supply each last is reused 40 times across different
+        // first-name combos — guarantees no duplicate lasts in any visible
+        // contiguous roster sample of ≤50 brawlers.
+        uint8 lastIdx = _lastsShuffle[(tokenId - 1) % 50];
         return string.concat(_firstNames[firstIdx], " ", _lastNames[lastIdx]);
     }
 
@@ -723,23 +735,40 @@ contract Brawlers is ERC721, Ownable, Pausable {
      *      them (they're deterministic from masterSeed + tokenId anyway).
      */
     function _initializeNames() private {
+        // Designed 2026-05-06: mix of brawler swagger, cute-deadly, "the X"
+        // epithets, wrestling moves, and a sprinkle of degen culture so the
+        // 2,500 combos read as fun-to-own rather than generic.
         string[50] memory firsts = [
-            "Knox","Hank","Quade","Enzo","Axel","Luna","Zara","Hatch","Rook","Marco",
-            "Rex","Jade","Kane","Mira","Bolt","Vince","Ivy","Drake","Nova","Cash",
-            "Jinx","Riggs","Fang","Stone","Crash","Ursa","Gunner","Vera","Gia","Phoenix",
-            "Talon","Vex","Roscoe","Mace","Kilo","Thorn","Grim","Ash","Raze","Hex",
-            "Beck","Tank","Tycho","Diesel","Ransom","Vulcan","Harlan","Bruno","Reaver","Blaze"
+            "Hank","Knox","Tank","Diesel","Bruno","Cash","Macho","Rocky","Buster","Brick",
+            "Vex","Bash","Smoke","Buzz","Spike","Flex","Punchy","Trigger","Boomer","Pickle",
+            "Biscuit","Mango","Goblin","Sugar","Pug","Stitch","Junior","Tiny","Bubba","Hodl",
+            "Gwap","Chad","Yeet","Bones","Knuckles","Iron","Slick","Goose","Rampage","Saint",
+            "Doc","Ace","Vlad","Wolfie","Shaq","Bandit","Sparky","Mongo","Big Mike","Buck"
         ];
+        // Ethnic surnames spanning Italian, Slavic, Indian, Chinese, Japanese,
+        // Greek, Spanish, Irish, Anglo, German, Jewish heritage. Keeps the
+        // brawler-first / real-last fight-card energy with global flavour.
         string[50] memory lasts = [
-            "Smasher","Blackheart","Wrecker","Stormbreaker","Grimes","Snake","Ravenclaw","Vance","Butcher","Deathrow",
-            "Harlow","Ives","Kane","Marrow","Nash","Warlow","Cross","Emberly","Locke","Slayer",
-            "Wolf","Nightshade","Zorn","Crusher","the Bull","the Wolf","the Snake","Ryker","Vale","Stoker",
-            "Steel","Hammer","Razor","Kade","Pike","Kross","Vane","Blackout","Hollow","Crowe",
-            "Redmane","Silvio","Ghoul","Rain","Sterling","Revenant","Murder","Brimstone","Thorn","Fury"
+            "Romano","Costello","Russo","Genovese","Conti","Falcone","DeLuca","Capozzi","Volkov","Petrovic",
+            "Kowalski","Sokolov","Wojcik","Nikolic","Kuznetsov","Patel","Singh","Sharma","Reddy","Khan",
+            "Bhatt","Wong","Liu","Chen","Wang","Lin","Zhao","Nakamura","Tanaka","Sato",
+            "Yamamoto","Watanabe","Suzuki","Stavros","Christou","Vlahakis","Diakos","Vasquez","Cabrera","Ortega",
+            "Salazar","Doyle","Murphy","O'Brien","Hammond","Schmidt","Krause","Vogel","Goldberg","Cohen"
         ];
         for (uint256 i = 0; i < 50; i++) {
             _firstNames[i] = firsts[i];
             _lastNames[i] = lasts[i];
+            _lastsShuffle[i] = uint8(i);
+        }
+        // Fisher-Yates shuffle of the last-name index permutation. Domain-
+        // separated seed so this can't be guessed from rarity/name rolls.
+        uint256 lastsSeed = masterSeed ^ uint256(0x4c41535453); // "LASTS"
+        Xorshift.State memory rng = Xorshift.create(lastsSeed);
+        for (uint256 i = 49; i > 0; i--) {
+            uint256 j = uint256(Xorshift.nextInt(rng, 0, int256(i)));
+            uint8 tmp = _lastsShuffle[i];
+            _lastsShuffle[i] = _lastsShuffle[j];
+            _lastsShuffle[j] = tmp;
         }
     }
 

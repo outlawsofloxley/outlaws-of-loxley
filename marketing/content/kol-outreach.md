@@ -48,7 +48,7 @@ Different angle, these accounts care about chart + early-in:
 ```
 [handle], not a meme but might be your speed:
 
-Just launched BASEic Brawlers on Base, 2,000 NFTs + utility token ($BRAWL), LP locked 6mo on Unicrypt, 0% tax, anti-sniper hardened. First 100 mints are FREE + permanent founder perks (25% off fights, free first resurrect). Then $40→$60 tiered.
+Just launched BASEic Brawlers on Base, 2,000 NFTs + utility token ($BRAWL), LP locked 90d on Unicrypt, 0% tax, anti-sniper hardened. First 100 mints are the cheapest tier ($20 for IDs 1-50, $25 for 51-100) + permanent founder perks (25% off fights, free first resurrect, gold/cyan badge). Tiers escalate to $50 by the final 500.
 
 Probably under your radar but the early-in is right now. CA + chart in pinned at @BASEicBrawlers.
 ```

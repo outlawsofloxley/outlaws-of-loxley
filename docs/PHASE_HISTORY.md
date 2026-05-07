@@ -20,7 +20,7 @@ and decisions current to v1 launch on BSC Testnet.
 | 7-ITERATION-2 | Batch mint (20/tx) + win-scaled resurrection + signer key uploaded | Complete (2026-04-24 pm) |
 | 7-ITERATION-3 | Batch reveal grid + one-click duel + history + leaderboard + visual duel animation | Complete (2026-04-24 pm+1) |
 | 7-ITERATION-3 polish | BSC-RPC-safe getLogs (1k chunks, retry-halve), pot-centric duel UI, leaderboard fighters-only, weapon glyphs + clash spark | Complete (2026-04-24 pm+2) |
-| 7-ITERATION-4 art v1 | Fantums-style 32×32 avatar generator, round head, googly eyes, rarity-driven hats, 12 hand-drawn weapon sprites, /audit page | Complete (2026-04-24 pm+3) |
+| 7-ITERATION-4 art v1 | Procedural 32×32 avatar generator, round head, googly eyes, rarity-driven hats, 12 hand-drawn weapon sprites, /audit page | Complete (2026-04-24 pm+3) |
 | 7-ITERATION-4 art v2 | Big variety pass: gender split + 7 hairstyles + hair streaks + 17 hat types + 6 arm accessories + 5 auras + 4 eyewear + 6 pet types + pet collars + 10 pant palettes | Complete (2026-04-24 pm+4) |
 | 7-ITERATION-4 art v3 | Off-hand items, background scenes, floor props, chest badges, face extras, species variants | Complete (2026-04-24 pm+5) |
 | 7-ITERATION-4 art v4 | Weather scenes + boosted scene chance on lower tiers + expanded palettes, art ready for 500-mint test | Complete (2026-04-24 pm+6) |

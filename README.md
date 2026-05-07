@@ -33,8 +33,8 @@ test/           vitest (engine) + forge (Solidity)
 frontend/       Next.js 16 dapp + API routes
 marketing/      Bots + content + art generators
 docs/           PHASE_HISTORY.md (full iteration log)
-CLAUDE.md       Stable project context (read by Claude Code)
-SESSION_STATE.md Live handoff doc (read first, update last)
+BASEicBrawlers.md Stable project context
+SESSION_STATE.md  Live handoff doc (read first, update last)
 ```
 
 ## Setup

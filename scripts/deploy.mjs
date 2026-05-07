@@ -398,21 +398,33 @@ async function phaseForgeDeploy() {
   if (state.usdcAddr) deployEnv.USDC_ADDRESS = state.usdcAddr;
 
   if (TARGET === 'mainnet') {
+    // Mainnet tokenomics (locked 2026-05-07):
+    //   - 100k BRAWL fixed supply: 30k LP / 5k dev / 65k governance treasury
+    //   - 0 BRAWL airdropped on mint (replaced by dynamic fight-cost keeper)
+    //   - 0% mint ETH/USDC/USDT routed to LP — 100% goes straight to dev treasury
+    //   - LP seeded ONCE at launch via SeedAndLockLP.s.sol from deployer wallet
+    //   - Founder discount on duels (25%) and free first resurrect retained
+    //   - TIERED pricing on mints: $20/$25/$30/$35/$40/$50 across 6 tiers
+    //   - Initial fightCost = 100 BRAWL; keeper rebalances every 5min to ~$1 USD
     Object.assign(deployEnv, {
       ETH_MINT_PRICE: '7500000000000000',
       USDT_MINT_PRICE: '30000000',
       USDC_MINT_PRICE: '30000000',
       RESURRECTION_COST: '100000000000000000',
-      FIGHT_COST: '10000000000000000000',
+      FIGHT_COST: '100000000000000000000',     // 100 BRAWL initial; keeper retunes
       AIRDROP_PER_MINT: '0',
-      FOUNDER_AIRDROP: '20000000000000000000',
-      LP_SHARE_BPS: '3333',
-      LP_BRAWL_PER_MINT: '50000000000000000000',
+      FOUNDER_AIRDROP: '0',                    // killed; founders keep duel discount + free resurrect
+      LP_SHARE_BPS: '0',                       // mint ETH 100% to dev, 0% to LP
+      LP_BRAWL_PER_MINT: '0',                  // no BRAWL pair-on-mint
       TIERED_PRICING: 'true',
     });
   } else {
-    // Sepolia: small prices but turn the airdrop on so testers can play.
+    // Sepolia: free mints + airdrop on, so testers can play without
+    // begging for testnet ETH every session. Mainnet still uses real prices.
     Object.assign(deployEnv, {
+      ETH_MINT_PRICE: '0',
+      USDT_MINT_PRICE: '0',
+      USDC_MINT_PRICE: '0',
       AIRDROP_PER_MINT: '50000000000000000000',
     });
   }
@@ -729,7 +741,7 @@ function phaseReport() {
     lines.push('- Manually transfer BRAWL allocations: 50k LP, 10k dev, 15k reserve.');
   } else {
     lines.push('- Update `frontend/.env.local` with the new addresses if you run the dev server.');
-    lines.push('- Distribute mint links to mates for the 500-mint Sepolia rehearsal.');
+    lines.push('- Distribute mint links to your test cohort for the 500-mint Sepolia rehearsal.');
   }
   lines.push('');
   lines.push(`Full log: \`${LOG_PATH.replace(ROOT + '\\', '').replace(ROOT + '/', '')}\``);
