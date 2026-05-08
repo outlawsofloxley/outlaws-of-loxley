@@ -8,7 +8,7 @@
  *   2. Welcome DM. New member joins → DM them how to verify.
  *   3. Duel watcher. Polls the live duel-history API and posts rich embeds
  *      with brawler names, weapons, ratings, and PNG portraits to
- *      #duel-talk in real time.
+ *      #duels in real time.
  *   4. Leaderboard digest. Posts a top-10 ranked-by-Rating summary to
  *      #leaderboard on an interval (default 24h, and once on startup if
  *      LEADERBOARD_ON_STARTUP=true).
@@ -71,7 +71,9 @@ const DUEL_BACKFILL_COUNT = Math.max(0, Number(process.env.DUEL_BACKFILL_COUNT |
 //                    block numbers exceed Base Sepolia's head (e.g.
 //                    BSC-Testnet rows at ~103M).
 const DUEL_BLOCK_MIN = Number(process.env.DUEL_BLOCK_MIN || '40889595');
-const DUEL_BLOCK_MAX = Number(process.env.DUEL_BLOCK_MAX || '90000000');
+// Default high enough to cover Base Sepolia for years; override per-deploy
+// when migrating chains (e.g. mainnet) so legacy testnet rows can't bleed in.
+const DUEL_BLOCK_MAX = Number(process.env.DUEL_BLOCK_MAX || '999999999');
 // Auto-repost the leaderboard when the top-N has materially changed.
 // Throttled by LEADERBOARD_MIN_INTERVAL_MIN so a busy night can't spam.
 const LEADERBOARD_AUTO_UPDATE = /^(1|true|yes)$/i.test(process.env.LEADERBOARD_AUTO_UPDATE || '');
@@ -100,8 +102,9 @@ const VERIFY_EMOJI = tpl.verification?.reaction || '⚔️';
 const VERIFIED_ROLE = tpl.verification?.grantsRole || 'Verified';
 const RULES_CHANNEL = tpl.guildPointers?.rulesChannel || 'rules';
 // #duels = bot-only auto-posts of duel outcomes (admin posting locked).
-// #duel-talk = community chat about duels (free posting).
-const DUEL_TALK_CHANNEL = process.env.DUEL_TALK_CHANNEL || 'duels';
+// `DUELS_CHANNEL` is the legacy env name — kept as a fallback so existing
+// deploys don't break, but new envs should use `DUELS_CHANNEL`.
+const DUELS_CHANNEL = process.env.DUELS_CHANNEL || process.env.DUELS_CHANNEL || 'duels';
 const LEADERBOARD_CHANNEL = process.env.LEADERBOARD_CHANNEL || 'leaderboard';
 const GRAVEYARD_CHANNEL = process.env.GRAVEYARD_CHANNEL || 'graveyard';
 
@@ -128,7 +131,7 @@ const client = new Client({
 let verifyChannelId = null;
 let verifiedRoleId = null;
 let rulesChannelId = null;
-let duelTalkChannelId = null;
+let duelsChannelId = null;
 let leaderboardChannelId = null;
 let graveyardChannelId = null;
 let marketplaceChannelId = null;
@@ -398,7 +401,7 @@ async function fetchHistory(limit = 50) {
 }
 
 async function pollDuels() {
-  if (!duelTalkChannelId) return;
+  if (!duelsChannelId) return;
   let rows;
   try { rows = await fetchHistory(50); } catch (e) { console.error('duel poll error:', e.message); return; }
   const fresh = rows.filter((d) => !seenDuelKeys.has(duelKey(d)));
@@ -406,7 +409,7 @@ async function pollDuels() {
   for (const d of fresh) {
     seenDuelKeys.add(duelKey(d));
     try {
-      const channel = await client.channels.fetch(duelTalkChannelId);
+      const channel = await client.channels.fetch(duelsChannelId);
       const msg = await buildDuelMessage(d);
       await channel.send(msg);
       console.log(`+ posted duel #${d.token_a} vs #${d.token_b}`);
@@ -913,8 +916,8 @@ async function bootstrap() {
   if (verify) { verifyChannelId = verify.id; console.log(`  resolved #${VERIFY_CHANNEL} → ${verify.id}`); }
   const rules = findText(RULES_CHANNEL);
   if (rules) rulesChannelId = rules.id;
-  const duelTalk = findText(DUEL_TALK_CHANNEL);
-  if (duelTalk) { duelTalkChannelId = duelTalk.id; console.log(`  resolved #${DUEL_TALK_CHANNEL} → ${duelTalk.id}`); }
+  const duelTalk = findText(DUELS_CHANNEL);
+  if (duelTalk) { duelsChannelId = duelTalk.id; console.log(`  resolved #${DUELS_CHANNEL} → ${duelTalk.id}`); }
   const lb = findText(LEADERBOARD_CHANNEL);
   if (lb) { leaderboardChannelId = lb.id; console.log(`  resolved #${LEADERBOARD_CHANNEL} → ${lb.id}`); }
   const gy = findText(GRAVEYARD_CHANNEL);
@@ -942,11 +945,11 @@ client.once(Events.ClientReady, async (c) => {
     console.error('  duel watermark init failed:', e.message);
   }
 
-  if (DUEL_BACKFILL_COUNT > 0 && duelTalkChannelId && initial.length > 0) {
+  if (DUEL_BACKFILL_COUNT > 0 && duelsChannelId && initial.length > 0) {
     const slice = initial.slice(0, DUEL_BACKFILL_COUNT).reverse();
-    console.log(`  backfilling ${slice.length} historical duel(s) → #${DUEL_TALK_CHANNEL}…`);
+    console.log(`  backfilling ${slice.length} historical duel(s) → #${DUELS_CHANNEL}…`);
     try {
-      const channel = await client.channels.fetch(duelTalkChannelId);
+      const channel = await client.channels.fetch(duelsChannelId);
       for (const d of slice) {
         const msg = await buildDuelMessage(d);
         msg.content = '_(backfill — historical duel for wiring verification)_';
@@ -959,7 +962,7 @@ client.once(Events.ClientReady, async (c) => {
   }
 
   console.log(
-    `✓ Watching: ⚔ in #${VERIFY_CHANNEL}, joins, new duels in #${DUEL_TALK_CHANNEL}, deaths in #${GRAVEYARD_CHANNEL}, sales in #${MARKETPLACE_CHANNEL}${MARKETPLACE_ADDRESS ? '' : ' (DISABLED — MARKETPLACE_ADDRESS unset)'}, leaderboard digest every ${LEADERBOARD_INTERVAL_HOURS}h.`,
+    `✓ Watching: ⚔ in #${VERIFY_CHANNEL}, joins, new duels in #${DUELS_CHANNEL}, deaths in #${GRAVEYARD_CHANNEL}, sales in #${MARKETPLACE_CHANNEL}${MARKETPLACE_ADDRESS ? '' : ' (DISABLED — MARKETPLACE_ADDRESS unset)'}, leaderboard digest every ${LEADERBOARD_INTERVAL_HOURS}h.`,
   );
   console.log(
     `✓ Slash: /leaderboard, /refresh-pins (Manage-Guild gated). Auto-update on top-${LEADERBOARD_FP_DEPTH} change: ${LEADERBOARD_AUTO_UPDATE ? `ON (≥${LEADERBOARD_MIN_INTERVAL_MIN}m gap)` : 'OFF'}.`,

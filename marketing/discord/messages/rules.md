@@ -6,7 +6,7 @@ We keep it chill in here. Read once, behave forever.
 Mods never DM first. Anyone DMing you with "support", a "free mint", an "official airdrop", or a wallet-connect prompt is trying to drain you. Block, report, move on. AutoMod nukes the obvious links on sight.
 
 **2. Be civil.**
-Trash-talk in **#duel-talk**, not in chat. No racism, no slurs, no targeted harassment. Spoiler tag anything edgy.
+Keep trash-talk in **#strategy** or **#general**, not at people directly. No racism, no slurs, no targeted harassment. Spoiler tag anything edgy.
 
 **3. Don't shill other tokens here.**
 We don't mind you being multi-project — we do mind your charts cluttering our channels. Take it to a DM with whoever wants it.

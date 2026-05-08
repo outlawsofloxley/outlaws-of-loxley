@@ -9,9 +9,9 @@ It's currently **open beta on Base Sepolia testnet** — mint, fight, break thin
 That tells me you've read **#rules** and grants you the **Verified** role. After that, the rest of the place opens up:
 
 - 💬 **#general** + **#art-show** — vibe, GM, show off mints
-- 🥊 **#duel-talk** — winners brag, losers seethe
+- ⚔️ **#duels** — bot-posted duel outcomes, live as they happen
 - 🪦 **#graveyard** — RIP threads + resurrection stories
-- 🧠 **#strategy** — combat math, weapon picks, build theory
+- 🧠 **#strategy** — combat math, weapon picks, build theory, trash-talk
 - 🛒 **#marketplace** + 💰 **#brawl-token** — listings + token chat
 - 🆘 **#help** — anything broken or confusing
 

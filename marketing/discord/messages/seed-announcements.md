@@ -26,7 +26,7 @@ LP seeded on **Aerodrome** day one and locked on **Unicrypt for 6 months**. Reno
 ## Get in
 1. Skim **#rules**
 2. Tap **⚔** in **#verify**
-3. Mint, fight, post your first KO in **#duel-talk**
+3. Mint, fight, watch the kills land in **#duels**
 
 Need testnet ETH? https://www.alchemy.com/faucets/base-sepolia
 

@@ -40,8 +40,7 @@
       "name": "ARENA",
       "verifiedOnly": true,
       "channels": [
-        { "name": "duels",          "type": "text", "topic": "Auto-posted duel outcomes — bot only. Talk in #duel-talk.",     "moderatorPostOnly": true },
-        { "name": "duel-talk",      "type": "text", "topic": "Brag about wins. Mourn losses. Trash-talk in moderation.",       "slowModeSeconds": 5 },
+        { "name": "duels",          "type": "text", "topic": "Auto-posted duel outcomes — bot only. Strategy chat in #strategy.", "moderatorPostOnly": true },
         { "name": "leaderboard",    "type": "text", "topic": "Daily standings — bot only.",                                    "moderatorPostOnly": true },
         { "name": "graveyard",      "type": "text", "topic": "RIP — auto-posted on every death. Bot only.",                    "moderatorPostOnly": true },
         { "name": "strategy",       "type": "text", "topic": "Stat builds, weapon picks, matchmaking tips.",                   "slowModeSeconds": 10, "seedFile": "messages/seed-strategy.md" }
@@ -120,7 +119,7 @@
         "inOnboarding": true,
         "options": [
           { "title": "I want to mint a brawler", "description": "Take me to the mint info.",   "emoji": "⚔",  "channels": ["links", "general"] },
-          { "title": "I'm here to duel",         "description": "Strategy and matchmaking.",   "emoji": "🥊", "channels": ["duel-talk", "strategy"] },
+          { "title": "I'm here to duel",         "description": "Strategy and matchmaking.",   "emoji": "🥊", "channels": ["duels", "strategy"] },
           { "title": "Just lurking",             "description": "Show me the community feed.", "emoji": "👀", "channels": ["general", "art-show"] },
           { "title": "I'm a holder",             "description": "Trading and tokenomics.",     "emoji": "💰", "channels": ["marketplace", "brawl-token"] }
         ]

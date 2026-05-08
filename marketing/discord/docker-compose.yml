@@ -54,9 +54,11 @@ services:
       # Auto-repost the leaderboard when the top-5 materially changes (≥30m gap).
       LEADERBOARD_AUTO_UPDATE: "true"
       # Block-range filter to drop legacy duel rows (BSC Testnet + earlier
-      # Sepolia versions). Set to the current Duel contract deploy block.
-      # v10 launch-rehearsal 2026-05-07.
-      DUEL_BLOCK_MIN: "41177645"
+      # Sepolia versions / earlier Sepolia contracts). Set to ~deploy block of
+      # the current Duel contract; bot.mjs default for DUEL_BLOCK_MAX is
+      # 999_999_999 so we don't normally need to set the upper bound here.
+      # v12 Sepolia redeploy era — earliest current row observed at 103492185.
+      DUEL_BLOCK_MIN: "103490000"
       # Marketplace watcher — Sold events post to #marketplace.
       # On mainnet day, set MARKETPLACE_ADDRESS to the real Marketplace
       # contract and RPC_URL to https://mainnet.base.org.
