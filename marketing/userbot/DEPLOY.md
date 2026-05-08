@@ -19,6 +19,19 @@ runbook for the generic phases, and you're done.
 | Public TG group username | `baseicbrawlers` (i.e. `https://t.me/baseicbrawlers`) |
 | Discord stack already on this NAS | `baseic-discord` (sibling, do not touch) |
 
+## Status
+
+| Field | Value |
+|---|---|
+| Deployed | 2026-05-08 |
+| Mode | `LISTENER_ONLY=true` — logs incoming, never replies |
+| Userbot TG identity | id `8372813217` (no public @username — pingable only via tag-click or reply, not by typing `@handle`) |
+| Smoke test | DM + group event both fired correctly on 2026-05-08 |
+
+### Open action items
+
+- [ ] **Flip to active.** Watch logs for ≥1h (ideally a day), confirm criteria in "Test before flipping to active" below, then run the steps in "Flip to active" to set `USERBOT_LISTENER_ONLY=false` and restart.
+
 ## Pre-deploy checklist
 
 - [ ] DeepSeek key in `~/.claude/secrets/secrets.env` (`DEEPSEEK_API_KEY=`)
