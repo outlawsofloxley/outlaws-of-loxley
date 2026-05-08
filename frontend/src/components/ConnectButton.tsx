@@ -27,6 +27,26 @@ function shortAddr(addr: `0x${string}`): string {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 }
 
+// EIP-1193 code 4001 = user rejected. viem also throws `UserRejectedRequestError`
+// (sometimes wrapped as `cause`). Rejecting a wallet prompt isn't an error —
+// it's a user choice — so we hide the error UI entirely in that case.
+function isUserRejection(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as { name?: string; code?: number; cause?: { name?: string; code?: number } };
+  return (
+    e.name === 'UserRejectedRequestError' ||
+    e.code === 4001 ||
+    e.cause?.name === 'UserRejectedRequestError' ||
+    e.cause?.code === 4001
+  );
+}
+
+// viem errors expose `.shortMessage` (just the headline, no `Details:` /
+// `Version:` footer). Fall back to the first line of `.message` if missing.
+function cleanErrorMessage(err: { message?: string; shortMessage?: string }): string {
+  return err.shortMessage ?? err.message?.split('\n')[0] ?? 'Connection failed';
+}
+
 export function ConnectButton() {
   // useAccount's chainId is the connector's real chain; useChainId falls back
   // to config.chains[0] when the wallet is on an unconfigured chain, which
@@ -161,9 +181,9 @@ export function ConnectButton() {
             ))}
           </div>
         )}
-        {connectError && (
+        {connectError && !isUserRejection(connectError) && (
           <span className="text-xs text-brawl-red max-w-xs text-right">
-            {connectError.message}
+            {cleanErrorMessage(connectError)}
           </span>
         )}
       </div>
