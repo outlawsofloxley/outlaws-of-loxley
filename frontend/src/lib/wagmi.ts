@@ -10,7 +10,7 @@
  * after the browser has mounted.
  */
 import { createConfig, http, fallback } from 'wagmi';
-import { coinbaseWallet, injected } from 'wagmi/connectors';
+import { coinbaseWallet, injected, walletConnect } from 'wagmi/connectors';
 import { defineChain, type Chain } from 'viem';
 import { requireEnv } from './env';
 
@@ -123,31 +123,45 @@ export function getWagmiConfig() {
   const { env } = requireEnv();
   const chain = buildChain(env.chainId, env.rpcUrl);
 
+  // Build connector list. wagmi v2's `multiInjectedProviderDiscovery` is on
+  // by default, so EIP-6963-announcing browser extensions (Rainbow, MetaMask,
+  // Rabby, Brave, Frame, Binance Wallet, etc.) appear as separate connectors
+  // in `useConnect().connectors` automatically — we only need to register the
+  // generic `injected` (legacy `window.ethereum` fallback), Coinbase, and
+  // (optionally) WalletConnect explicitly.
+  const connectors: ReturnType<typeof injected>[] = [
+    // Legacy `window.ethereum` fallback for users on browsers that don't yet
+    // implement EIP-6963 announcement (older wallets, niche browsers).
+    injected({ shimDisconnect: true }),
+    // Coinbase Wallet: covers extension/mobile native AND Smart Wallet
+    // (passkey, no install) in one connector.
+    coinbaseWallet({
+      appName: 'BASEic Brawlers',
+      appLogoUrl: 'https://baseicbrawlers.com/logo.svg',
+      preference: { options: 'all' },
+    }) as unknown as ReturnType<typeof injected>,
+  ];
+  if (env.walletConnectProjectId) {
+    // WalletConnect: QR/deeplink for mobile wallets (Rainbow, Trust, Binance,
+    // MetaMask Mobile, hundreds more). Only registered when a project id is
+    // configured — without it the WC SDK throws on init.
+    connectors.push(
+      walletConnect({
+        projectId: env.walletConnectProjectId,
+        metadata: {
+          name: 'BASEic Brawlers',
+          description: 'Pixel-art duels on Base',
+          url: 'https://baseicbrawlers.com',
+          icons: ['https://baseicbrawlers.com/logo.svg'],
+        },
+        showQrModal: true,
+      }) as unknown as ReturnType<typeof injected>,
+    );
+  }
+
   cached = createConfig({
     chains: [chain],
-    connectors: [
-      // EIP-1193 provider exposed on window.ethereum. Works for:
-      //   - Desktop browser extensions (MetaMask, Rabby, Frame, Brave Wallet).
-      //   - Mobile dapps opened inside a wallet's in-app browser (MetaMask
-      //     mobile has one, tap the hamburger → Browser → enter URL).
-      // For mobile Chrome/Safari users without window.ethereum, the
-      // ConnectButton renders an "Open in MetaMask" deeplink that bounces
-      // them into MM's in-app browser, where this same connector works.
-      injected({ shimDisconnect: true }),
-      // Coinbase Wallet: covers two distinct user paths in one connector.
-      //   - "smartWalletOnly" preference => Coinbase Smart Wallet, a passkey-
-      //     based wallet that runs entirely in the browser. No app/extension
-      //     install required; great for first-time crypto users on a Base-
-      //     native dapp.
-      //   - Users with the Coinbase Wallet extension/mobile app keep working
-      //     because the SDK auto-detects and prefers the native provider when
-      //     present. Setting preference="all" gives both paths transparently.
-      coinbaseWallet({
-        appName: 'BASEic Brawlers',
-        appLogoUrl: 'https://baseicbrawlers.com/logo.svg',
-        preference: { options: 'all' },
-      }),
-    ],
+    connectors,
     transports: {
       // Fallback transport, viem rotates through these on RPC errors so a
       // single rate-limited endpoint can't kill mints / reads. Per-call

@@ -26,6 +26,7 @@ export const envRaw = {
   usdcAddress: process.env.NEXT_PUBLIC_USDC_ADDRESS,
   marketplaceAddress: process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS,
   houseKeeperAddress: process.env.NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS,
+  walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
 } as const;
 
 function isHex40(s: string): s is `0x${string}` {
@@ -72,6 +73,10 @@ export type EnvValidation =
         marketplaceAddress: `0x${string}`;
         /** Optional, when set, brawlers owned by this address are labeled "HOUSE" and auto-resurrected. */
         houseKeeperAddress: `0x${string}` | null;
+        /** Optional, WalletConnect cloud project id — when set, the wallet
+         *  picker offers WalletConnect (QR code for mobile wallets:
+         *  Rainbow, Trust, Binance, MetaMask Mobile, etc.). */
+        walletConnectProjectId: string | null;
       };
     }
   | { ok: false; errors: string[] };
@@ -132,6 +137,14 @@ export function validateEnv(): EnvValidation {
     }
   }
 
+  // Optional: WalletConnect cloud project id. WalletConnect IDs are 32-char
+  // hex (no 0x prefix). If unset/blank, the picker simply omits the
+  // WalletConnect option — we degrade gracefully rather than throw.
+  const walletConnectProjectId =
+    envRaw.walletConnectProjectId && /^[a-fA-F0-9]{32}$/.test(envRaw.walletConnectProjectId)
+      ? envRaw.walletConnectProjectId
+      : null;
+
   // All required addresses passed normalisation, so the non-null assertions
   // are safe.
   return {
@@ -148,6 +161,7 @@ export function validateEnv(): EnvValidation {
       usdcAddress: usdcAddress!,
       marketplaceAddress: marketplaceAddress!,
       houseKeeperAddress,
+      walletConnectProjectId,
     },
   };
 }

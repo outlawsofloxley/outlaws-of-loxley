@@ -75,21 +75,25 @@ export function ConnectButton() {
     );
   }, []);
 
-  // Auto-prompt the user to switch networks once per connected address when
-  // they land on the wrong chain. wagmi's switchChain falls back to
-  // wallet_addEthereumChain (EIP-3085) if the wallet doesn't have the chain
-  // yet, using the rpcUrls / nativeCurrency / blockExplorer baked into our
-  // chain config. We only prompt once per address — if the user rejects,
-  // they can retry via the visible SWITCH button rather than getting nagged.
-  const promptedAddrRef = useRef<string | null>(null);
+  // Auto-prompt the user to switch networks ONLY when they just clicked a
+  // connector option (not on auto-reconnect from cached wagmi state). Without
+  // this gate the wallet pops up asking to switch chains every page load,
+  // which feels like the site is auto-prompting "connect wallet" on visit.
+  // The flag is set inside each option's onClick below, then consumed once
+  // here. The manual "Switch to <chain>" button in the wrong-chain state
+  // stays visible as a retry path if the user rejects.
+  const userJustClickedConnectRef = useRef(false);
   useEffect(() => {
     if (!isConnected || !address) {
-      promptedAddrRef.current = null;
+      userJustClickedConnectRef.current = false;
       return;
     }
+    if (!userJustClickedConnectRef.current) return;
+    // We have a fresh user-initiated connection. Consume the flag whether or
+    // not we end up firing switchChain — we only want one auto-prompt per
+    // click, never on subsequent re-renders.
+    userJustClickedConnectRef.current = false;
     if (activeChainId === env.chainId) return;
-    if (promptedAddrRef.current === address) return;
-    promptedAddrRef.current = address;
     switchChain({ chainId: env.chainId });
   }, [isConnected, address, activeChainId, env.chainId, switchChain]);
 
@@ -118,39 +122,83 @@ export function ConnectButton() {
 
   // State 1: not connected
   if (!isConnected) {
-    const injected = connectors.find((c) => c.id === 'injected' || c.type === 'injected');
-    const coinbase = connectors.find((c) => c.id === 'coinbaseWalletSDK' || c.id === 'coinbaseWallet');
+    // wagmi v2 + multiInjectedProviderDiscovery (default ON) exposes one
+    // connector per EIP-6963-announced browser extension, plus the explicit
+    // ones we registered (`injected` / `coinbaseWallet` / `walletConnect`).
+    // EIP-6963 connectors all have `type: 'injected'` and a non-`'injected'`
+    // id derived from the wallet's RDNS (e.g. `io.rainbow`, `io.metamask`,
+    // `com.binance.wallet`). Filter accordingly.
+    const eip6963Wallets = connectors.filter(
+      (c) => c.type === 'injected' && c.id !== 'injected',
+    );
+    const genericInjected = connectors.find((c) => c.id === 'injected');
+    const coinbase = connectors.find(
+      (c) => c.id === 'coinbaseWalletSDK' || c.id === 'coinbaseWallet',
+    );
+    const wc = connectors.find((c) => c.id === 'walletConnect');
 
-    // Build the picker option list. Order: browser extension first (fastest
-    // path for power users), then Coinbase Wallet / Smart Wallet (passkey),
-    // then MetaMask deeplink as a mobile fallback.
-    const options: { key: string; label: string; sub?: string; onClick: () => void }[] = [];
-    if (injected && hasInjected !== false) {
+    // Helper: clicking any wallet entry sets the user-initiated flag so the
+    // auto-switch-chain effect fires exactly once after we land connected.
+    const pick = (connector: (typeof connectors)[number]) => () => {
+      setPickerOpen(false);
+      userJustClickedConnectRef.current = true;
+      connect({ connector });
+    };
+
+    const options: {
+      key: string;
+      label: string;
+      sub?: string;
+      iconUrl?: string;
+      onClick: () => void;
+    }[] = [];
+
+    // 1. EIP-6963 browser extensions (Rainbow, MetaMask, Rabby, Binance, …).
+    //    Render each by its announced name + icon — much clearer than a
+    //    single generic "Browser Wallet" entry when the user has multiple.
+    for (const c of eip6963Wallets) {
+      const icon = (c as { icon?: string }).icon;
       options.push({
-        key: 'injected',
-        label: 'Browser Wallet',
-        sub: 'MetaMask, Rabby, Brave, Frame…',
-        onClick: () => {
-          setPickerOpen(false);
-          connect({ connector: injected });
-        },
+        key: c.uid ?? c.id,
+        label: c.name,
+        ...(icon ? { iconUrl: icon } : {}),
+        onClick: pick(c),
       });
     }
+    // 2. Coinbase Wallet (extension OR Smart Wallet passkey, single SDK).
     if (coinbase) {
       options.push({
         key: 'coinbase',
         label: 'Coinbase Wallet',
         sub: 'or Smart Wallet (passkey, no install)',
-        onClick: () => {
-          setPickerOpen(false);
-          connect({ connector: coinbase });
-        },
+        onClick: pick(coinbase),
       });
     }
+    // 3. WalletConnect — only when project id configured. Covers every
+    //    mobile wallet (Rainbow Mobile, Trust, Binance Mobile, MetaMask
+    //    Mobile, …) via the QR-code modal.
+    if (wc) {
+      options.push({
+        key: 'walletConnect',
+        label: 'WalletConnect',
+        sub: 'Mobile: Rainbow, Trust, Binance, others — scan QR',
+        onClick: pick(wc),
+      });
+    }
+    // 4. Generic `window.ethereum` fallback. Hide when we already exposed
+    //    EIP-6963 wallets (otherwise the user sees both the named wallet
+    //    AND a generic "Browser Wallet" entry that points at the same one).
+    if (eip6963Wallets.length === 0 && genericInjected && hasInjected !== false) {
+      options.push({
+        key: 'injected',
+        label: 'Browser Wallet',
+        sub: 'MetaMask, Rabby, Brave, Frame…',
+        onClick: pick(genericInjected),
+      });
+    }
+    // 5. Mobile-no-injected fallback: MetaMask deeplink. Bounces the user
+    //    into MM's in-app browser where the injected connector works.
     if (hasInjected === false) {
-      // Mobile Chrome/Safari users without an injected provider. Coinbase
-      // Smart Wallet handles them via passkeys, but keep the MetaMask
-      // deeplink for users who prefer their existing MM mobile install.
       const url =
         typeof window !== 'undefined' && window.location.hostname
           ? `${window.location.hostname}${window.location.pathname}`
@@ -189,13 +237,29 @@ export function ConnectButton() {
                 key={o.key}
                 type="button"
                 role="menuitem"
-                className="text-left px-3 py-3 border-b border-brawl-border last:border-b-0 hover:bg-brawl-bg transition-colors"
+                className="text-left px-3 py-3 border-b border-brawl-border last:border-b-0 hover:bg-brawl-bg transition-colors flex items-center gap-3"
                 onClick={o.onClick}
               >
-                <span className="block text-sm text-brawl-text">{o.label}</span>
-                {o.sub && (
-                  <span className="block text-xs text-brawl-text-dim mt-0.5">{o.sub}</span>
+                {o.iconUrl ? (
+                  // EIP-6963 icons are typically inline data: URLs (base64
+                  // SVG/PNG) embedded by the wallet itself, so loading is
+                  // synchronous and there's nothing for next/image to
+                  // optimise. Plain <img> is the right tool.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={o.iconUrl}
+                    alt=""
+                    className="w-6 h-6 flex-shrink-0"
+                  />
+                ) : (
+                  <span className="w-6 h-6 flex-shrink-0" aria-hidden />
                 )}
+                <span className="flex-1 min-w-0">
+                  <span className="block text-sm text-brawl-text">{o.label}</span>
+                  {o.sub && (
+                    <span className="block text-xs text-brawl-text-dim mt-0.5">{o.sub}</span>
+                  )}
+                </span>
               </button>
             ))}
           </div>
