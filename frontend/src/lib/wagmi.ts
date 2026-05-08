@@ -52,7 +52,7 @@ export function nativeSymbol(chainId: number): string {
   return nativeCurrencyFor(chainId).symbol;
 }
 
-function chainNameFor(chainId: number): string {
+export function chainNameFor(chainId: number): string {
   if (chainId === 31337) return 'Anvil Local';
   if (chainId === 97) return 'BSC Testnet';
   if (chainId === 56) return 'BNB Smart Chain';
@@ -62,12 +62,26 @@ function chainNameFor(chainId: number): string {
   return `Chain ${chainId}`;
 }
 
+// Block explorer per chain. Used in the chain definition so wagmi can pass
+// `blockExplorerUrls` to `wallet_addEthereumChain` — wallets that don't yet
+// have the chain configured render the explorer link in their add-chain
+// confirmation, which makes the prompt look legit instead of bare-bones.
+function blockExplorerFor(chainId: number): { name: string; url: string } | null {
+  if (chainId === 8453) return { name: 'Basescan', url: 'https://basescan.org' };
+  if (chainId === 84532) return { name: 'Basescan Sepolia', url: 'https://sepolia.basescan.org' };
+  if (chainId === 1) return { name: 'Etherscan', url: 'https://etherscan.io' };
+  if (chainId === 56) return { name: 'BscScan', url: 'https://bscscan.com' };
+  if (chainId === 97) return { name: 'BscScan Testnet', url: 'https://testnet.bscscan.com' };
+  return null;
+}
+
 /** Build a viem `Chain` from env config. Includes the full RPC pool so
  *  wallets that auto-add the chain inherit the redundant endpoints. */
 function buildChain(chainId: number, rpcUrl: string): Chain {
   const pool = [rpcUrl, ...rpcPoolFor(chainId)].filter(
     (u, i, arr) => arr.indexOf(u) === i,
   );
+  const explorer = blockExplorerFor(chainId);
   return defineChain({
     id: chainId,
     name: chainNameFor(chainId),
@@ -75,6 +89,7 @@ function buildChain(chainId: number, rpcUrl: string): Chain {
     rpcUrls: {
       default: { http: pool },
     },
+    blockExplorers: explorer ? { default: explorer } : undefined,
     // Multicall3 lives at the canonical deterministic address on most public
     // EVM chains (verified for Base, BSC Testnet, Ethereum, etc.), but Anvil
     // doesn't always predeploy it. Registering it where it exists lets wagmi's

@@ -22,6 +22,7 @@ import {
 } from 'wagmi';
 import { formatEther } from 'viem';
 import { requireEnv } from '@/lib/env';
+import { chainNameFor } from '@/lib/wagmi';
 
 function shortAddr(addr: `0x${string}`): string {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
@@ -54,7 +55,7 @@ export function ConnectButton() {
   const { address, isConnected, chainId: activeChainId } = useAccount();
   const { connect, connectors, isPending: isConnecting, error: connectError } = useConnect();
   const { disconnect } = useDisconnect();
-  const { switchChain, isPending: isSwitching } = useSwitchChain();
+  const { switchChain, isPending: isSwitching, error: switchError } = useSwitchChain();
   const { env } = requireEnv();
   const { data: balance } = useBalance({
     address,
@@ -73,6 +74,24 @@ export function ConnectButton() {
         typeof (window as unknown as { ethereum?: unknown }).ethereum !== 'undefined',
     );
   }, []);
+
+  // Auto-prompt the user to switch networks once per connected address when
+  // they land on the wrong chain. wagmi's switchChain falls back to
+  // wallet_addEthereumChain (EIP-3085) if the wallet doesn't have the chain
+  // yet, using the rpcUrls / nativeCurrency / blockExplorer baked into our
+  // chain config. We only prompt once per address — if the user rejects,
+  // they can retry via the visible SWITCH button rather than getting nagged.
+  const promptedAddrRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isConnected || !address) {
+      promptedAddrRef.current = null;
+      return;
+    }
+    if (activeChainId === env.chainId) return;
+    if (promptedAddrRef.current === address) return;
+    promptedAddrRef.current = address;
+    switchChain({ chainId: env.chainId });
+  }, [isConnected, address, activeChainId, env.chainId, switchChain]);
 
   // Picker open/closed state for the multi-wallet dropdown. Closed by default.
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -190,21 +209,32 @@ export function ConnectButton() {
     );
   }
 
-  // State 2: connected to wrong chain
+  // State 2: connected to wrong chain. The auto-prompt effect above fires
+  // wallet_switchEthereumChain (and wallet_addEthereumChain if the wallet
+  // doesn't have it yet) on first connect; if the user rejects, this manual
+  // SWITCH button stays visible so they can retry.
   if (activeChainId !== env.chainId) {
+    const targetName = chainNameFor(env.chainId);
     return (
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-brawl-red uppercase tracking-wide">
-          Wrong Network ({activeChainId})
-        </span>
-        <button
-          type="button"
-          className="brawl-btn brawl-btn-danger"
-          disabled={isSwitching}
-          onClick={() => switchChain({ chainId: env.chainId })}
-        >
-          {isSwitching ? 'Switching…' : `Switch to ${env.chainId}`}
-        </button>
+      <div className="flex flex-col items-end gap-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-brawl-red uppercase tracking-wide">
+            Wrong Network
+          </span>
+          <button
+            type="button"
+            className="brawl-btn brawl-btn-danger"
+            disabled={isSwitching}
+            onClick={() => switchChain({ chainId: env.chainId })}
+          >
+            {isSwitching ? 'Switching…' : `Switch to ${targetName}`}
+          </button>
+        </div>
+        {switchError && !isUserRejection(switchError) && (
+          <span className="text-xs text-brawl-red max-w-xs text-right">
+            {cleanErrorMessage(switchError)}
+          </span>
+        )}
       </div>
     );
   }
