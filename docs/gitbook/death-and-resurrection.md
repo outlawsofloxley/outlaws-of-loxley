@@ -1,0 +1,71 @@
+# Death and resurrection 💀 🪦
+
+three losses in a row, your brawler dies. not a euphemism, not a debuff. dead. can't fight, can't earn brawl. shows up in the [/graveyard](https://baseicbrawlers.com/graveyard) until you pay to bring them back.
+
+if you don't want to pay, you don't have to. the brawler stays dead forever. you can sell, transfer, or just leave them in your wallet as a tombstone.
+
+## when does the death happen
+
+after the third consecutive loss is confirmed on-chain, the duel contract flips your brawler's `isDead` flag to true and emits a `BrawlerDied` event. the discord bot sees the event and posts a death notice in **#graveyard** within seconds.
+
+a tie does not break a loss streak. it also doesn't count as a loss. so:
+
+- l, l, l → dead
+- l, l, t, l → dead (3 losses with a tie in the middle)
+- l, l, w, l → not dead (the win reset the streak)
+- l, l, t → not dead (no third loss yet)
+
+## the resurrection cost formula
+
+paid in eth. scales by rarity tier and how many wins your brawler has racked up:
+
+```
+cost = base × tierMult / 10 × (10 + wins) / 10
+```
+
+where:
+- **base** is the dev-set base cost in eth, currently calibrated to about $10 worth of eth on base.
+- **tierMult** is:
+  - common: 1×
+  - uncommon: 1.5×
+  - rare: 2.5×
+  - legendary: 4×
+  - epic: 7×
+  - king: 15×
+- **wins** is your brawler's total recorded wins.
+
+a few worked examples (rounded, eth/usd will fluctuate):
+
+- a fresh common at 0 wins: ~$10
+- an uncommon with 3 wins: ~$20
+- a legendary with 5 wins: ~$60
+- an epic with 10 wins: ~$140
+- a king with any wins: north of $150 base, plus the win multiplier. you don't want to find out.
+
+founders (slots 1-100) get **the first resurrection free.** doesn't matter when it happens, doesn't expire. the second one onward costs full price.
+
+## resurrecting
+
+go to your brawler's detail page (or the graveyard, click their card), hit **resurrect**. one wallet popup, eth deducted, the `isDead` flag flips back to false, the brawler is alive again.
+
+resurrection eth goes to the dev treasury. it doesn't go back into the LP, it doesn't get burned, it doesn't get auto-converted. it sits as eth.
+
+## what carries over after resurrection
+
+- **rating**: stays exactly where it was. dying doesn't reset the elo, but the three losses already dragged it down.
+- **wins / losses / ties**: stay on record. losses are not erased.
+- **the loss streak counter**: this resets to zero. so the next loss is a fresh start, not the fourth.
+- **stats, weapon, level**: unchanged. resurrection is not a re-roll.
+- **founder perks**: still active. founders only get one free resurrect though, used or unused on the first death.
+
+## what doesn't carry over
+
+nothing else, really. it's the same brawler, just walked back from the dead with a debt to whoever paid.
+
+## why this exists
+
+the death rule is the difference between "tap to fight" and "decide whether to fight". if you could lose forever and just keep trying, brawl would be worth nothing and rating would be meaningless. mortality makes the rating ladder real.
+
+it also forces a question every player has to answer at some point: **is my brawler good enough to keep gambling on, or am i throwing eth into a hole?**
+
+if the answer's the second one, the kindest thing you can do is let them rest. or sell them as a graveyard brawler to someone who wants the project.
