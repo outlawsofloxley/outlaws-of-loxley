@@ -48,6 +48,21 @@ function cleanErrorMessage(err: { message?: string; shortMessage?: string }): st
   return err.shortMessage ?? err.message?.split('\n')[0] ?? 'Connection failed';
 }
 
+// EIP-6963 wallets ship their own icon via the announce protocol (we read
+// `connector.icon` directly), but our explicitly-registered connectors —
+// Coinbase Wallet and WalletConnect — don't expose one. Map them to the
+// bundled brand SVGs in /public/wallet-icons/ so they're not visually
+// orphaned next to the named EIP-6963 entries.
+function fallbackIconFor(connectorId: string): string | undefined {
+  if (connectorId === 'coinbaseWallet' || connectorId === 'coinbaseWalletSDK') {
+    return '/wallet-icons/coinbase.svg';
+  }
+  if (connectorId === 'walletConnect') {
+    return '/wallet-icons/walletconnect.svg';
+  }
+  return undefined;
+}
+
 export function ConnectButton() {
   // useAccount's chainId is the connector's real chain; useChainId falls back
   // to config.chains[0] when the wallet is on an unconfigured chain, which
@@ -167,10 +182,12 @@ export function ConnectButton() {
     }
     // 2. Coinbase Wallet (extension OR Smart Wallet passkey, single SDK).
     if (coinbase) {
+      const icon = fallbackIconFor(coinbase.id);
       options.push({
         key: 'coinbase',
         label: 'Coinbase Wallet',
         sub: 'or Smart Wallet (passkey, no install)',
+        ...(icon ? { iconUrl: icon } : {}),
         onClick: pick(coinbase),
       });
     }
@@ -178,10 +195,12 @@ export function ConnectButton() {
     //    mobile wallet (Rainbow Mobile, Trust, Binance Mobile, MetaMask
     //    Mobile, …) via the QR-code modal.
     if (wc) {
+      const icon = fallbackIconFor(wc.id);
       options.push({
         key: 'walletConnect',
         label: 'WalletConnect',
         sub: 'Mobile: Rainbow, Trust, Binance, others — scan QR',
+        ...(icon ? { iconUrl: icon } : {}),
         onClick: pick(wc),
       });
     }
