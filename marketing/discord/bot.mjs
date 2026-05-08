@@ -92,6 +92,8 @@ const BACKFILL_DEATHS_ON_STARTUP = /^(1|true|yes)$/i.test(process.env.BACKFILL_D
 // backfill. Useful when an earlier run double-posted and you want a clean
 // graveyard. Only deletes messages authored by THIS bot.
 const WIPE_GRAVEYARD_ON_STARTUP = /^(1|true|yes)$/i.test(process.env.WIPE_GRAVEYARD_ON_STARTUP || '');
+const WIPE_DUELS_ON_STARTUP = /^(1|true|yes)$/i.test(process.env.WIPE_DUELS_ON_STARTUP || '');
+const WIPE_MARKETPLACE_ON_STARTUP = /^(1|true|yes)$/i.test(process.env.WIPE_MARKETPLACE_ON_STARTUP || '');
 
 if (!TOKEN) { console.error('FATAL: DISCORD_BOT_TOKEN not set.'); process.exit(1); }
 if (!GUILD_ID) { console.error('FATAL: DISCORD_GUILD_ID not set.'); process.exit(1); }
@@ -936,6 +938,37 @@ client.once(Events.ClientReady, async (c) => {
   console.log(`✓ Bot online as ${c.user.tag} (${c.user.id})`);
   await bootstrap();
 
+  // Generic wipe helper — pull last `limit` messages and delete the ones
+  // we authored. Useful for clearing stale embeds after a contract
+  // redeploy invalidates old token-id references (which leaves them
+  // displaying as "Image failed to load" forever otherwise).
+  async function wipeBotPostsFrom(channelId, label, limit = 100) {
+    try {
+      const channel = await client.channels.fetch(channelId);
+      const messages = await channel.messages.fetch({ limit });
+      const ours = messages.filter((m) => m.author.id === client.user.id);
+      let wiped = 0;
+      for (const [, m] of ours) {
+        try { await m.delete(); wiped++; } catch (e) { console.error(`wipe error in #${label}:`, e.message); }
+      }
+      console.log(`✓ wiped ${wiped} bot message(s) from #${label}`);
+    } catch (e) {
+      console.error(`#${label} wipe error:`, e.message);
+    }
+  }
+
+  // Run wipes BEFORE any backfill / live posting so we don't delete the
+  // freshly re-posted messages a moment later.
+  if (WIPE_GRAVEYARD_ON_STARTUP && graveyardChannelId) {
+    await wipeBotPostsFrom(graveyardChannelId, GRAVEYARD_CHANNEL);
+  }
+  if (WIPE_DUELS_ON_STARTUP && duelsChannelId) {
+    await wipeBotPostsFrom(duelsChannelId, DUELS_CHANNEL);
+  }
+  if (WIPE_MARKETPLACE_ON_STARTUP && marketplaceChannelId) {
+    await wipeBotPostsFrom(marketplaceChannelId, MARKETPLACE_CHANNEL);
+  }
+
   let initial = [];
   try {
     initial = await fetchHistory(50);
@@ -985,21 +1018,6 @@ client.once(Events.ClientReady, async (c) => {
       console.log('refresh-pins (startup):\n' + lines.join('\n'));
     } catch (e) {
       console.error('refresh-pins startup error:', e.message);
-    }
-  }
-
-  if (WIPE_GRAVEYARD_ON_STARTUP && graveyardChannelId) {
-    try {
-      const channel = await client.channels.fetch(graveyardChannelId);
-      const messages = await channel.messages.fetch({ limit: 100 });
-      const ours = messages.filter((m) => m.author.id === client.user.id);
-      let wiped = 0;
-      for (const [, m] of ours) {
-        try { await m.delete(); wiped++; } catch (e) { console.error('wipe error:', e.message); }
-      }
-      console.log(`✓ wiped ${wiped} bot message(s) from #${GRAVEYARD_CHANNEL}`);
-    } catch (e) {
-      console.error('graveyard wipe error:', e.message);
     }
   }
 
