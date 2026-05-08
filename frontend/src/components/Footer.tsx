@@ -4,7 +4,6 @@
  * external dep) so the bundle stays tiny.
  */
 import type { ReactElement } from 'react';
-import Link from 'next/link';
 
 interface SocialLink {
   href: string;
@@ -38,11 +37,24 @@ const GitHubIcon = (
   </svg>
 );
 
+const GitBookIcon = (
+  <svg viewBox="0 0 24 24" aria-hidden className="w-5 h-5" fill="currentColor">
+    <path d="M10.802 17.77a.703.703 0 1 1-.002 1.406.703.703 0 0 1 .002-1.406m11.024-4.347a.703.703 0 1 1 .001-1.406.703.703 0 0 1-.001 1.406m0-2.876a2.176 2.176 0 0 0-2.174 2.174c0 .233.039.465.115.691l-7.181 3.823a2.165 2.165 0 0 0-1.784-.937c-.829 0-1.584.475-1.95 1.216l-6.451-3.402c-.682-.358-1.192-1.48-1.138-2.502.028-.533.212-.947.493-1.107.178-.1.392-.092.62.027l.042.023c1.71.9 7.304 3.847 7.54 3.956.363.169.565.237 1.185-.057l11.564-6.014c.17-.064.368-.227.368-.474 0-.342-.354-.477-.355-.477-.658-.315-1.669-.788-2.655-1.25-2.108-.987-4.497-2.105-5.546-2.655-.906-.475-1.635-.074-1.766.006l-.252.125C7.78 6.048 1.46 9.178 1.1 9.397.457 9.789.058 10.57.025 11.495c-.052 1.466.69 2.995 1.725 3.55l6.835 3.524a2.174 2.174 0 0 0 2.165 2.008 2.177 2.177 0 0 0 2.158-1.939l7.555-4.045c.404.31.898.484 1.412.484A2.177 2.177 0 0 0 24 12.901a2.176 2.176 0 0 0-2.174-2.174"/>
+  </svg>
+);
+
+// docs.baseicbrawlers.com is the chosen home for the player gitbook
+// (DNS + hosting wired separately on Darren's side; the link 404s until
+// then). Keep this constant rather than inlining so the "How to Play"
+// link below uses the same target.
+const GITBOOK_URL = 'https://docs.baseicbrawlers.com';
+
 const SOCIALS: SocialLink[] = [
   { href: 'https://discord.gg/RjvBEA5CVd', label: 'Discord', icon: DiscordIcon },
   { href: 'https://x.com/BASEicBrawlers', label: 'X', icon: XIcon },
   { href: 'https://t.me/baseicbrawlers', label: 'Telegram', icon: TelegramIcon },
   { href: 'https://github.com/baseicbrawlers/baseic-brawlers', label: 'GitHub', icon: GitHubIcon },
+  { href: GITBOOK_URL, label: 'GitBook', icon: GitBookIcon },
 ];
 
 export function Footer() {
@@ -70,9 +82,14 @@ export function Footer() {
           BASEic by name. Brutal by attitude.
         </p>
         <p className="text-xs text-brawl-text-faint">
-          <Link href="/about" className="hover:text-brawl-orange transition-colors">
+          <a
+            href={GITBOOK_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-brawl-orange transition-colors"
+          >
             How to Play
-          </Link>
+          </a>
           <span className="mx-2">·</span>
           <a
             href="https://basescan.org"
