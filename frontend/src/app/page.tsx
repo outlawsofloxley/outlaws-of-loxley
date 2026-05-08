@@ -45,6 +45,18 @@ export default function HomePage() {
             Start on /about
           </Link>
         </div>
+
+        <div className="pt-2 text-xs text-brawl-text-faint font-mono">
+          Open source ·{' '}
+          <a
+            href="https://github.com/baseicbrawlers/baseic-brawlers"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-brawl-orange hover:underline"
+          >
+            github.com/baseicbrawlers/baseic-brawlers
+          </a>
+        </div>
       </div>
     </div>
   );
