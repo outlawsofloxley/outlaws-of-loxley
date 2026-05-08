@@ -53,16 +53,28 @@ services:
       REFRESH_PINS_ON_STARTUP: "true"
       # Auto-repost the leaderboard when the top-5 materially changes (≥30m gap).
       LEADERBOARD_AUTO_UPDATE: "true"
-      # Block-range filter to drop legacy duel rows (BSC Testnet + earlier
-      # Sepolia versions / earlier Sepolia contracts). Set to ~deploy block of
-      # the current Duel contract; bot.mjs default for DUEL_BLOCK_MAX is
-      # 999_999_999 so we don't normally need to set the upper bound here.
-      # v12 Sepolia redeploy era — earliest current row observed at 103492185.
-      DUEL_BLOCK_MIN: "103490000"
+      # Block-range filter to drop legacy duel rows. The history DB carries
+      # rows from prior chains (BSC Testnet rows have block_number ~103M+
+      # which is HIGHER than Base Sepolia's current head, so block_number
+      # alone is enough to disambiguate). Set to ~current Duel contract
+      # deploy block to avoid posting brawlers from prior Sepolia deploys
+      # that no longer exist on chain (broken thumbnails). bot.mjs default
+      # for DUEL_BLOCK_MAX is 999_999_999.
+      # v12 Sepolia era — set just before the dry-run mint activity so we
+      # only post duels involving brawlers minted on the current contract.
+      DUEL_BLOCK_MIN: "41232000"
+      # Upper bound. The history DB carries cross-chain rows (BSC Testnet
+      # etc.) whose block_number is ~103M+ — way above Base Sepolia's
+      # head (currently ~41.2M, 6+ years of headroom to reach 90M). MUST
+      # be set explicitly because bot.mjs's permissive default (999_999_999)
+      # would let those cross-chain rows leak through. On mainnet this can
+      # be unset (default is fine; mainnet starts fresh, no contamination).
+      DUEL_BLOCK_MAX: "90000000"
       # Marketplace watcher — Sold events post to #marketplace.
       # On mainnet day, set MARKETPLACE_ADDRESS to the real Marketplace
       # contract and RPC_URL to https://mainnet.base.org.
-      MARKETPLACE_ADDRESS: "0xdf6caa8d648ded9f01669f8ebf6d4695072081fe"
+      # v12 Sepolia marketplace.
+      MARKETPLACE_ADDRESS: "0x868a890bdde7f2d6f3e9401a383d045ca72b1942"
       RPC_URL: "https://base-sepolia-rpc.publicnode.com"
       # One-shot wipe + backfill ran 2026-05-07 to repair v9 sim death
       # posts. Both off now — every future death posts via the live
