@@ -1,3 +1,4 @@
+<!-- last synced: 2026-05-14 -->
 # BASEic Brawlers: the player's handbook
 
 basic art. brutal arena. built on base.
