@@ -55,7 +55,7 @@ a brawler is in one of these states:
 
 ## name
 
-every brawler gets a procedurally generated first + last name on mint. they're real-people-shaped, not "warrior of the seventh dawn" type. examples from the testnet pool: knox tanaka, gwap watanabe, rocky vlahakis, buster costello.
+every brawler gets a procedurally generated first + last name on mint. they're real-people-shaped, not "warrior of the seventh dawn" type. some examples: knox tanaka, gwap watanabe, rocky vlahakis, buster costello.
 
 names are derived from the token id and a name pool baked into the contract. same id, same name forever. you can't rename them, that would break art determinism.
 

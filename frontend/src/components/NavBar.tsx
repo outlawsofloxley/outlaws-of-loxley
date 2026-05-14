@@ -18,6 +18,9 @@ interface NavItem {
   href: string;
   label: string;
   disabled?: boolean;
+  // external links open in a new tab via plain <a> instead of <Link>;
+  // used for the gitbook handbook which lives on a separate origin.
+  external?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -30,7 +33,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/ranks', label: 'Ranks' },
   { href: '/browse', label: 'Browse' },
   { href: '/me', label: 'Profile' },
-  { href: '/about', label: 'How to Play' },
+  { href: 'https://docs.baseicbrawlers.com', label: 'How to Play', external: true },
 ];
 
 export function NavBar() {
@@ -126,7 +129,7 @@ export function NavBar() {
             </div>
             <div className="flex flex-col">
               {NAV_ITEMS.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = !item.external && pathname === item.href;
                 if (item.disabled) {
                   return (
                     <span
@@ -137,17 +140,26 @@ export function NavBar() {
                     </span>
                   );
                 }
+                const className =
+                  'brawl-header text-base px-5 py-4 border-b border-brawl-border transition-colors ' +
+                  (isActive
+                    ? 'text-brawl-orange bg-brawl-panel'
+                    : 'text-brawl-text hover:text-brawl-orange hover:bg-brawl-panel');
+                if (item.external) {
+                  return (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={className}
+                    >
+                      {item.label}
+                    </a>
+                  );
+                }
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={
-                      'brawl-header text-base px-5 py-4 border-b border-brawl-border transition-colors ' +
-                      (isActive
-                        ? 'text-brawl-orange bg-brawl-panel'
-                        : 'text-brawl-text hover:text-brawl-orange hover:bg-brawl-panel')
-                    }
-                  >
+                  <Link key={item.href} href={item.href} className={className}>
                     {item.label}
                   </Link>
                 );
@@ -161,7 +173,7 @@ export function NavBar() {
 }
 
 function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string }) {
-  const isActive = pathname === item.href;
+  const isActive = !item.external && pathname === item.href;
   if (item.disabled) {
     return (
       <span
@@ -172,14 +184,18 @@ function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string })
       </span>
     );
   }
+  const className =
+    'brawl-header text-sm transition-colors whitespace-nowrap ' +
+    (isActive ? 'text-brawl-orange' : 'text-brawl-text hover:text-brawl-orange');
+  if (item.external) {
+    return (
+      <a href={item.href} target="_blank" rel="noreferrer" className={className}>
+        {item.label}
+      </a>
+    );
+  }
   return (
-    <Link
-      href={item.href}
-      className={
-        'brawl-header text-sm transition-colors whitespace-nowrap ' +
-        (isActive ? 'text-brawl-orange' : 'text-brawl-text hover:text-brawl-orange')
-      }
-    >
+    <Link href={item.href} className={className}>
       {item.label}
     </Link>
   );

@@ -4,28 +4,28 @@ i'm one person building this. that's the charm and the limit. so let's be specif
 
 this chapter is the unsexy part. read it anyway.
 
-## the brawl token: ownership renounced after launch settles
+## the brawl token: ownership renounced
 
-the brawl ERC-20 launches with two safety nets:
+the brawl ERC-20 launched with two safety nets:
 
 - **1% max wallet**: no single wallet can hold more than 1,000 brawl (1% of 100k supply).
 - **0.5% max tx**: no single trade can move more than 500 brawl.
 
-these are anti-sniper limits. block 0 of trading is bot territory. the limits stop one bot from front-running everyone and dumping into the pool.
+these were anti-sniper limits. block 0 of trading is bot territory. the limits stopped any one bot from front-running everyone and dumping into the pool.
 
-**about 24-48 hours after launch settles**, the dev calls `renounceOwnership()` on the brawl contract. from that point:
+**24-48 hours after launch settled**, the dev called `renounceOwnership()` on the brawl contract. from that point:
 - nobody can change the limits ever again
 - nobody can mint new brawl
 - nobody can blacklist or whitelist anyone
 - nobody can pause trading
 
-the token becomes a true fixed-supply ERC-20 with zero admin functions. you can verify on basescan once it's done, the `owner()` function returns the zero address.
+the token is a true fixed-supply ERC-20 with zero admin functions. verify on basescan: `owner()` returns the zero address.
 
 ## LP locked for 6 months on unicrypt
 
-when the brawl/eth liquidity pool gets seeded on aerodrome at launch, the LP token is immediately deposited into [unicrypt](https://app.uncx.network) for **6 months**.
+at launch, the brawl/eth liquidity pool was seeded on aerodrome and the LP token was immediately deposited into [unicrypt](https://app.uncx.network) for **6 months**.
 
-while the lock is active, nobody can pull the liquidity. not the dev, not anyone. the lock URL gets posted in #links on discord on launch day. anyone can verify on-chain.
+while the lock is active, nobody can pull the liquidity. not the dev, not anyone. the lock URL is in #links on the discord. anyone can verify on-chain.
 
 when the 6-month lock expires, the LP token releases back to the dev wallet. the dev's options at that point are: re-lock for another period, migrate the pool, or pull liquidity. i'll be transparent about which one and why when the time comes.
 
@@ -62,8 +62,8 @@ this isn't a token where the team holds half. there's no vesting cliff to fear. 
 
 ## what you should keep an eye on
 
-- **basescan** the brawl token contract: confirm `owner()` returns 0x0 within ~48h of launch.
-- **the unicrypt lock URL** (posted in #links on discord launch day).
+- **basescan** the brawl token contract: confirm `owner()` returns `0x0`.
+- **the unicrypt lock URL** (in #links on the discord).
 - **the dev wallet** on basescan: any large brawl transfer out is worth a question.
 - **#announcements** in discord for upgrades or major changes.
 
@@ -73,8 +73,8 @@ if i ever do something sketchy, the on-chain receipts will be public within seco
 
 this is a small solo build. that's the appeal. it's also the constraint.
 
-- there's no security audit yet. solidity tests cover the core flows (duel signing, mint hash, marketplace approvals, resurrection math). they're not the same as a paid audit.
-- there's no team to escalate to if i get hit by a bus. the dev wallet is one EOA. plans to migrate to a 2-of-3 gnosis safe before any contract upgrades are real, but right now they're plans.
+- there's no paid security audit. solidity tests cover the core flows (duel signing, mint hash, marketplace approvals, resurrection math). they're not the same as a paid audit.
+- there's no team to escalate to if i get hit by a bus. the dev wallet is one EOA. a 2-of-3 gnosis safe migration is on the roadmap.
 - there's no rapid response to discord drama. if you have a real bug, post in #bug-reports with repro steps. i'll get to it.
 
 basically don't put more in than you can lose. that's true of every crypto thing. it's especially true here.

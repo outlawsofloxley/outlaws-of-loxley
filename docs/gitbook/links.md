@@ -5,7 +5,7 @@ bookmark this page. anything not on it isn't us.
 ## the site
 
 - **home**: https://baseicbrawlers.com
-- **how to play** (this gitbook entry point), https://baseicbrawlers.com/about
+- **handbook** (you're reading it): https://docs.baseicbrawlers.com
 - **mint**: https://baseicbrawlers.com/mint
 - **duel**: https://baseicbrawlers.com/duel
 - **leaderboard**: https://baseicbrawlers.com/leaderboard
@@ -21,25 +21,14 @@ bookmark this page. anything not on it isn't us.
 - **telegram**: https://t.me/baseicbrawlers
 - **github**: https://github.com/baseicbrawlers/baseic-brawlers
 
-## faucet (testnet only)
-
-if you want to play on base sepolia without spending real money:
-
-- **alchemy base sepolia faucet**: https://www.alchemy.com/faucets/base-sepolia (0.5 testnet eth/day)
-- **coinbase base sepolia faucet**: https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet
-
-## bridge (mainnet)
+## get eth on base
 
 - **base bridge**: https://bridge.base.org (eth from ethereum mainnet to base)
 - **coinbase exchange withdraw**: straight to your base address from the coinbase app, free.
 
 ## contract addresses
 
-addresses are pinned in **#links** on discord on launch day. on testnet they're in the live deploy.
-
-**base sepolia (chain 84532, testnet)**: addresses change on each redeploy during the open beta. always check #links in discord for the current set, or the on-chain deploy events on basescan sepolia. don't trust addresses pasted in random places.
-
-**base mainnet (chain 8453)**: posted in #links on launch day. same drill: don't trust an address that isn't on this gitbook page or in #links.
+**base mainnet (chain 8453)**: pinned in **#links** on the discord, and visible on basescan via the deploy events. don't trust an address that isn't on this gitbook page or in #links.
 
 ## things we never do
 

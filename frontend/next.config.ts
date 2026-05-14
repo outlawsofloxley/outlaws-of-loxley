@@ -12,6 +12,18 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: here,
   },
+  // /about is the legacy on-site how-to-play page. The gitbook handbook
+  // at docs.baseicbrawlers.com is now the canonical onboarding doc; bounce
+  // any direct visits or stale backlinks there permanently.
+  async redirects() {
+    return [
+      {
+        source: '/about',
+        destination: 'https://docs.baseicbrawlers.com',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

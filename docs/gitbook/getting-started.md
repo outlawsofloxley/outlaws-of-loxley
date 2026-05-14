@@ -14,7 +14,7 @@ if you're on mobile chrome or safari with no wallet at all, the picker also show
 
 ## 2. add base to your wallet
 
-if your wallet doesn't already know about base, the connect flow will offer to add it for you. one click, both networks if you want them:
+if your wallet doesn't already know about base, the connect flow will offer to add it for you. one click:
 
 **base mainnet**
 - network name: base
@@ -23,28 +23,16 @@ if your wallet doesn't already know about base, the connect flow will offer to a
 - currency: ETH
 - explorer: https://basescan.org
 
-**base sepolia (testnet, for trying before spending)**
-- network name: base sepolia
-- rpc: https://sepolia.base.org
-- chain id: 84532
-- currency: ETH
-- explorer: https://sepolia.basescan.org
-
 if you connect on the wrong network, the site auto-prompts a switch one time per connect. reject it and the manual switch button stays visible.
 
 ## 3. get some eth
 
-**on mainnet** you need real eth on base to mint and pay gas. cheapest path:
+you need eth on base to mint and pay gas. cheapest paths:
 
 - bridge eth from ethereum mainnet via [bridge.base.org](https://bridge.base.org). a few dollars in gas, a couple of minutes.
 - if you're on coinbase exchange already, withdraw eth straight to your base address from the coinbase app. no bridge needed, no fee.
 
-**on sepolia** it's all free testnet eth:
-
-- [alchemy base sepolia faucet](https://www.alchemy.com/faucets/base-sepolia), 0.5 testnet eth per day, no signup for small amounts.
-- [coinbase base sepolia faucet](https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet), easy if you already have a coinbase account.
-
-mint prices are $20-$50 in eth-equivalent depending on which slot you grab. duels cost pennies of gas. on sepolia, everything is free.
+mint prices are $20-$50 in eth-equivalent depending on which slot you grab. duels cost pennies of gas.
 
 ## you're connected. what next?
 

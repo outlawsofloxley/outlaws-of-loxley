@@ -28,9 +28,14 @@ export default function HomePage() {
         </div>
 
         <div className="flex items-center justify-center gap-3 pt-4 flex-wrap">
-          <Link href="/about" className="brawl-btn">
+          <a
+            href="https://docs.baseicbrawlers.com"
+            target="_blank"
+            rel="noreferrer"
+            className="brawl-btn"
+          >
             How to Play
-          </Link>
+          </a>
           <Link href="/mint" className="brawl-btn brawl-btn-secondary">
             Mint a Brawler
           </Link>
@@ -40,10 +45,15 @@ export default function HomePage() {
         </div>
 
         <div className="pt-8 text-sm text-brawl-text-faint font-mono">
-          Base Sepolia · Chain 84532 · First time here?{' '}
-          <Link href="/about" className="text-brawl-orange hover:underline">
-            Start on /about
-          </Link>
+          First time here?{' '}
+          <a
+            href="https://docs.baseicbrawlers.com"
+            target="_blank"
+            rel="noreferrer"
+            className="text-brawl-orange hover:underline"
+          >
+            Read the handbook
+          </a>
         </div>
       </div>
     </div>

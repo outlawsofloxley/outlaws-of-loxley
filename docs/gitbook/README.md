@@ -22,7 +22,7 @@ if you've never used a crypto wallet, the **getting started** chapter walks you 
 
 - not a presale. not a vc round. not a roadmap deck.
 - not a 10x play. it's a game. price can do whatever it wants.
-- not a finished product. it's an **open beta** on base sepolia testnet right now. mainnet ships when the soak finishes.
+- not a "finished" product, no software is. it's a small solo build, live on base. what you can mint and fight today is what got shipped.
 
 i'm a solo dev. that's the charm. it's also the limit. i'd rather you understood the trade-offs than felt sold to.
 
@@ -38,6 +38,6 @@ i'm a solo dev. that's the charm. it's also the limit. i'd rather you understood
 `trust` → what's renounced, what isn't, why.
 `tips` → things i'd tell a friend before their first duel.
 `faq` → questions people actually ask.
-`links` → discord, x, telegram, contract addresses, faucet.
+`links` → discord, x, telegram, contract addresses.
 
 read in order if you've never minted. skim by chapter if you have.

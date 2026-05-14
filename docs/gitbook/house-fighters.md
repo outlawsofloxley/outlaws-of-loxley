@@ -39,12 +39,6 @@ yes. all the time. they're not buffed. their stats are uniform-distributed like 
 
 their rating moves like every other brawler's. if you beat one, your rating climbs. if you lose to one, you drop. they're not punching bags, they're not boss fights.
 
-## what happens to house brawlers on mainnet flip?
-
-the house pool is regenerated for mainnet. testnet house brawlers stay on testnet, mainnet gets a fresh 10 minted on mainnet day one as part of the deploy script.
-
-the keeper service points at whichever chain the dev wallet says it does. when we flip to mainnet, the keeper config flips with us.
-
 ## why 10?
 
 ten is a sweet spot. fewer than that and a single bad night could thin the pool. more than that and the founder range starts feeling crowded. we picked 10 after looking at how often duels actually happen on similar games and how long resurrections take.
