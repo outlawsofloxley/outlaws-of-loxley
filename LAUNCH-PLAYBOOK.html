@@ -89,6 +89,7 @@
     border: 1px solid var(--rule);
     padding: 8px 12px;
     text-align: left;
+    vertical-align: top;
   }
   th {
     background: var(--panel);
@@ -116,6 +117,9 @@
     color: var(--dim);
     margin-right: 6px;
   }
+  .pill.done { color: var(--green); border-color: rgba(82,192,85,0.4); }
+  .pill.todo { color: var(--yellow); border-color: rgba(230,194,0,0.4); }
+  .pill.blocked { color: var(--red); border-color: rgba(193,62,62,0.4); }
   ol li, ul li { margin-bottom: 6px; }
   .check { color: var(--green); }
   .x { color: var(--red); }
@@ -149,20 +153,40 @@
     letter-spacing: 1px;
     font-family: 'JetBrains Mono', monospace;
   }
+  .status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  @media (max-width: 720px) {
+    .status-grid { grid-template-columns: 1fr; }
+  }
+  .status-card {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 14px 18px;
+  }
+  .status-card h4 { margin-top: 0; }
+  .status-card ul { padding-left: 18px; margin: 6px 0 0; }
+  .status-card li { font-size: 14px; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header>
-  <div class="meta">launch playbook · v3 · base mainnet · v12 contracts</div>
+  <div class="meta">launch playbook · v5 · base mainnet · v12 contracts · updated 2026-05-14</div>
   <h1>⚔ BASEic Brawlers</h1>
-  <p class="dim">Single-file reference for deploy-day operations, LP economics, anti-sniper flow, marketing fire-order, and post-launch maintenance. Read top to bottom before touching the deployer key.</p>
+  <p class="dim">Single-file reference for deploy-day operations, LP economics, anti-sniper flow, marketing fire-order, and post-launch maintenance. Read top to bottom before touching the deployer key. The first two sections are the new bits: <strong>where we are right now</strong>, and <strong>what needs to happen, in order, before mainnet deploy</strong>.</p>
 </header>
 
 <div class="toc">
   <h4>Contents</h4>
   <ol>
+    <li><a href="#status">Status — where we are (2026-05-14)</a></li>
+    <li><a href="#outstanding">Outstanding pre-deploy work (ordered)</a></li>
     <li><a href="#tokenomics">Tokenomics — locked numbers</a></li>
     <li><a href="#wallets">Wallet architecture</a></li>
     <li><a href="#preflight">Pre-deploy preflight</a></li>
@@ -181,7 +205,179 @@
   </ol>
 </div>
 
-<h2 id="tokenomics">1. Tokenomics — locked numbers</h2>
+<h2 id="status">1. Status — where we are (2026-05-14)</h2>
+
+<p>Sepolia v12 has had a full pipeline dry-run end-to-end (10 duels broadcast, 1 death auto-detected, 3 marketplace listings + 3 buys, all Discord channels validated). Everything below tracks the gap between that proven testnet state and a flippable mainnet launch.</p>
+
+<div class="status-grid">
+  <div class="status-card">
+    <h4 style="color: var(--green);">Done</h4>
+    <ul>
+      <li>v12 contracts deployed + verified on Base Sepolia (Brawlers, Duel, MintDrop, Brawl, Graveyard, Marketplace)</li>
+      <li>Sepolia full pipeline dry-run: duels → death (#6) → marketplace listings + buys, all Discord channels posted correctly</li>
+      <li>Frontend: wallet UX rebuild — user-reject errors swallowed, network auto-switch only on user click, EIP-6963 multi-wallet picker (MetaMask, Rainbow, Rabby, Brave, Phantom, Binance, etc.), WalletConnect connector live with brand icons</li>
+      <li>Discord bot on TrueNAS Dockge stack <code>baseic-discord</code>; <code>#duel-talk</code> retired, all duel outcomes route to <code>#duels</code>; generalised wipe envs for <code>#duels</code>/<code>#graveyard</code>/<code>#marketplace</code>; block-range filter corrected to skip cross-chain ghost rows</li>
+      <li>Telegram userbot deployed to TrueNAS Dockge stack <code>baseic-tg</code> as <code>claude-baseicbrawlers</code> locked-down user; <code>USERBOT_LISTENER_ONLY=true</code>; smoke-tested DM + group event</li>
+      <li>Player handbook: 13-chapter markdown source at <code>docs/gitbook/</code> (~842 lines, written in project voice, no invented numbers)</li>
+      <li>GitBook Docs space populated via API import (<code>POST /spaces/.../git/import</code>) — 12 content pages live, nav order matches <code>SUMMARY.md</code></li>
+      <li>GitBook site <code>site_QFyit</code> ("BASEic Brawlers Docs", ultimate plan) published</li>
+      <li>Custom hostname <code>docs.baseicbrawlers.com</code> registered against site, CNAME → <code>dc6987e235-hosting.gitbook.io</code> added at Vercel DNS — handbook now live at <a href="https://docs.baseicbrawlers.com">docs.baseicbrawlers.com</a></li>
+      <li>Orphan GitBook space <code>bzaYh4Dk5Vc2vqMR3Drf</code> ("Player Handbook") soft-deleted via API</li>
+      <li>Footer: GitHub + GitBook icons added; "How to Play" footer link points at <code>docs.baseicbrawlers.com</code></li>
+      <li>House-brawler routing decision: <strong>on mainnet they go to the DEV wallet</strong>, not a separate keeper EOA (collapses one wallet, links them to DASH)</li>
+    </ul>
+  </div>
+  <div class="status-card">
+    <h4 style="color: var(--yellow);">Open</h4>
+    <ul>
+      <li>GitBook git-sync continuous: new git-sync installation <code>gitsync_sM2if</code> created on Docs space but <code>status: unauthenticated</code> — needs browser OAuth click-through. One-shot <code>git/import</code> still works for any future content refresh in the meantime</li>
+      <li>TG userbot still listener-only — needs ≥1h of clean logs, then flip <code>USERBOT_LISTENER_ONLY=false</code></li>
+      <li>Vercel auto-deploy webhook broken — every recent change required manual <code>vercel deploy --prod</code></li>
+      <li>GitHub PAT in <code>git remote -v</code> was visible in chat context; rotate before launch</li>
+      <li><code>secrets.env</code> line 42 has an unfilled <code>ANTHROPIC_API_KEY=&lt;paste-key&gt;</code> placeholder that chokes <code>source</code> (workaround in place but worth filling/commenting)</li>
+      <li><code>.env.base-mainnet</code> still needs <code>HOUSE_KEEPER_ADDRESS=$BB_DEV_TREASURY_ADDRESS</code> + <code>HOUSE_BRAWLERS_COUNT=10</code> wired before the deploy run</li>
+      <li>Final pre-launch Discord wipe pass (clear all Sepolia posts before pointing the bot at mainnet)</li>
+    </ul>
+  </div>
+</div>
+
+<h2 id="outstanding">2. Outstanding pre-deploy work (ordered)</h2>
+
+<p>Tackle in order. Group <strong>A</strong> can be done any time this week. Group <strong>B</strong> is launch-day-eve. Group <strong>C</strong> is the deploy sequence proper, which has its own detail in sections 5-9.</p>
+
+<h3>Group A — Housekeeping (do these first, any time)</h3>
+
+<div class="steps">
+
+  <div class="step">
+    <h4>A1. GitBook content import + publish — <span style="color: var(--green);">DONE (2026-05-14)</span></h4>
+    <p>Wired via API on 2026-05-14:</p>
+    <ul>
+      <li>Detached Docs space (<code>n4Ab6hKYBCLQ57x9CPN9</code>) from the legacy integration binding that was blocking new git-sync.</li>
+      <li><code>POST /spaces/n4Ab6hKYBCLQ57x9CPN9/git/import</code> with <code>{url: https://baseicbrawlers:&lt;PAT&gt;@github.com/...git, ref: refs/heads/main, repoProjectDirectory: docs/gitbook, force: true}</code> — pulled all 12 content pages.</li>
+      <li><code>POST /orgs/DOVDg3Iw7VqLlACE6NRI/sites/site_QFyit/publish</code> — site now live at <a href="https://baseic-brawlers.gitbook.io/baseic-brawlers-docs/"><code>baseic-brawlers.gitbook.io/baseic-brawlers-docs/</code></a>.</li>
+      <li><code>DELETE /spaces/bzaYh4Dk5Vc2vqMR3Drf</code> — orphan "Player Handbook" space soft-deleted.</li>
+    </ul>
+    <p class="dim">Continuous sync: a new git-sync installation (<code>gitsync_sM2if</code>) was created on the Docs space but is <code>unauthenticated</code>, because OAuth requires browser flow. Either finish OAuth in the GitBook UI (Integrations → Git Sync → Authenticate), or re-run <code>POST /spaces/.../git/import</code> via a tiny script after future content edits. Imports are idempotent.</p>
+  </div>
+
+  <div class="step">
+    <h4>A2. Point docs.baseicbrawlers.com at GitBook — <span style="color: var(--green);">DONE (2026-05-14)</span></h4>
+    <p>Custom hostname registered in GitBook UI for site <code>site_QFyit</code>; GitBook returned the CNAME target <code>dc6987e235-hosting.gitbook.io</code> (Cloudflare for SaaS, tenant-specific). DNS record added at Vercel via the personal-token API:</p>
+    <pre>POST https://api.vercel.com/v2/domains/baseicbrawlers.com/records?teamId=team_meER3hmCPZwNsCuUUa3yFK9M
+{"name":"docs","type":"CNAME","value":"dc6987e235-hosting.gitbook.io","ttl":60}
+→ rec_2fd6c6499510fe5452c63d2b</pre>
+    <p>The apex's existing <code>ALIAS * → cname.vercel-dns-017.com.</code> wildcard does not interfere — specific records take precedence. CAA records already permit Let's Encrypt + Google Trust Services (which GitBook's Cloudflare-for-SaaS uses), so cert provisioning was instant.</p>
+    <p class="dim">Note: <code>POST /custom-hostnames</code> on the GitBook public API is gated to internal staff auth (returns 403). The GitBook UI step is currently the only way to register a custom hostname; the rest of the flow is fully automatable.</p>
+  </div>
+
+  <div class="step">
+    <h4>A3. Fix Vercel auto-deploy webhook</h4>
+    <p>Recent git pushes don't trigger deploys; today every change required <code>vercel deploy --prod</code> manually. Fix before mainnet, because the deploy orchestrator relies on the auto-deploy chain.</p>
+    <ol>
+      <li>Vercel dashboard → project → Settings → Git → Connected Git Repository. Confirm it points at <code>baseicbrawlers/baseic-brawlers</code> and the production branch is <code>main</code>.</li>
+      <li>If the connection looks healthy, check GitHub repo → Settings → Webhooks → look for the Vercel hook, check recent deliveries for 4xx/5xx.</li>
+      <li>Re-connect (disconnect + reconnect) is the usual quick fix. Verify by pushing a trivial commit and watching the Deployments tab.</li>
+    </ol>
+    <p class="dim">If you'd rather not chase this before launch, the orchestrator's <code>vercel deploy --prod</code> step still works regardless of the webhook — but the post-launch tweaks (typo fix in copy, etc) are slower without auto-deploy.</p>
+  </div>
+
+  <div class="step">
+    <h4>A4. Flip TG userbot from listener-only → active</h4>
+    <p>Currently logs incoming messages but never replies. Pre-flip checklist lives in <code>marketing/userbot/DEPLOY.md</code> § "Test before flipping to active".</p>
+    <pre>ssh baseic-tg
+cd /mnt/.ix-apps/app_mounts/dockge/stacks/baseic-tg/
+docker compose logs --tail=200 userbot   # confirm clean for ≥1h
+# Edit .env: USERBOT_LISTENER_ONLY=false
+nano .env
+exit
+
+# back to root for compose
+ssh truenas-discord
+cd /mnt/.ix-apps/app_mounts/dockge/stacks/baseic-tg
+docker compose up -d</pre>
+    <p>Then send a DM to the userbot from another TG account and confirm it replies.</p>
+  </div>
+
+  <div class="step">
+    <h4>A5. Rotate the GitHub PAT</h4>
+    <p>The <code>ghp_...</code> token currently embedded in <code>git remote -v</code> was visible in chat context earlier. Treat as compromised.</p>
+    <ol>
+      <li>Visit <a href="https://github.com/settings/tokens">github.com/settings/tokens</a>, revoke the existing PAT.</li>
+      <li>Generate a new fine-grained token: repo <code>baseicbrawlers/baseic-brawlers</code>, scopes <em>Contents: RW</em>, <em>Metadata: R</em>. Expire in 90 days.</li>
+      <li>Update remote: <code>git remote set-url origin https://&lt;user&gt;:&lt;new-pat&gt;@github.com/baseicbrawlers/baseic-brawlers.git</code></li>
+      <li>Push a trivial commit to confirm.</li>
+    </ol>
+  </div>
+
+  <div class="step">
+    <h4>A6. Fix secrets.env line 42 placeholder</h4>
+    <p>Line 42 reads <code>ANTHROPIC_API_KEY=&lt;paste-key&gt;</code>. Bash sees <code>&lt;paste-key&gt;</code> as input redirection and aborts any <code>source ~/.claude/secrets/secrets.env</code>. Either paste a real key or comment the line:</p>
+    <pre># either:
+ANTHROPIC_API_KEY=sk-ant-...
+# or:
+# ANTHROPIC_API_KEY=&lt;paste-key&gt;</pre>
+  </div>
+</div>
+
+<h3>Group B — Launch-day-eve checks</h3>
+
+<div class="steps" style="counter-reset: step;">
+
+  <div class="step">
+    <h4>B1. Wire mainnet env for the house roster</h4>
+    <p>Decision logged this session: on mainnet, the 10 house brawlers go to the DEV wallet (not a separate keeper EOA). Set in <code>.env.base-mainnet</code>:</p>
+    <pre>HOUSE_BRAWLERS_COUNT=10
+HOUSE_KEEPER_ADDRESS=$BB_DEV_TREASURY_ADDRESS</pre>
+    <p>Verify:</p>
+    <pre>grep -E '^(HOUSE_BRAWLERS_COUNT|HOUSE_KEEPER_ADDRESS|BB_DEV_TREASURY_ADDRESS)=' .env.base-mainnet</pre>
+    <p class="dim">If <code>HOUSE_KEEPER_ADDRESS</code> is unset or stuck at a placeholder, Deploy.s.sol leaves the 10 brawlers on the deployer wallet and you have to <code>cast send transferFrom</code> 10 times by hand later. Get this right first.</p>
+  </div>
+
+  <div class="step">
+    <h4>B2. Pre-launch Discord wipe (clear all Sepolia posts)</h4>
+    <p>The bot has been posting Sepolia duels/deaths/marketplace events all week. Before pointing it at mainnet, wipe the channels so day-1 players see a clean board.</p>
+    <pre>ssh baseic-tg   # or whichever alias resolves to the Discord stack root
+# edit docker-compose.yml under baseic-discord
+WIPE_DUELS_ON_STARTUP: "true"
+WIPE_GRAVEYARD_ON_STARTUP: "true"
+WIPE_MARKETPLACE_ON_STARTUP: "true"
+# restart so the wipes run BEFORE backfills
+docker compose -f /mnt/.ix-apps/app_mounts/dockge/stacks/baseic-discord/docker-compose.yml up -d
+# confirm channels are clean, then flip all three back to "false"</pre>
+    <p class="dim">The actual mainnet env flip (DUEL_BLOCK_MIN, RPC_URL, MARKETPLACE_ADDRESS) happens in section 9 right after deploy.</p>
+  </div>
+
+  <div class="step">
+    <h4>B3. Run the pre-deploy preflight</h4>
+    <p>Detailed in section 5 below. In short: <code>forge test</code> + <code>npm test</code> green, <code>.env.base-mainnet</code> populated, deployer balance ≥ 0.2 ETH, secrets gitignored, no AI/Claude/Anthropic references in user-facing files.</p>
+  </div>
+</div>
+
+<h3>Group C — Deploy sequence (the ordered launch)</h3>
+
+<p>This is the same ordering as the sections below; listed here as a one-page summary so you can see the full shape at a glance.</p>
+
+<table>
+  <tr><th>#</th><th>Action</th><th>Section</th></tr>
+  <tr><td>C1</td><td><code>npm run deploy:mainnet</code> — broadcasts BRAWL, Brawlers, Duel, Graveyard, MintDrop, Marketplace; mints + flags + transfers 10 house brawlers to DEV; mints King to deployer; updates Vercel env + production deploy; runs smoke test</td><td><a href="#deploy">§6</a></td></tr>
+  <tr><td>C2</td><td>Move King NFT (#2001) deployer → DEV</td><td><a href="#deploy">§6b</a></td></tr>
+  <tr><td>C3</td><td>Move 5k BRAWL deployer → DEV (operating allocation)</td><td><a href="#deploy">§6c</a></td></tr>
+  <tr><td>C4</td><td>Move 65k BRAWL deployer → Safe (governance treasury)</td><td><a href="#deploy">§6d</a></td></tr>
+  <tr><td>C5</td><td>Whitelist Aerodrome router on BRAWL</td><td><a href="#lpseed">§7a</a></td></tr>
+  <tr><td>C6</td><td>Create BRAWL/ETH pair on Aerodrome v2, whitelist pair</td><td><a href="#lpseed">§7b-c</a></td></tr>
+  <tr><td>C7</td><td>Approve router for 30k BRAWL, <code>addLiquidityETH</code> (30k BRAWL + 0.075 ETH)</td><td><a href="#lpseed">§7d-e</a></td></tr>
+  <tr><td>C8</td><td>Lock LP tokens on Unicrypt for 90 days, save lock URL</td><td><a href="#lpseed">§7f</a></td></tr>
+  <tr><td>C9</td><td>Whitelist Duel/Graveyard/MintDrop on BRAWL</td><td><a href="#trading">§8a</a></td></tr>
+  <tr><td>C10</td><td><strong><code>BRAWL.enableTrading()</code> — the launch tx</strong>. Fire X tweet 1/12.</td><td><a href="#trading">§8b</a></td></tr>
+  <tr><td>C11</td><td>Verify all contracts on Basescan</td><td><a href="#verify">§9</a></td></tr>
+  <tr><td>C12</td><td>Discord stack: flip <code>DUEL_BLOCK_MIN</code> to mainnet deploy block, drop the testnet 90M cap, point <code>RPC_URL</code> + <code>MARKETPLACE_ADDRESS</code> at mainnet, restart</td><td><a href="#discord">§11</a></td></tr>
+  <tr><td>C13</td><td>Freeze rarity table (<code>Brawlers.freezeRarity()</code>) after dev wallet mint window</td><td><a href="#trading">§8d</a></td></tr>
+  <tr><td>C14</td><td>Watch first 24-48h, manual blacklist any snipers caught</td><td><a href="#trading">§8c</a></td></tr>
+  <tr><td>C15</td><td>After 24-48h: <code>liftLimits()</code>, then <code>renounceOwnership()</code> on BRAWL</td><td><a href="#renounce">§16</a></td></tr>
+</table>
+
+<h2 id="tokenomics">3. Tokenomics — locked numbers</h2>
 
 <table>
   <tr><th>Parameter</th><th>Value</th><th>Notes</th></tr>
@@ -203,16 +399,20 @@
   <tr><td>BRAWL on-chain protections</td><td colspan="2">tradingEnabled gate, auto-blacklist of pre-launch buyers, max-tx 0.5% (500 BRAWL), max-wallet 1% (1000 BRAWL), manual blacklist</td></tr>
 </table>
 
-<h2 id="wallets">2. Wallet architecture</h2>
+<h2 id="wallets">4. Wallet architecture</h2>
 
-<p>Three distinct keys. Two held by you, one a small operational keeper. None of them ever go in chat or commits.</p>
+<p>Three distinct keys held by you, plus one small operational keeper EOA. None of them ever go in chat or commits.</p>
+
+<div class="panel warn">
+  <strong>v12 change (this session):</strong> the 10 house brawlers seeded at deploy now land on the <strong>DEV wallet</strong>, not a separate keeper. The keeper EOA exists only as the fight-cost rebalancer. Rationale: easier to control, links the house roster to DASH activity.
+</div>
 
 <table>
   <tr><th>Wallet</th><th>Purpose</th><th>Funding</th><th>Holds</th></tr>
   <tr><td><code>DEPLOYER</code></td><td>Deploys contracts, seeds LP, manages owner-only setters in the first 24-48h.</td><td>$300 ETH (LP) + ~0.05 ETH gas + ~$50 USD margin = <strong>~$400 ETH total</strong></td><td>Will hold BRAWL allocations briefly during deploy. Renounces ownership after limits lift.</td></tr>
-  <tr><td><code>DEV</code> (treasury)</td><td>Receives 100% of mint ETH/USDC/USDT. Holds 5k BRAWL operating allocation. Holds the King NFT (#2001).</td><td>n/a (receives funds)</td><td>~5k BRAWL + accumulated mint revenue + King NFT</td></tr>
+  <tr><td><code>DEV</code> (treasury)</td><td>Receives 100% of mint ETH/USDC/USDT. Holds 5k BRAWL operating allocation. Holds the King NFT (#2001). <strong>Also holds the 10 house brawlers</strong> seeded by Deploy.s.sol — the auto-duel loop fights them on rotation so day-1 players always have opponents.</td><td>n/a (receives funds)</td><td>~5k BRAWL + accumulated mint revenue + King NFT + 10 house brawlers</td></tr>
   <tr><td><code>SAFE</code> (governance)</td><td>2-of-3 Gnosis Safe. Holds 65k BRAWL governance treasury. Executes Snapshot vote results.</td><td>Tiny ETH for executions</td><td>65k BRAWL</td></tr>
-  <tr><td><code>KEEPER</code></td><td>Fight-cost rebalancer (5min loop). Owner of Duel contract for setFightEconomics. Also holds the 10 house brawlers seeded at deploy so day-1 players have opponents — the auto-duel loop fights them on rotation.</td><td>~0.005 ETH (months of gas at Base prices)</td><td>10 house brawler NFTs (transferred in by Deploy.s.sol) + gas. No BRAWL allocation.</td></tr>
+  <tr><td><code>KEEPER</code></td><td>Fight-cost rebalancer (5min loop). Owner of Duel contract for <code>setFightEconomics</code>. Optional — can be skipped and run from deployer if you don't want a separate EOA.</td><td>~0.005 ETH (months of gas at Base prices)</td><td>Gas only. No BRAWL, no NFTs.</td></tr>
 </table>
 
 <div class="panel warn">
@@ -220,38 +420,38 @@
   I get the <code>DEPLOYER</code> private key (so I can run forge scripts, owner-only setters, contract verification). I get the <code>KEEPER</code> private key (small EOA, only authorised for <code>setFightEconomics</code>). I <strong>never</strong> get the <code>DEV</code> private key or any Safe signer key. You retain full custody of every wallet that holds value.
 </div>
 
-<h2 id="preflight">3. Pre-deploy preflight</h2>
+<h2 id="preflight">5. Pre-deploy preflight</h2>
 
 <p>Run these checks before ever sending the first mainnet tx.</p>
 
 <div class="step">
-  <h4>3a. Final test sweep</h4>
+  <h4>5a. Final test sweep</h4>
   <pre>cd /c/tools/brawlers
 forge test
 npm test</pre>
-  <p>Both must pass cleanly: 139 forge + 211 vitest. Any failure = stop. Investigate.</p>
+  <p>Both must pass cleanly. Any failure = stop. Investigate.</p>
 </div>
 
 <div class="step">
-  <h4>3b. Verify .env.base-mainnet is populated</h4>
+  <h4>5b. Verify .env.base-mainnet is populated</h4>
   <pre>grep -E '^[A-Z_]+=' .env.base-mainnet | sed 's/=.*/=set/'</pre>
-  <p>Required keys: <code>DEPLOYER_KEY</code>, <code>DEPLOYER_ADDRESS</code>, <code>SIGNER_KEY</code>, <code>SIGNER_ADDRESS</code>, <code>DEV_TREASURY</code>, <code>MAINNET_RPC</code>, <code>MAINNET_CHAIN_ID=8453</code>, <code>USDC_ADDRESS_MAINNET</code>, <code>ETHERSCAN_API_KEY</code>.</p>
+  <p>Required keys: <code>DEPLOYER_KEY</code>, <code>DEPLOYER_ADDRESS</code>, <code>SIGNER_KEY</code>, <code>SIGNER_ADDRESS</code>, <code>BB_DEV_TREASURY_ADDRESS</code>, <code>HOUSE_KEEPER_ADDRESS</code> (= <code>$BB_DEV_TREASURY_ADDRESS</code>), <code>HOUSE_BRAWLERS_COUNT=10</code>, <code>MAINNET_RPC</code>, <code>MAINNET_CHAIN_ID=8453</code>, <code>USDC_ADDRESS_MAINNET</code>, <code>ETHERSCAN_API_KEY</code>.</p>
 </div>
 
 <div class="step">
-  <h4>3c. Wallet balance check</h4>
+  <h4>5c. Wallet balance check</h4>
   <pre>cast balance $DEPLOYER_ADDRESS --rpc-url $MAINNET_RPC --ether</pre>
   <p>Must be ≥ <strong>0.2 ETH</strong> (the orchestrator's mainnet minDeployerEth). At least <strong>0.1 ETH</strong> reserved for LP, ~0.05 ETH for deploy gas, rest as buffer.</p>
 </div>
 
 <div class="step">
-  <h4>3d. Confirm gitignored secrets</h4>
+  <h4>5d. Confirm gitignored secrets</h4>
   <pre>git check-ignore .env.base-mainnet .env.base-sepolia
 git status --porcelain | grep -E '\.env'  # should return nothing</pre>
 </div>
 
 <div class="step">
-  <h4>3e. Confirm no AI/personal/beta references in committed files</h4>
+  <h4>5e. Confirm no AI/personal/beta references in committed files</h4>
   <pre>grep -rE '\b(AI|Claude|Anthropic|Cursor|Copilot)\b' \
   --include='*.{ts,tsx,sol,md,html,json}' \
   --exclude-dir=node_modules .
@@ -259,16 +459,15 @@ git status --porcelain | grep -E '\.env'  # should return nothing</pre>
 </div>
 
 <div class="step">
-  <h4>3f. Confirm <code>HOUSE_KEEPER_ADDRESS</code> is the real keeper wallet</h4>
-  <p>The mainnet deploy auto-mints + flags + <strong>transfers</strong> 10 house brawlers to whatever address sits in <code>HOUSE_KEEPER_ADDRESS</code> at deploy time. If this env is unset, the brawlers stay on the deployer wallet and you have to move them manually with <code>cast send transferFrom</code> later (extra tx, extra failure surface).</p>
+  <h4>5f. Confirm <code>HOUSE_KEEPER_ADDRESS</code> resolves to the DEV wallet</h4>
+  <p>The mainnet deploy auto-mints + flags + <strong>transfers</strong> 10 house brawlers to whatever address sits in <code>HOUSE_KEEPER_ADDRESS</code> at deploy time. Per this session's decision, that should be the DEV wallet.</p>
   <pre>grep '^HOUSE_KEEPER_ADDRESS=' .env.base-mainnet
-# must print HOUSE_KEEPER_ADDRESS=0x... (the keeper EOA, NOT the deployer)
-# if missing or =0xDEADBEEF, STOP. Generate the keeper EOA first
-# (see step 10a) and paste its address here before running deploy:mainnet.</pre>
-  <p class="dim">The same env can target the dev wallet or any other address you want holding the house roster — just make sure it's the *final* destination so the auto-transfer at deploy time leaves nothing manual to clean up. Skipping this gate is the most common path to a half-done launch.</p>
+# expect: HOUSE_KEEPER_ADDRESS=$BB_DEV_TREASURY_ADDRESS
+# or:     HOUSE_KEEPER_ADDRESS=0x&lt;same as BB_DEV_TREASURY_ADDRESS&gt;
+# if missing or =0xDEADBEEF, STOP. Fix the env before running deploy:mainnet.</pre>
 </div>
 
-<h2 id="deploy">4. Mainnet deploy sequence</h2>
+<h2 id="deploy">6. Mainnet deploy sequence</h2>
 
 <div class="panel crit">
   <strong>Point of no return.</strong> Steps below broadcast real transactions on Base mainnet (chain 8453). They are irreversible. You'll be prompted twice for confirmation.
@@ -276,14 +475,14 @@ git status --porcelain | grep -E '\.env'  # should return nothing</pre>
 
 <div class="steps">
   <div class="step">
-    <h4>4a. Run the orchestrator</h4>
+    <h4>6a. Run the orchestrator</h4>
     <pre>HOUSE_BRAWLERS_COUNT=10 \
-HOUSE_KEEPER_ADDRESS=0x&lt;keeper-address&gt; \
+HOUSE_KEEPER_ADDRESS=$BB_DEV_TREASURY_ADDRESS \
 npm run deploy:mainnet</pre>
     <p>Phases:</p>
     <ol>
       <li><strong>Preflight</strong> — tools, env, RPC, balance, build, test</li>
-      <li><strong>Forge deploy</strong> — broadcasts BRAWL, Brawlers, Duel, Graveyard, MintDrop, <strong>Marketplace</strong> in one script. Deploy.s.sol also wires <code>duel.setMarketplace()</code> so listed brawlers can't be sent into duels, and (when <code>HOUSE_BRAWLERS_COUNT</code> is set) mints N house brawlers to the deployer, flags them as <code>isHouseBrawler</code> on-chain, and transfers them to <code>HOUSE_KEEPER_ADDRESS</code>.</li>
+      <li><strong>Forge deploy</strong> — broadcasts BRAWL, Brawlers, Duel, Graveyard, MintDrop, <strong>Marketplace</strong> in one script. Deploy.s.sol also wires <code>duel.setMarketplace()</code> so listed brawlers can't be sent into duels, and (when <code>HOUSE_BRAWLERS_COUNT</code> is set) mints N house brawlers to the deployer, flags them as <code>isHouseBrawler</code> on-chain, and transfers them to <code>HOUSE_KEEPER_ADDRESS</code> (= DEV wallet on mainnet).</li>
       <li><strong>Parse broadcast</strong> — extracts addresses (<code>MARKETPLACE_ADDRESS</code> included)</li>
       <li><strong>Update .env</strong> — writes addresses into <code>.env.base-mainnet</code></li>
       <li><strong>Mint King</strong> — sends King NFT (#2001) to deployer</li>
@@ -291,29 +490,29 @@ npm run deploy:mainnet</pre>
       <li><strong>Vercel production deploy</strong> — frontend points at mainnet</li>
       <li><strong>Smoke test</strong> — read-only checks against deployed contracts</li>
     </ol>
-    <p class="dim">v11 change: Marketplace folded into the main forge script. v12 change: <code>HOUSE_BRAWLERS_COUNT</code> env now seeds house fighters at deploy time so day-1 players always have someone to brawl. House-flagged brawlers in the 1..100 founder range get NO founder discount / freebie / airdrop.</p>
+    <p class="dim">v11 change: Marketplace folded into the main forge script. v12 change: <code>HOUSE_BRAWLERS_COUNT</code> env seeds house fighters at deploy time so day-1 players always have someone to brawl. House-flagged brawlers in the 1-100 founder range get NO founder discount / freebie / airdrop.</p>
   </div>
 
   <div class="step">
-    <h4>4b. Move King to dev wallet</h4>
+    <h4>6b. Move King to dev wallet</h4>
     <pre>cast send $BRAWLERS_ADDRESS \
   "transferFrom(address,address,uint256)" \
-  $DEPLOYER_ADDRESS $DEV_TREASURY 2001 \
+  $DEPLOYER_ADDRESS $BB_DEV_TREASURY_ADDRESS 2001 \
   --private-key $DEPLOYER_KEY \
   --rpc-url $MAINNET_RPC</pre>
   </div>
 
   <div class="step">
-    <h4>4c. Move 5k BRAWL to dev wallet (operating)</h4>
+    <h4>6c. Move 5k BRAWL to dev wallet (operating)</h4>
     <pre>cast send $BRAWL_ADDRESS \
   "transfer(address,uint256)" \
-  $DEV_TREASURY 5000000000000000000000 \
+  $BB_DEV_TREASURY_ADDRESS 5000000000000000000000 \
   --private-key $DEPLOYER_KEY \
   --rpc-url $MAINNET_RPC</pre>
   </div>
 
   <div class="step">
-    <h4>4d. Move 65k BRAWL to Safe (governance treasury)</h4>
+    <h4>6d. Move 65k BRAWL to Safe (governance treasury)</h4>
     <pre>cast send $BRAWL_ADDRESS \
   "transfer(address,uint256)" \
   $SAFE_ADDRESS 65000000000000000000000 \
@@ -323,12 +522,12 @@ npm run deploy:mainnet</pre>
   </div>
 </div>
 
-<h2 id="lpseed">5. LP seed + 90-day Unicrypt lock</h2>
+<h2 id="lpseed">7. LP seed + 90-day Unicrypt lock</h2>
 
 <div class="steps">
   <div class="step">
-    <h4>5a. Whitelist LP router + pair on BRAWL</h4>
-    <p>Aerodrome v2 router on Base mainnet: <code>0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43</code>. Pair address comes from creating the pair in 5b.</p>
+    <h4>7a. Whitelist LP router + pair on BRAWL</h4>
+    <p>Aerodrome v2 router on Base mainnet: <code>0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43</code>. Pair address comes from creating the pair in 7b.</p>
     <pre>cast send $BRAWL_ADDRESS \
   "setWhitelist(address,bool)" \
   0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43 true \
@@ -337,12 +536,12 @@ npm run deploy:mainnet</pre>
   </div>
 
   <div class="step">
-    <h4>5b. Create the BRAWL/ETH pair on Aerodrome v2</h4>
+    <h4>7b. Create the BRAWL/ETH pair on Aerodrome v2</h4>
     <p>Either via the Aerodrome UI (https://aerodrome.finance/pools, "create pair") or via factory call. Note the pair address.</p>
   </div>
 
   <div class="step">
-    <h4>5c. Whitelist the pair on BRAWL</h4>
+    <h4>7c. Whitelist the pair on BRAWL</h4>
     <pre>cast send $BRAWL_ADDRESS \
   "setWhitelist(address,bool)" \
   $PAIR_ADDRESS true \
@@ -351,7 +550,7 @@ npm run deploy:mainnet</pre>
   </div>
 
   <div class="step">
-    <h4>5d. Approve router for BRAWL spend</h4>
+    <h4>7d. Approve router for BRAWL spend</h4>
     <pre>cast send $BRAWL_ADDRESS \
   "approve(address,uint256)" \
   0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43 \
@@ -361,7 +560,7 @@ npm run deploy:mainnet</pre>
   </div>
 
   <div class="step">
-    <h4>5e. addLiquidityETH on Aerodrome router</h4>
+    <h4>7e. addLiquidityETH on Aerodrome router</h4>
     <p>30,000 BRAWL paired with 0.075 ETH (= $300 at $4k ETH). LP tokens go to deployer.</p>
     <pre># Pseudocode — exact selector depends on Aerodrome's interface
 cast send 0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43 \
@@ -378,7 +577,7 @@ cast send 0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43 \
   </div>
 
   <div class="step">
-    <h4>5f. Lock LP tokens on Unicrypt for 90 days</h4>
+    <h4>7f. Lock LP tokens on Unicrypt for 90 days</h4>
     <ol>
       <li>Visit <a href="https://app.uncx.network/lockers/v3/lock-liquidity-token">UNCX (Unicrypt) Locker on Base</a></li>
       <li>Connect deployer wallet</li>
@@ -392,10 +591,10 @@ cast send 0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43 \
   </div>
 </div>
 
-<h2 id="trading">6. Enable trading + anti-sniper window</h2>
+<h2 id="trading">8. Enable trading + anti-sniper window</h2>
 
 <div class="step">
-  <h4>6a. Whitelist game contracts (final pre-launch state)</h4>
+  <h4>8a. Whitelist game contracts (final pre-launch state)</h4>
   <pre># Game contracts that must move BRAWL during gameplay:
 cast send $BRAWL_ADDRESS "setWhitelistBulk(address[],bool)" \
   "[$DUEL_ADDRESS,$GRAVEYARD_ADDRESS,$MINTDROP_ADDRESS]" true \
@@ -403,7 +602,7 @@ cast send $BRAWL_ADDRESS "setWhitelistBulk(address[],bool)" \
 </div>
 
 <div class="step">
-  <h4>6b. Flip trading on (THE LAUNCH MOMENT)</h4>
+  <h4>8b. Flip trading on (THE LAUNCH MOMENT)</h4>
   <pre>cast send $BRAWL_ADDRESS "enableTrading()" \
   --private-key $DEPLOYER_KEY --rpc-url $MAINNET_RPC</pre>
   <p>This is the launch tx. Within seconds:</p>
@@ -416,7 +615,7 @@ cast send $BRAWL_ADDRESS "setWhitelistBulk(address[],bool)" \
 </div>
 
 <div class="step">
-  <h4>6c. Watch the first 24-48h for snipers</h4>
+  <h4>8c. Watch the first 24-48h for snipers</h4>
   <p>Use Basescan transfers panel + DexScreener trades feed. If you spot:</p>
   <ul>
     <li>A wallet that bought within seconds of launch and immediately tried to dump → blacklist it</li>
@@ -429,7 +628,7 @@ cast send $BRAWL_ADDRESS "setWhitelistBulk(address[],bool)" \
 </div>
 
 <div class="step">
-  <h4>6d. Freeze the rarity table after the dev-mint window</h4>
+  <h4>8d. Freeze the rarity table after the dev-mint window</h4>
   <p>v11 ships <code>Brawlers.freezeRarity()</code>: once the dev wallet has taken its mints, this owner-only call locks the rarity table so subsequent buyers see no further skip-rare swaps. The shuffle is deterministic from <code>masterSeed</code>, so anyone can re-derive the post-shuffle hash off-chain and confirm <code>initialRarityHash</code> matches.</p>
   <pre># Verify the on-chain table still matches the canonical shuffle:
 cast call $BRAWLERS_ADDRESS "initialRarityHash()(bytes32)" --rpc-url $MAINNET_RPC
@@ -442,7 +641,7 @@ cast send $BRAWLERS_ADDRESS "freezeRarity()" \
   <p class="dim">After this tx, public buyers can be sure the rarity they pull is exactly what's at their tokenId in the now-frozen table. Call this before posting the rarity sheet to Discord/X.</p>
 </div>
 
-<h2 id="verify">7. Contract verification on Basescan</h2>
+<h2 id="verify">9. Contract verification on Basescan</h2>
 
 <p>Etherscan multichain API key already stored in <code>.env.base-mainnet</code>. Run for each contract.</p>
 
@@ -469,7 +668,7 @@ forge verify-contract $BRAWLERS_ADDRESS contracts/Brawlers.sol:Brawlers \
 
 <p class="dim">All contracts verified ⇒ green checkmark on Basescan. People reading the source see real Solidity, not bytecode. Critical for trust.</p>
 
-<h2 id="frontend">8. Frontend / Vercel cutover</h2>
+<h2 id="frontend">10. Frontend / Vercel cutover</h2>
 
 <p>The deploy orchestrator runs Vercel env update + production deploy automatically (phases 6-7). After deploy, verify:</p>
 
@@ -478,19 +677,29 @@ forge verify-contract $BRAWLERS_ADDRESS contracts/Brawlers.sol:Brawlers \
   <li><code>/api/token/2001</code> returns King metadata from mainnet contract</li>
   <li>Connect wallet on the site → wagmi shows <strong>Base</strong> (chain 8453), not Base Sepolia</li>
   <li><code>/mint</code> page reads tier prices from mainnet MintDrop</li>
+  <li><code>/market</code> page reads from mainnet Marketplace</li>
 </ul>
 
-<h2 id="discord">9. Discord mainnet flip</h2>
+<div class="panel warn">
+  <strong>Vercel project quirk:</strong> the project lives in <code>ghubbers-projects</code> scope, but <code>.vercel/project.json</code> lists a different team Darren's CLI doesn't have access to. <code>vercel deploy --prod</code> from <code>frontend/</code> works regardless — deploys land in the personal scope and auto-alias to <code>baseicbrawlers.com</code>. Auto-deploy webhook is currently broken (see §2 A3); manual <code>vercel deploy --prod</code> works as the fallback.
+</div>
+
+<h2 id="discord">11. Discord mainnet flip</h2>
 
 <p>Bot is hosted on TrueNAS (Dockge stack <code>baseic-discord</code>). Flip these env values:</p>
 
 <pre># SSH to TrueNAS, edit /mnt/.ix-apps/app_mounts/dockge/stacks/baseic-discord/docker-compose.yml
 environment:
-  DUEL_BLOCK_MIN: "&lt;mainnet-Duel-deploy-block&gt;"
-  DUEL_BLOCK_MAX: "999999999"   # high ceiling, mainnet won't approach
+  RPC_URL: "&lt;mainnet rpc&gt;"
+  DUEL_BLOCK_MIN: "&lt;mainnet Duel deploy block&gt;"
+  DUEL_BLOCK_MAX: "999999999"        # high ceiling — mainnet has no ghost-row issue (Sepolia did)
+  MARKETPLACE_ADDRESS: "&lt;mainnet Marketplace address&gt;"
+  DUELS_CHANNEL: "&lt;#duels channel id&gt;"   # (renamed from DUEL_TALK_CHANNEL; legacy fallback still works)
   BASESCAN_TX_BASE: "https://basescan.org/tx/"
   REFRESH_PINS_ON_STARTUP: "true"   # one-shot refresh on mainnet flip
-  WIPE_GRAVEYARD_ON_STARTUP: "true"  # nuke testnet death posts
+  WIPE_DUELS_ON_STARTUP: "false"        # already wiped pre-flip in §2 B2
+  WIPE_GRAVEYARD_ON_STARTUP: "false"    # ditto
+  WIPE_MARKETPLACE_ON_STARTUP: "false"  # ditto
   BACKFILL_DEATHS_ON_STARTUP: "false"</pre>
 
 <p>Then redeploy stack:</p>
@@ -504,47 +713,45 @@ environment:
   <li>Run <code>/refresh-pins</code> in Discord (or wait — startup did it)</li>
   <li>Drop the Unicrypt lock URL into <code>#links</code></li>
   <li>Drop Basescan contract URLs into <code>#links</code></li>
+  <li>Drop <code>docs.baseicbrawlers.com</code> into <code>#links</code></li>
 </ol>
 
-<p>After the deploy completes, set the flags back to false:</p>
-<pre>WIPE_GRAVEYARD_ON_STARTUP: "false"
-BACKFILL_DEATHS_ON_STARTUP: "false"
-REFRESH_PINS_ON_STARTUP: "true"  # safe to leave on; idempotent</pre>
+<p class="dim">
+  Block-range note: on Sepolia we capped <code>DUEL_BLOCK_MAX=90000000</code> to skip cross-chain ghost rows at ~103M (BSC testnet leftovers in the shared history DB). Mainnet is a clean DB — no upper cap needed.
+</p>
 
-<h2 id="keeper">10. Fight-cost keeper deployment</h2>
+<h2 id="keeper">12. Fight-cost keeper deployment</h2>
 
-<p>Keeper bot lives at <code>marketing/keeper/</code>. Deploy on TrueNAS as a sibling Dockge stack.</p>
+<p>Keeper bot lives at <code>marketing/keeper/</code>. Deploy on TrueNAS as a sibling Dockge stack <strong>only if you want the fight cost auto-rebalanced</strong> (it polls BRAWL price and adjusts <code>setFightEconomics</code> every 5min). Otherwise you can run the rebalancer manually from the deployer wallet.</p>
 
-<div class="step">
-  <h4>10a. Create keeper EOA + fund</h4>
-  <p>Generate a fresh EOA (e.g. <code>cast wallet new</code>). Fund it with ~0.005 ETH on Base. This wallet's two jobs:</p>
-  <ol>
-    <li>Call <code>setFightEconomics</code> every few minutes (the original keeper purpose).</li>
-    <li>Hold the 10 house brawlers seeded at deploy and run the auto-duel loop so day-1 players always have an opponent.</li>
-  </ol>
-  <div class="panel warn">
-    <strong>Do this BEFORE running <code>npm run deploy:mainnet</code>.</strong> The keeper address must be in <code>.env.base-mainnet</code> as <code>HOUSE_KEEPER_ADDRESS</code> at deploy time so Deploy.s.sol auto-transfers the 10 house brawlers to it in the same forge tx. If the env is unset, brawlers stay with the deployer and you have to manually <code>cast send transferFrom</code> 10 times after the fact.
-  </div>
+<div class="panel ok">
+  <strong>v12 simplification:</strong> the 10 house brawlers no longer need to live on this keeper EOA — they're on the DEV wallet now. The keeper is only the fight-cost rebalancer. You can skip it entirely if you're happy doing the rebalance by hand once a day.
 </div>
 
 <div class="step">
-  <h4>10b. Transfer Duel contract ownership to the keeper</h4>
+  <h4>12a. Create keeper EOA + fund (only if running it)</h4>
+  <pre>cast wallet new
+# Send ~0.005 ETH on Base to the printed address — that's months of gas.</pre>
+</div>
+
+<div class="step">
+  <h4>12b. Transfer Duel contract ownership to the keeper</h4>
   <p>The current owner is the deployer. After mainnet stabilises (~24h), transfer Duel ownership to the keeper EOA:</p>
   <pre>cast send $DUEL_ADDRESS \
   "transferOwnership(address)" \
   $KEEPER_ADDRESS \
   --private-key $DEPLOYER_KEY \
   --rpc-url $MAINNET_RPC</pre>
-  <p class="dim">If you'd rather not transfer ownership, leave it with deployer and have keeper run as a notifier-only (DRY_RUN=true). Manual rebalance from deployer when needed.</p>
+  <p class="dim">If you'd rather not transfer ownership, leave it with deployer and have keeper run as a notifier-only (<code>DRY_RUN=true</code>). Manual rebalance from deployer when needed.</p>
 </div>
 
 <div class="step">
-  <h4>10c. Fill .env on TrueNAS</h4>
-  <p>SCP <code>marketing/keeper/.env.example</code> → fill <code>KEEPER_PRIVATE_KEY</code>, <code>DUEL_ADDRESS</code>, <code>BRAWL_ADDRESS</code>, <code>BRAWL_PAIR_ADDRESS</code>, <code>DEV_TREASURY</code>. Set <code>DRY_RUN=true</code> for first 24h.</p>
+  <h4>12c. Fill .env on TrueNAS</h4>
+  <p>SCP <code>marketing/keeper/.env.example</code> → fill <code>KEEPER_PRIVATE_KEY</code>, <code>DUEL_ADDRESS</code>, <code>BRAWL_ADDRESS</code>, <code>BRAWL_PAIR_ADDRESS</code>, <code>BB_DEV_TREASURY_ADDRESS</code>. Set <code>DRY_RUN=true</code> for first 24h.</p>
 </div>
 
 <div class="step">
-  <h4>10d. Deploy via Dockge</h4>
+  <h4>12d. Deploy via Dockge</h4>
   <pre>scp -r marketing/keeper/ truenas-discord:/mnt/.ix-apps/app_mounts/dockge/stacks/baseic-keeper/
 ssh truenas-discord docker compose \
   -f /mnt/.ix-apps/app_mounts/dockge/stacks/baseic-keeper/docker-compose.yml \
@@ -553,10 +760,10 @@ ssh truenas-discord docker logs -f baseic-brawlers-keeper</pre>
   <p>Watch for "BRAWL=$0.0xxx | target=NN | current=NN | Δ=N.N%" lines. After verifying the calculation looks right, flip <code>DRY_RUN=false</code> and restart.</p>
 </div>
 
-<h2 id="governance">11. Governance setup (Snapshot + Safe)</h2>
+<h2 id="governance">13. Governance setup (Snapshot + Safe)</h2>
 
 <div class="step">
-  <h4>11a. Deploy a 2-of-3 Gnosis Safe on Base</h4>
+  <h4>13a. Deploy a 2-of-3 Gnosis Safe on Base</h4>
   <ol>
     <li>Visit <a href="https://app.safe.global">Safe Global</a></li>
     <li>Create Safe → Base mainnet</li>
@@ -566,12 +773,12 @@ ssh truenas-discord docker logs -f baseic-brawlers-keeper</pre>
 </div>
 
 <div class="step">
-  <h4>11b. Send 65k BRAWL to the Safe</h4>
-  <p>Done in <a href="#deploy">step 4d</a>. Confirm Safe shows the 65k balance before announcing.</p>
+  <h4>13b. Send 65k BRAWL to the Safe</h4>
+  <p>Done in <a href="#deploy">step 6d</a>. Confirm Safe shows the 65k balance before announcing.</p>
 </div>
 
 <div class="step">
-  <h4>11c. Set up Snapshot space</h4>
+  <h4>13c. Set up Snapshot space</h4>
   <ol>
     <li>Visit <a href="https://snapshot.org">snapshot.org</a></li>
     <li>Create space "BASEic Brawlers" with ENS or use the wallet-direct option</li>
@@ -583,11 +790,11 @@ ssh truenas-discord docker logs -f baseic-brawlers-keeper</pre>
 </div>
 
 <div class="step">
-  <h4>11d. Document publicly</h4>
+  <h4>13d. Document publicly</h4>
   <p>Add to <code>#links</code> pin: Snapshot URL, Safe address (publicly verifiable on Basescan).</p>
 </div>
 
-<h2 id="marketing">12. Marketing fire-order</h2>
+<h2 id="marketing">14. Marketing fire-order</h2>
 
 <table>
   <tr><th>T-time</th><th>Action</th></tr>
@@ -603,31 +810,31 @@ ssh truenas-discord docker logs -f baseic-brawlers-keeper</pre>
   <tr><td>T+48h</td><td>Anti-sniper retrospective: "we caught N bots, here's the blacklist tx"</td></tr>
 </table>
 
-<h2 id="postlaunch">13. Post-launch operations (first 7 days)</h2>
+<h2 id="postlaunch">15. Post-launch operations (first 7 days)</h2>
 
 <ul>
   <li><strong>Discord</strong>: respond to every #help ticket within 4h waking hours. AutoMod handles the obvious scams.</li>
-  <li><strong>Telegram</strong>: bot bots running (welcome / raid / leaderboard); manually monitor for impersonators.</li>
-  <li><strong>Bots</strong>: keep an eye on the keeper logs. Adjust <code>DELTA_THRESHOLD</code> if updates are too chatty or too slow.</li>
+  <li><strong>Telegram</strong>: userbot is active (out of listener-only), responds to DMs + group mentions. Manually monitor for impersonators.</li>
+  <li><strong>Keeper</strong>: if deployed, watch logs. Adjust <code>DELTA_THRESHOLD</code> if updates are too chatty or too slow. If not deployed, do a manual <code>setFightEconomics</code> from deployer once a day or when BRAWL/USD drifts &gt;10%.</li>
   <li><strong>Mint</strong>: monitor tier transitions. When tier 1 (1-50) sells out, post a "tier 1 SOLD OUT, tier 2 active at $25" tweet. Repeat for each tier.</li>
   <li><strong>Duels</strong>: bot posts duels + deaths to Discord automatically. Manual leaderboard reposts via <code>/leaderboard</code> if community asks.</li>
   <li><strong>Marketplace</strong>: watch for floor sweep / wash trading. Manual investigation if anything looks off.</li>
 </ul>
 
-<h2 id="renounce">14. Renounce sequence (24-48h after launch)</h2>
+<h2 id="renounce">16. Renounce sequence (24-48h after launch)</h2>
 
 <p>After trading has stabilised + obvious snipers blacklisted, surrender control of BRAWL:</p>
 
 <div class="steps">
   <div class="step">
-    <h4>14a. Lift the launch limits</h4>
+    <h4>16a. Lift the launch limits</h4>
     <pre>cast send $BRAWL_ADDRESS "liftLimits()" \
   --private-key $DEPLOYER_KEY --rpc-url $MAINNET_RPC</pre>
     <p>One-way. Removes max-tx and max-wallet caps. Trading is now unrestricted.</p>
   </div>
 
   <div class="step">
-    <h4>14b. Renounce BRAWL ownership</h4>
+    <h4>16b. Renounce BRAWL ownership</h4>
     <pre>cast send $BRAWL_ADDRESS "renounceOwnership()" \
   --private-key $DEPLOYER_KEY --rpc-url $MAINNET_RPC</pre>
     <p>Whitelist/blacklist/limits frozen forever. BRAWL contract becomes truly immutable.</p>
@@ -635,7 +842,7 @@ ssh truenas-discord docker logs -f baseic-brawlers-keeper</pre>
   </div>
 </div>
 
-<h2 id="emergency">15. Emergency runbook</h2>
+<h2 id="emergency">17. Emergency runbook</h2>
 
 <div class="panel crit">
   <strong>If something is on fire after launch.</strong>
@@ -647,14 +854,15 @@ ssh truenas-discord docker logs -f baseic-brawlers-keeper</pre>
   <tr><td>Front-end down</td><td>Vercel revert via <code>vercel rollback</code>. The chain keeps working regardless.</td></tr>
   <tr><td>Discord bot down</td><td><code>ssh truenas-discord docker compose -f /…/baseic-discord/docker-compose.yml restart</code></td></tr>
   <tr><td>Keeper bot down</td><td>Same: <code>docker compose restart keeper</code>. Fight cost stays at last set value until keeper resumes.</td></tr>
+  <tr><td>TG userbot down</td><td><code>ssh truenas-discord docker compose -f /…/baseic-tg/compose.yaml restart</code>. Worst case: people DM Telegram normally and you respond manually.</td></tr>
   <tr><td>Aerodrome LP exploited</td><td>LP is locked on Unicrypt — exploit can't drain through normal LP withdrawal. Worst case: pair-level price manipulation. Pause MintDrop with <code>MintDrop.pause()</code> if needed.</td></tr>
   <tr><td>Smart contract bug surfaces</td><td>Game contracts have <code>pause()</code>. BRAWL has no pause (would be a censorship lever). For BRAWL bugs after renounce, only the community / forks can react.</td></tr>
-  <tr><td>Suspected dev wallet compromise</td><td>You handle this — your keys, your security. Move funds out of dev to a fresh wallet ASAP. Update Vercel <code>DEV_TREASURY</code> env to the new address.</td></tr>
+  <tr><td>Suspected dev wallet compromise</td><td>You handle this — your keys, your security. Move funds out of dev to a fresh wallet ASAP. Update Vercel <code>BB_DEV_TREASURY_ADDRESS</code> env to the new address. Note: the 10 house brawlers also live here, so if compromised you'd need to move them too.</td></tr>
 </table>
 
 <hr>
 
-<p class="dim" style="font-size: 12px; text-align: center;">BASEic Brawlers — Mainnet Launch Playbook · v3 (v12 contracts) · For internal operator reference only · Do not publish</p>
+<p class="dim" style="font-size: 12px; text-align: center;">BASEic Brawlers — Mainnet Launch Playbook · v4 (v12 contracts) · For internal operator reference only · Do not publish</p>
 
 </div>
 </body>

@@ -43,10 +43,6 @@ const GitBookIcon = (
   </svg>
 );
 
-// docs.baseicbrawlers.com is the chosen home for the player gitbook
-// (DNS + hosting wired separately on Darren's side; the link 404s until
-// then). Keep this constant rather than inlining so the "How to Play"
-// link below uses the same target.
 const GITBOOK_URL = 'https://docs.baseicbrawlers.com';
 
 const SOCIALS: SocialLink[] = [
