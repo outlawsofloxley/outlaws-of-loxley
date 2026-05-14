@@ -21,6 +21,20 @@ interface IBrawlersDeadRead {
  *         Base). Buyers pay the listed price; the contract forwards proceeds
  *         minus a configurable fee (default 5%) to the dev treasury.
  *
+ * @custom:website  https://baseicbrawlers.com
+ * @custom:docs     https://docs.baseicbrawlers.com
+ * @custom:github   https://github.com/baseicbrawlers/baseic-brawlers
+ * @custom:telegram https://t.me/baseicbrawlers
+ * @custom:twitter  https://x.com/BASEicBrawlers
+ * @custom:discord  https://discord.gg/RjvBEA5CVd
+ *
+ *  Website:  https://baseicbrawlers.com
+ *  Docs:     https://docs.baseicbrawlers.com
+ *  GitHub:   https://github.com/baseicbrawlers/baseic-brawlers
+ *  Telegram: https://t.me/baseicbrawlers
+ *  X:        https://x.com/BASEicBrawlers
+ *  Discord:  https://discord.gg/RjvBEA5CVd
+ *
  *         Approval-based, no escrow: the seller retains custody of their NFT
  *         and simply grants this contract approval to transfer on a sale.
  *         This means:

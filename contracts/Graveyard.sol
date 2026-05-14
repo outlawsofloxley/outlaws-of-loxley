@@ -11,6 +11,20 @@ import {Duel} from "./Duel.sol";
  * @title Graveyard
  * @notice Manages dead-brawler revival.
  *
+ * @custom:website  https://baseicbrawlers.com
+ * @custom:docs     https://docs.baseicbrawlers.com
+ * @custom:github   https://github.com/baseicbrawlers/baseic-brawlers
+ * @custom:telegram https://t.me/baseicbrawlers
+ * @custom:twitter  https://x.com/BASEicBrawlers
+ * @custom:discord  https://discord.gg/RjvBEA5CVd
+ *
+ *  Website:  https://baseicbrawlers.com
+ *  Docs:     https://docs.baseicbrawlers.com
+ *  GitHub:   https://github.com/baseicbrawlers/baseic-brawlers
+ *  Telegram: https://t.me/baseicbrawlers
+ *  X:        https://x.com/BASEicBrawlers
+ *  Discord:  https://discord.gg/RjvBEA5CVd
+ *
  * @dev Only the Brawler's owner can revive it. Resurrection pays a fee
  *      (default 0.01 ETH, configurable by owner) to the treasury address.
  *      Dead brawlers have their loss streak reset to 0 on resurrection.

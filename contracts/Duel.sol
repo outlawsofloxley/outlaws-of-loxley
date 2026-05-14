@@ -21,6 +21,20 @@ interface IMarketplaceListedRead {
  * @title Duel
  * @notice Accepts backend-signed duel results and applies them to Brawlers.
  *
+ * @custom:website  https://baseicbrawlers.com
+ * @custom:docs     https://docs.baseicbrawlers.com
+ * @custom:github   https://github.com/baseicbrawlers/baseic-brawlers
+ * @custom:telegram https://t.me/baseicbrawlers
+ * @custom:twitter  https://x.com/BASEicBrawlers
+ * @custom:discord  https://discord.gg/RjvBEA5CVd
+ *
+ *  Website:  https://baseicbrawlers.com
+ *  Docs:     https://docs.baseicbrawlers.com
+ *  GitHub:   https://github.com/baseicbrawlers/baseic-brawlers
+ *  Telegram: https://t.me/baseicbrawlers
+ *  X:        https://x.com/BASEicBrawlers
+ *  Discord:  https://discord.gg/RjvBEA5CVd
+ *
  * @dev Key design: the backend computes EVERYTHING (winner, rounds, seed,
  *      new ELOs) and signs the full result. The contract performs only
  *      signature verification, replay prevention, liveness checks, and

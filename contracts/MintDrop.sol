@@ -14,6 +14,20 @@ import {Brawlers} from "./Brawlers.sol";
  *         to MAX_MINT brawlers at a dev-settable ETH / USDT / USDC price
  *         and airdrops BRAWL tokens to each buyer.
  *
+ * @custom:website  https://baseicbrawlers.com
+ * @custom:docs     https://docs.baseicbrawlers.com
+ * @custom:github   https://github.com/baseicbrawlers/baseic-brawlers
+ * @custom:telegram https://t.me/baseicbrawlers
+ * @custom:twitter  https://x.com/BASEicBrawlers
+ * @custom:discord  https://discord.gg/RjvBEA5CVd
+ *
+ *  Website:  https://baseicbrawlers.com
+ *  Docs:     https://docs.baseicbrawlers.com
+ *  GitHub:   https://github.com/baseicbrawlers/baseic-brawlers
+ *  Telegram: https://t.me/baseicbrawlers
+ *  X:        https://x.com/BASEicBrawlers
+ *  Discord:  https://discord.gg/RjvBEA5CVd
+ *
  * @dev Wiring at deploy time:
  *        1. Deploy Brawlers, Duel, Graveyard.
  *        2. Deploy BRAWL ERC-20 (100,000 minted to deployer EOA).

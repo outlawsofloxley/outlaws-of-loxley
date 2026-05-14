@@ -11,11 +11,15 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  *         limits during the first window after trading is enabled.
  *
  * @custom:website  https://baseicbrawlers.com
+ * @custom:docs     https://docs.baseicbrawlers.com
+ * @custom:github   https://github.com/baseicbrawlers/baseic-brawlers
  * @custom:telegram https://t.me/baseicbrawlers
  * @custom:twitter  https://x.com/BASEicBrawlers
  * @custom:discord  https://discord.gg/RjvBEA5CVd
  *
  *  Website:  https://baseicbrawlers.com
+ *  Docs:     https://docs.baseicbrawlers.com
+ *  GitHub:   https://github.com/baseicbrawlers/baseic-brawlers
  *  Telegram: https://t.me/baseicbrawlers
  *  X:        https://x.com/BASEicBrawlers
  *  Discord:  https://discord.gg/RjvBEA5CVd
