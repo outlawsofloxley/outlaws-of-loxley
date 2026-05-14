@@ -1,0 +1,8 @@
+LP seeded on @AerodromeFi.
+
+{{BRAWL_IN_LP}} $BRAWL paired with {{ETH_IN_LP}} ETH.
+
+pair: https://basescan.org/address/{{PAIR_ADDRESS}}
+tx: https://basescan.org/tx/{{TX_HASH}}
+
+locking the LP next.

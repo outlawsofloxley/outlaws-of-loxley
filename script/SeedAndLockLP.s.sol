@@ -57,14 +57,19 @@ interface IAerodromeRouter {
 }
 
 interface IUnicryptLocker {
-    /// @notice Standard Unicrypt v3 LP locker signature. Confirm at deploy time.
+    /// @notice UNCX Liquidity Locker V2.1 signature (Base, Aerodrome support).
+    ///         The trailing `countryCode` was added in V2.1 — older 6-arg
+    ///         variants will revert with no matching function.
+    ///         Base locker contract: 0x30e522deDfFE3e3d11Cd53E27d18Cd4F016eD870
+    ///         Fee on Base: 0.1 ETH flat + 1% of LP locked (paid in LP).
     function lockLPToken(
         address lpToken,
         uint256 amount,
         uint256 unlockDate,
         address payable referral,
         bool feeInEth,
-        address payable withdrawer
+        address payable withdrawer,
+        uint16 countryCode
     ) external payable;
 }
 
@@ -138,22 +143,37 @@ contract SeedAndLockLP is Script {
             console2.log("Whitelisted LP pair on BRAWL");
         }
 
-        // ── 5. Optional: lock the LP token on Unicrypt ──
-        if (locker != address(0)) {
+        // ── 5. Lock the LP token on UNCX (or burn to 0xdead) ──
+        // BURN_LP=true sends the LP token to 0x000000000000000000000000000000000000dEaD
+        // permanently. Zero cost vs the 0.1 ETH UNCX fee, but unrecoverable.
+        // Path is set via env (BURN_LP / UNICRYPT_LOCKER); see LAUNCH_AUTOMATION.md §2.
+        bool burnLP = vm.envOr("BURN_LP", false);
+        if (burnLP) {
+            address burnAddr = address(0x000000000000000000000000000000000000dEaD);
+            IERC20(pair).transfer(burnAddr, liquidity);
+            console2.log("LP BURNED to 0xdead:", liquidity);
+            console2.log("Pair address:       ", pair);
+            console2.log("VERIFY: basescan.org/address/", burnAddr);
+        } else if (locker != address(0)) {
             IERC20(pair).approve(locker, liquidity);
             uint256 unlockDate = block.timestamp + lockSeconds;
-            // Note: Unicrypt has a small ETH fee for locks. 0.01 ETH covers
-            // most ones; check the actual rate before launch.
-            IUnicryptLocker(locker).lockLPToken{value: 0.01 ether}(
-                pair, liquidity, unlockDate, payable(address(0)), true, payable(devWallet)
+            // UNCX V2 Base flat fee = 0.1 ETH; an extra small margin
+            // protects against any minor rate change without overpaying much.
+            // countryCode 36 = Australia per ISO 3166-1 numeric (Darren's loc).
+            uint16 countryCode = uint16(vm.envOr("UNCX_COUNTRY_CODE", uint256(36)));
+            uint256 uncxFee = vm.envOr("UNCX_FEE_WEI", uint256(0.1 ether));
+            IUnicryptLocker(locker).lockLPToken{value: uncxFee}(
+                pair, liquidity, unlockDate, payable(address(0)), true, payable(devWallet), countryCode
             );
-            console2.log("LP locked until:    ", unlockDate);
+            console2.log("LP locked until ts: ", unlockDate);
+            console2.log("UNCX fee paid:      ", uncxFee);
+            console2.log("CountryCode:        ", countryCode);
             console2.log(
                 "VERIFY URL: https://app.uncx.network/lockers/univ2/address/", pair
             );
         } else {
-            console2.log("WARNING: UNICRYPT_LOCKER unset - LP NOT LOCKED.");
-            console2.log("You should lock manually at https://app.uncx.network/");
+            console2.log("WARNING: UNICRYPT_LOCKER unset and BURN_LP not set - LP NOT LOCKED.");
+            console2.log("Set one of UNICRYPT_LOCKER=0x30e522de... or BURN_LP=true and re-run.");
         }
 
         vm.stopBroadcast();

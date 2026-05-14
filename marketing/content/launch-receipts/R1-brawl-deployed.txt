@@ -1,0 +1,10 @@
+$BRAWL is on-chain.
+
+100,000 fixed supply. no mint after deploy.
+
+CA: {{BRAWL_ADDRESS}}
+
+basescan: https://basescan.org/address/{{BRAWL_ADDRESS}}
+tx: https://basescan.org/tx/{{TX_HASH}}
+
+LP seeding next.

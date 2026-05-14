@@ -1,0 +1,8 @@
+🔒 LP locked on @UNCX_token for {{LOCK_DAYS}} days.
+
+nobody pulls liquidity. not the dev, not anyone.
+
+lock: {{LOCK_URL}}
+tx: https://basescan.org/tx/{{TX_HASH}}
+
+verify on-chain anytime.

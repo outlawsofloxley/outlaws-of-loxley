@@ -1,0 +1,10 @@
+✅ all contracts verified on @basescan. source is readable, the math is yours to check.
+
+🪙 BRAWL:      https://basescan.org/address/{{BRAWL_ADDRESS}}#code
+⚔ Duel:       https://basescan.org/address/{{DUEL_ADDRESS}}#code
+🦾 Brawlers:   https://basescan.org/address/{{BRAWLERS_ADDRESS}}#code
+🎮 MintDrop:   https://basescan.org/address/{{MINTDROP_ADDRESS}}#code
+🪦 Graveyard:  https://basescan.org/address/{{GRAVEYARD_ADDRESS}}#code
+🛒 Marketplace: https://basescan.org/address/{{MARKETPLACE_ADDRESS}}#code
+
+contracts also on github: https://github.com/baseicbrawlers/baseic-brawlers

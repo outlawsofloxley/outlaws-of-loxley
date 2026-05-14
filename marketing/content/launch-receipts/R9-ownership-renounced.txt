@@ -1,0 +1,8 @@
+👑 $BRAWL ownership renounced.
+
+owner() now returns 0x0.
+
+no more limit changes, no more whitelist, no more anything from the dev side. the token is fully autonomous from here.
+
+verify: https://basescan.org/address/{{BRAWL_ADDRESS}}#readContract
+tx: https://basescan.org/tx/{{TX_HASH}}

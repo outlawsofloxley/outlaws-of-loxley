@@ -1,0 +1,6 @@
+🔒 {{VEST_AMOUNT}} $BRAWL of the dev allocation now vests linearly over {{VEST_DAYS}} days on @UNCX_token.
+
+half the dev bag is on a timer. you can watch it unlock block by block.
+
+vesting dashboard: https://app.uncx.network/services/token-vesting
+tx: https://basescan.org/tx/{{TX_HASH}}

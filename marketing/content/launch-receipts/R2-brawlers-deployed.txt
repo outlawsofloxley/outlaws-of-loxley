@@ -1,0 +1,8 @@
+Brawlers NFT deployed.
+
+ERC-721. 2,000 + 1 king. on-chain stats, ELO, weapons, art.
+
+CA: {{BRAWLERS_ADDRESS}}
+
+basescan: https://basescan.org/address/{{BRAWLERS_ADDRESS}}
+tx: https://basescan.org/tx/{{TX_HASH}}

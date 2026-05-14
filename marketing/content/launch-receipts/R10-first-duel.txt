@@ -1,0 +1,10 @@
+first duel of mainnet just mined.
+
+🦾 #{{WINNER_ID}} {{WINNER_NAME}} beat #{{LOSER_ID}} {{LOSER_NAME}}
+ΔELO: +{{ELO_DELTA}}
+
+tx: https://basescan.org/tx/{{TX_HASH}}
+
+the arena's open for business.
+
+https://baseicbrawlers.com/duel

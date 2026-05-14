@@ -1,0 +1,10 @@
+game contracts up.
+
+⚔ Duel:        {{DUEL_ADDRESS}}
+🎮 MintDrop:   {{MINTDROP_ADDRESS}}
+🪦 Graveyard:  {{GRAVEYARD_ADDRESS}}
+🛒 Marketplace: {{MARKETPLACE_ADDRESS}}
+
+all verified on basescan once the verifier catches up.
+
+next: LP seed + lock.

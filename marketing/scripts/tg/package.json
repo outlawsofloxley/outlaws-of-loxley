@@ -1,0 +1,10 @@
+{
+  "name": "baseic-brawlers-tg-broadcast",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Posts launch receipts + ad-hoc announcements to the BASEic Brawlers Telegram via one of the project bot tokens. Reads BB_TG_* from secrets.env.",
+  "type": "module",
+  "scripts": {
+    "post": "node post-receipt.mjs"
+  }
+}
