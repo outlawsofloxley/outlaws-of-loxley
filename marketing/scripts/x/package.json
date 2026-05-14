@@ -1,0 +1,18 @@
+{
+  "name": "baseic-brawlers-x-automation",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Playwright-driven automation for @BASEicBrawlers — login, profile setup, post composer. Credentials read from $env:USERPROFILE/.claude/secrets/secrets.env (grep-extracted, never sourced).",
+  "type": "module",
+  "scripts": {
+    "install:browsers": "playwright install chromium",
+    "login": "node login.mjs",
+    "profile": "node profile-setup.mjs",
+    "post": "node post.mjs",
+    "tweet": "node tweet.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.60.0",
+    "otpauth": "^9.3.4"
+  }
+}

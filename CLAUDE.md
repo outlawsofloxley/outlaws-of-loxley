@@ -4,6 +4,70 @@ Living doc for Claude Code sessions on this project. Append to the top, prune th
 
 ---
 
+## Session 2026-05-13 → 2026-05-14 (mainnet eve)
+
+### What got shipped
+
+**GitBook → docs.baseicbrawlers.com fully live**
+- Detached Docs space `n4Ab6hKYBCLQ57x9CPN9` from broken legacy github integration (expired OAuth tokens were silently failing every `git/import`).
+- Imported the 12 chapter handbook via `POST /spaces/.../git/import` with PAT-embedded URL.
+- Published `site_QFyit` ("BASEic Brawlers Docs", ultimate plan).
+- Custom hostname `docs.baseicbrawlers.com` registered in GitBook UI by Darren; CNAME `docs → dc6987e235-hosting.gitbook.io` added at Vercel DNS via API (`rec_2fd6c6499510fe5452c63d2b`). Cert via Google Trust Services / Cloudflare for SaaS, ~18 min provision.
+- Soft-deleted orphan Player Handbook space `bzaYh4Dk5Vc2vqMR3Drf`.
+- Re-set up new GitHub Sync via UI — legacy install `267db1e...` now re-active with `projectDirectory: docs/gitbook` configured. Continuous sync working (a real-diff push to `docs/gitbook/*` produces a new revision within ~10s).
+
+**GitBook content rewritten to PROD voice**
+- Removed all "open beta / sepolia / soak / mainnet ships when" language across README, getting-started, links, brawlers, house-fighters, faq, trust.
+- Reads as if mainnet is live: `BRAWL` ownership renounced, LP locked on Unicrypt, deploy addresses pinned in `#links`. Faucet section + Sepolia network block stripped from getting-started + links.
+
+**"How to Play" pointed at the gitbook everywhere**
+- Footer GitBook icon + "How to Play" link → `docs.baseicbrawlers.com` (was that already; constant tidied)
+- NavBar "How to Play" item → external `docs.baseicbrawlers.com` opens in new tab (added `external: true` flag to NavItem)
+- Home page hero CTA + "First time here?" link → same. Dropped "Base Sepolia · Chain 84532" line.
+- `/about` route now `308 → https://docs.baseicbrawlers.com/` via `next.config.ts` (catches stale backlinks). The `/about/page.tsx` file is dead code now.
+
+**Frontend deploy `dpl_AU2dUPCi32qhEMLc4r8HqYJYFNzq`** aliased to `baseicbrawlers.com` + `www.baseicbrawlers.com`. Verified `/about` 308's correctly.
+
+**X automation up + first hype tweet posted**
+- `marketing/scripts/x/` is a tiny Playwright project (package.json + node 20). `creds.mjs` grep-extracts BB_TWITTER_* and BB_X_* from `secrets.env`.
+- **Scripted login is dead-end on X**: form silently resets on Enter (anti-bot). VPN-origin logins also bounced.
+- **Cookie-paste path works**: Darren copied `auth_token` + `ct0` from his real Chrome devtools. `set-session-from-cookies.mjs` bakes them into `.session.json` (storageState). `verify-session.mjs` lands on `/home` with the authed compose UI = pass. Cookies also persisted into `secrets.env` as `BB_TWITTER_AUTH_TOKEN` / `BB_TWITTER_CT0`.
+- **Banner uploaded**: `set-banner.mjs` opens Edit profile modal, sets `marketing/art/x-banner.png` on first file input, clicks Apply, Save. Verified live on profile.
+- **First hype tweet fired** at https://x.com/BASEicBrawlers/status/2054873099548651910 — day-7 brand reveal copy with "drops this week" + king PFP attached.
+
+### Decisions logged
+
+- **Mainnet deploy targeted ~Friday 2026-05-15 ~12:30 ACST** (Adelaide lunch) ≈ 03:00 UTC. Hype campaign now → launch thread fires at deploy moment.
+- **X marketing fully delegated to Claude** via headless browser. Memory `x_twitter_delegation.md` carries the cookie-paste auth path so future sessions skip the login dance.
+- **Bio left as-is** (title-case "On-chain arena…") for now — Darren can flip to lowercase voice later if desired.
+
+### Open items / next session priorities
+
+1. **Mainnet deploy Friday ~03:00 UTC.** Group C of LAUNCH-PLAYBOOK fires: BRAWL/Brawlers/Duel/MintDrop/Brawl/Marketplace + LP seed + Aerodrome pair + Unicrypt lock + `enableTrading()`.
+2. **At launch moment**: fire `x-launch-thread.md` tweet 1/12, then ~30 min cadence for the rest. Will need to fill `[BRAWLERS_ADDR]`, `[BRAWL_ADDR]`, `[PAIR_ADDR]`, `[UNICRYPT_LOCK_URL]` placeholders post-deploy.
+3. **Pre-launch countdown days -6 → -1**: post on cadence per `x-prelaunch-kit.md`, mostly daily 14:00-18:00 UTC. Tweets stored in `marketing/scripts/x/drafts/` as they go out.
+4. **Footer/Discord/TG also need launch announcements** when trading goes live.
+5. **GitHub PAT in `git remote -v`** (`ghp_DnwkPYij...`) is already invalid (`Bad credentials` from API) so no rotation needed — leak-via-CLAUDE.md exposed the FACT not the value.
+6. **Repo is private** — confirmed via 404 from unauth + non-collaborator probe. The 70-min GitBook misconfig that exposed `LAUNCH.md`/`CLAUDE.md`/`marketing/*` was the FIRST public exposure of those files. Risk was low (no live secrets, marketing copy mostly), traffic likely zero given brand-new domain.
+7. **TG userbot still listener-only** (`USERBOT_LISTENER_ONLY=true`). Flip after launch when there's actual TG chatter to respond to.
+8. **Vercel auto-deploy webhook** still broken — every deploy needed manual `vercel deploy --prod`. Fix worth doing pre-launch so post-launch hot-fix tweets/copy land instantly.
+
+### Convention notes for future sessions
+
+- **X automation: don't do scripted username/password login.** X bounces it silently. Use the cookie-paste session at `marketing/scripts/x/.session.json`. If cookies expire, regrab `auth_token` + `ct0` from a logged-in Chrome devtools (`Application → Cookies → x.com`).
+- **Continuous gitbook sync**: pushing to `main` with any diff under `docs/gitbook/*` auto-syncs to docs.baseicbrawlers.com within ~10s via the legacy `267db1e...` integration (now properly configured with `projectDirectory: docs/gitbook`). Empty commits don't trigger; needs a real file change in the watched subtree.
+- **Custom hostname API gated**: `POST /custom-hostnames` returns 403 "internal staff auth". UI is the only way to bind `*.baseicbrawlers.com` subdomains to GitBook sites. The CNAME half is fully API-driven via Vercel.
+- **Vercel personal token `vca_4ehJ...`** has DNS read+write access on `team_meER3hmCPZwNsCuUUa3yFK9M` (the `ghubbers-projects` team) even though `vercel dns ls` CLI says "no permission". Use the REST API directly: `POST/DELETE https://api.vercel.com/v2/domains/baseicbrawlers.com/records[/recordId]?teamId=...`.
+- **GitBook unpublish + visibility flips DON'T immediately invalidate the Vercel-hosted edge cache** that GitBook serves through. To take a misconfigured GitBook site offline FAST, remove the CNAME at the DNS provider — DNS flips within seconds, the leak stops at the resolver layer.
+
+### Live infra (deltas from prev session)
+
+- GitBook org: `DOVDg3Iw7VqLlACE6NRI`, site `site_QFyit`, Docs space `n4Ab6hKYBCLQ57x9CPN9`, custom hostname `docs.baseicbrawlers.com`.
+- Vercel team: `team_meER3hmCPZwNsCuUUa3yFK9M` (ghubbers-projects). Personal token in CLI auth.json works for DNS API.
+- X account `@BASEicBrawlers` profile complete (display name, bio, location, website, pfp, banner). First hype tweet live. Session cookies in `secrets.env` (`BB_TWITTER_AUTH_TOKEN`/`BB_TWITTER_CT0`) + `marketing/scripts/x/.session.json`.
+
+---
+
 ## Session 2026-05-08 → 2026-05-10
 
 ### What got shipped

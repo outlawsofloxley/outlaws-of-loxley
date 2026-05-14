@@ -1,0 +1,7 @@
+.session.json
+.session.*.json
+*.log
+screenshots/
+node_modules/
+.chrome-profile/
+package-lock.json
