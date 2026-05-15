@@ -124,6 +124,9 @@ export const GRAVEYARD_ABI = parseAbi([
   'function treasury() view returns (address)',
   'function resurrectionCost() view returns (uint256)',
   'function resurrectionCap() view returns (uint256)',
+  'function resurrectionCostUsdCents() view returns (uint256)',
+  'function resurrectionCapUsdCents() view returns (uint256)',
+  'function MAX_RESURRECTION_USD_CENTS() view returns (uint256)',
   'function costFor(uint256 tokenId) view returns (uint256)',
   'function hasUsedFreeResurrect(uint256 tokenId) view returns (bool)',
   'function FOUNDER_FREE_RESURRECT_CAP() view returns (uint256)',
@@ -132,6 +135,8 @@ export const GRAVEYARD_ABI = parseAbi([
 
   'function setResurrectionCost(uint256 newCost)',
   'function setResurrectionCap(uint256 newCap)',
+  'function setResurrectionCostUsdCents(uint256 newCents)',
+  'function setResurrectionCapUsdCents(uint256 newCents)',
   'function resurrect(uint256 tokenId) payable',
 
   'event ResurrectionCostChanged(uint256 oldCost, uint256 newCost)',
@@ -282,6 +287,9 @@ export const DUEL_ROUTER_ABI = parseAbi([
   // --- Reads ---
   'function fightCostBrawl() view returns (uint256)',
   'function fightCostEth() view returns (uint256)',
+  'function fightCostUsdCents() view returns (uint256)',
+  'function MAX_FIGHT_COST_USD_CENTS() view returns (uint256)',
+  'function setFightCostUsdCents(uint256 newCents)',
   'function devShareBps() view returns (uint16)',
   'function devTreasury() view returns (address)',
   'function founderDiscountBps() view returns (uint256)',

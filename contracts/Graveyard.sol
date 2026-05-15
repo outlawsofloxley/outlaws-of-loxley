@@ -116,7 +116,24 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
     ///         the original tier×wins formula.
     uint256 public resurrectionCap;
 
+    /// @notice USD target the resurrect-cost-keeper bot pegs `resurrectionCost`
+    ///         to, in cents. Default 10_000 = $100. Dashboard writes here,
+    ///         keeper reads, updates `resurrectionCost` wei within 5 min.
+    uint256 public resurrectionCostUsdCents = 10_000;
+
+    /// @notice USD target for `resurrectionCap`, in cents. Default 50_000 = $500.
+    ///         Same keeper-bot peg flow as `resurrectionCostUsdCents`.
+    uint256 public resurrectionCapUsdCents = 50_000;
+
+    /// @notice Hard cap on USD-cents targets the dashboard can set. 1_000_000
+    ///         cents = $10k per revive. Fat-finger guard.
+    uint256 public constant MAX_RESURRECTION_USD_CENTS = 1_000_000;
+
     event ResurrectionCapChanged(uint256 oldCap, uint256 newCap);
+    event ResurrectionCostUsdCentsChanged(uint256 oldCents, uint256 newCents);
+    event ResurrectionCapUsdCentsChanged(uint256 oldCents, uint256 newCents);
+
+    error UsdCentsTooHigh(uint256 requested);
 
     /// @notice Update the per-revive USD cap (in ETH wei). Capped at
     ///         MAX_RESURRECTION_COST so a compromised owner can't disable
@@ -125,6 +142,23 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
         if (newCap > MAX_RESURRECTION_COST) revert CostTooHigh(newCap, MAX_RESURRECTION_COST);
         emit ResurrectionCapChanged(resurrectionCap, newCap);
         resurrectionCap = newCap;
+    }
+
+    /// @notice Update the USD target the keeper pegs `resurrectionCost` to,
+    ///         in cents. Default 10000 = $100. Takes effect on next keeper
+    ///         tick. Bounded for fat-finger safety. Owner-only.
+    function setResurrectionCostUsdCents(uint256 newCents) external onlyOwner {
+        if (newCents > MAX_RESURRECTION_USD_CENTS) revert UsdCentsTooHigh(newCents);
+        emit ResurrectionCostUsdCentsChanged(resurrectionCostUsdCents, newCents);
+        resurrectionCostUsdCents = newCents;
+    }
+
+    /// @notice Update the USD target the keeper pegs `resurrectionCap` to,
+    ///         in cents. Default 50000 = $500. Same keeper-driven flow.
+    function setResurrectionCapUsdCents(uint256 newCents) external onlyOwner {
+        if (newCents > MAX_RESURRECTION_USD_CENTS) revert UsdCentsTooHigh(newCents);
+        emit ResurrectionCapUsdCentsChanged(resurrectionCapUsdCents, newCents);
+        resurrectionCapUsdCents = newCents;
     }
 
     function setResurrectionCost(uint256 newCost) external onlyOwner {

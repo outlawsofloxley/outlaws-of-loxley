@@ -128,6 +128,10 @@ contract DuelRouter is Ownable, Pausable, ReentrancyGuard, EIP712, IERC721Receiv
     /// @notice Hard cap on the stored ETH fight cost. 1 ETH ≈ $4000 at the
     ///         launch ETH price, so 0.5 ETH is a generous safety stop.
     uint256 public constant MAX_FIGHT_COST_ETH = 0.5 ether;
+    /// @notice Hard cap on the USD target the dashboard can set, in cents.
+    ///         100000 cents = $1000/fight. Protects against a fat-finger that
+    ///         would lock players out of fighting. Default target is $1.
+    uint256 public constant MAX_FIGHT_COST_USD_CENTS = 100_000;
 
     // ─── Wired contracts (immutable) ────────────────────────────────
 
@@ -140,13 +144,19 @@ contract DuelRouter is Ownable, Pausable, ReentrancyGuard, EIP712, IERC721Receiv
 
     // ─── Mutable economics ──────────────────────────────────────────
 
-    /// @notice Per-fighter stake in BRAWL wei. Pegged to ~$1 by the
-    ///         fight-cost-keeper bot (mirrors the old Duel.fightCost role).
+    /// @notice Per-fighter stake in BRAWL wei. Pegged to `fightCostUsdCents`
+    ///         worth by the fight-cost-keeper bot via setFightEconomics.
     uint256 public fightCostBrawl;
 
-    /// @notice Per-fighter stake in ETH wei. Pegged to ~$1 by the
-    ///         fight-cost-keeper bot using Chainlink ETH/USD.
+    /// @notice Per-fighter stake in ETH wei. Pegged to `fightCostUsdCents`
+    ///         worth by the fight-cost-keeper bot using Chainlink ETH/USD.
     uint256 public fightCostEth;
+
+    /// @notice USD target the keeper bot pegs `fightCostBrawl` + `fightCostEth`
+    ///         to, in cents. Source of truth — dashboard writes here, keeper
+    ///         reads from here and rebalances the wei amounts within 5 min.
+    ///         Default 100 cents = $1. Change once, both currencies follow.
+    uint256 public fightCostUsdCents = 100;
 
     /// @notice Dev cut of the gross fight pot, in bps. 1000 = 10%.
     uint16 public devShareBps = 1000;
@@ -214,6 +224,7 @@ contract DuelRouter is Ownable, Pausable, ReentrancyGuard, EIP712, IERC721Receiv
         uint256 devBrawlAmount
     );
     event FightEconomicsChanged(uint256 fightCostBrawl, uint256 fightCostEth, uint16 devShareBps);
+    event FightCostUsdCentsChanged(uint256 oldCents, uint256 newCents);
     event FounderDiscountChanged(uint256 newBps);
     event TrustedSignerChanged(address indexed oldSigner, address indexed newSigner);
     event DevTreasuryChanged(address indexed oldTreasury, address indexed newTreasury);
@@ -242,6 +253,7 @@ contract DuelRouter is Ownable, Pausable, ReentrancyGuard, EIP712, IERC721Receiv
     error FounderDiscountTooHigh(uint256 requested);
     error FightCostBrawlTooHigh(uint256 requested);
     error FightCostEthTooHigh(uint256 requested);
+    error FightCostUsdCentsTooHigh(uint256 requested);
     error SelfFight();
     error EthTransferFailed();
 
@@ -296,6 +308,16 @@ contract DuelRouter is Ownable, Pausable, ReentrancyGuard, EIP712, IERC721Receiv
         fightCostEth = _fightCostEth;
         devShareBps = _devShareBps;
         emit FightEconomicsChanged(_fightCostBrawl, _fightCostEth, _devShareBps);
+    }
+
+    /// @notice Update the USD-cents target the keeper bot pegs both currency
+    ///         sides to. Takes effect on the next keeper tick (≤5 min). Bounded
+    ///         at MAX_FIGHT_COST_USD_CENTS so a fat-finger can't lock players
+    ///         out. Owner-only — this is the dashboard's source of truth.
+    function setFightCostUsdCents(uint256 newCents) external onlyOwner {
+        if (newCents > MAX_FIGHT_COST_USD_CENTS) revert FightCostUsdCentsTooHigh(newCents);
+        emit FightCostUsdCentsChanged(fightCostUsdCents, newCents);
+        fightCostUsdCents = newCents;
     }
 
     function setFounderDiscountBps(uint256 newBps) external onlyOwner {

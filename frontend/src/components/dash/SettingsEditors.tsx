@@ -19,6 +19,7 @@ import {
 } from 'wagmi';
 import {
   DUEL_ABI,
+  DUEL_ROUTER_ABI,
   GRAVEYARD_ABI,
   MARKETPLACE_ABI,
   MINTDROP_ABI,
@@ -63,6 +64,22 @@ export function SettingsEditors() {
     abi: GRAVEYARD_ABI,
     address: env.graveyardAddress,
     functionName: 'resurrectionCap',
+  });
+  const resurrectCostCents = useReadContract({
+    abi: GRAVEYARD_ABI,
+    address: env.graveyardAddress,
+    functionName: 'resurrectionCostUsdCents',
+  });
+  const resurrectCapCents = useReadContract({
+    abi: GRAVEYARD_ABI,
+    address: env.graveyardAddress,
+    functionName: 'resurrectionCapUsdCents',
+  });
+  const fightCostUsdCents = useReadContract({
+    abi: DUEL_ROUTER_ABI,
+    address: env.duelRouterAddress ?? undefined,
+    functionName: 'fightCostUsdCents',
+    query: { enabled: !!env.duelRouterAddress },
   });
   const mintEth = useReadContract({
     abi: MINTDROP_ABI,
@@ -117,6 +134,9 @@ export function SettingsEditors() {
     void devTreasury.refetch();
     void graveyardCost.refetch();
     void graveyardCap.refetch();
+    void resurrectCostCents.refetch();
+    void resurrectCapCents.refetch();
+    void fightCostUsdCents.refetch();
     void mintEth.refetch();
     void mintUsdt.refetch();
     void mintUsdc.refetch();
@@ -149,6 +169,26 @@ export function SettingsEditors() {
       </Section>
 
       <Section title="Graveyard">
+        <UsdCentsEditor
+          label="resurrectionCost target (USD)"
+          current={resurrectCostCents.data as bigint | undefined}
+          contract={env.graveyardAddress}
+          abi={GRAVEYARD_ABI}
+          functionName="setResurrectionCostUsdCents"
+          auditKey="graveyard:setResurrectionCostUsdCents"
+          help="The base resurrection cost in USD. The resurrect-cost-keeper bot reads this and updates resurrectionCost (ETH wei) within 5 min. Default $100."
+          onSuccess={refetchAll}
+        />
+        <UsdCentsEditor
+          label="resurrectionCap target (USD)"
+          current={resurrectCapCents.data as bigint | undefined}
+          contract={env.graveyardAddress}
+          abi={GRAVEYARD_ABI}
+          functionName="setResurrectionCapUsdCents"
+          auditKey="graveyard:setResurrectionCapUsdCents"
+          help="The per-revive ceiling in USD. Clamps even max-mult King at this value. Keeper updates resurrectionCap (ETH wei) automatically. Default $500."
+          onSuccess={refetchAll}
+        />
         <GraveyardCostEditor
           current={graveyardCost.data as Wei}
           symbol={sym}
@@ -160,6 +200,21 @@ export function SettingsEditors() {
           onSuccess={refetchAll}
         />
       </Section>
+
+      {env.duelRouterAddress && (
+        <Section title="DuelRouter (USD targets)">
+          <UsdCentsEditor
+            label="fightCost target (USD)"
+            current={fightCostUsdCents.data as bigint | undefined}
+            contract={env.duelRouterAddress}
+            abi={DUEL_ROUTER_ABI}
+            functionName="setFightCostUsdCents"
+            auditKey="router:setFightCostUsdCents"
+            help="Per-fighter USD target. fight-cost-keeper bot reads this and updates fightCostBrawl + fightCostEth wei amounts within 5 min. Change once, both currencies follow. Default $1."
+            onSuccess={refetchAll}
+          />
+        </Section>
+      )}
 
       <Section title="MintDrop">
         <MintPriceEditor
@@ -1100,6 +1155,84 @@ function TierPricingEditor({
         label="Replace tier table"
         currentHint={`tiers: ${tiers.length} rows`}
       />
+    </div>
+  );
+}
+
+/**
+ * Generic USD-cents target editor. User types dollars (e.g. "1.50"), we
+ * write cents to the contract. Keeper bot picks up the new target within
+ * 5 minutes and rebalances the on-chain wei amount(s) automatically.
+ */
+function UsdCentsEditor({
+  label,
+  current,
+  contract,
+  abi,
+  functionName,
+  auditKey,
+  help,
+  onSuccess,
+}: {
+  label: string;
+  current: bigint | undefined;
+  contract: `0x${string}`;
+  abi: readonly unknown[];
+  functionName: string;
+  auditKey: string;
+  help: string;
+  onSuccess: () => void;
+}) {
+  const { writeContract, isPending, isMining, err, hash, isSuccess, reset } = useTxWrite(onSuccess);
+  const postAudit = useAuditPost();
+  const [val, setVal] = useState('');
+
+  useEffect(() => {
+    if (current !== undefined) setVal((Number(current) / 100).toFixed(2));
+  }, [current]);
+
+  const handle = async () => {
+    try {
+      const dollars = Number(val);
+      if (!Number.isFinite(dollars) || dollars < 0) throw new Error('invalid dollar amount');
+      const cents = BigInt(Math.round(dollars * 100));
+      writeContract({
+        abi: abi as never,
+        address: contract,
+        functionName: functionName as never,
+        args: [cents] as never,
+      });
+      void postAudit(auditKey, { cents: cents.toString() });
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'invalid amount');
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Row label={label}>
+        <div className="flex items-center gap-1">
+          <span className="text-brawl-text-faint">$</span>
+          <input
+            className="brawl-input"
+            value={val}
+            onChange={(e) => setVal(e.target.value)}
+            inputMode="decimal"
+            placeholder="1.00"
+          />
+        </div>
+      </Row>
+      <TxFooter
+        onClick={handle}
+        busy={isPending || isMining}
+        success={isSuccess}
+        err={err}
+        hash={hash}
+        reset={reset}
+        label="Update USD target"
+        currentHint={`current: $${current !== undefined ? (Number(current) / 100).toFixed(2) : '—'}`}
+      />
+      <div className="text-sm text-brawl-text-faint font-mono">{help}</div>
     </div>
   );
 }
