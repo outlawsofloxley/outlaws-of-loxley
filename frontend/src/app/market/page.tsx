@@ -86,9 +86,10 @@ export default function MarketPage() {
         <div>
           <h1 className="brawl-header text-2xl md:text-3xl text-brawl-text mb-2">Marketplace</h1>
           <p className="text-sm text-brawl-text-dim">
-            Buy and sell brawlers for {symbol}. <span className="text-brawl-orange">5%</span> fee
+            Buy and sell brawlers for {symbol}. <span className="text-brawl-orange">7.5%</span> fee
             to the dev treasury; the rest goes to the seller. Listings are
-            approval-based, sellers keep custody until sold.
+            approval-based — sellers keep custody until sold, and listed
+            brawlers are blocked from duels (no fight-then-buy-corpse race).
           </p>
         </div>
         <div className="text-left md:text-right text-sm font-mono text-brawl-text-dim">

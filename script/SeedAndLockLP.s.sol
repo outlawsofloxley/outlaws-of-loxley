@@ -7,33 +7,43 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /**
  * @title SeedAndLockLP
  * @notice One-tx mainnet launch script - seeds the BRAWL/ETH liquidity pool
- *         on Aerodrome v2 and (optionally) locks the resulting LP token on
- *         Unicrypt for an extended period so the dev cannot pull liquidity.
+ *         on Aerodrome v2 and BURNS the resulting LP token to 0xdead so
+ *         liquidity is permanently locked.
  *
- *         Flow:
- *           1. Approve Aerodrome router to spend BRAWL.
- *           2. Call addLiquidityETH() → LP tokens minted to dev wallet.
- *           3. (optional) Approve Unicrypt to spend LP tokens.
- *           4. Call Unicrypt.lockLPToken() → LP tokens locked for LOCK_DURATION.
- *           5. Whitelist the LP pair on BRAWL (so trades aren't hit by limits).
+ *         Decision recap (D's 2026-05-15 launch-eve call): the LP is small
+ *         (50,000 BRAWL + ~$200 ETH). UNCX V2 lock fee is 0.1 ETH flat,
+ *         which is half the LP itself - economically silly. Burning the
+ *         LP token to 0xdead is free, maximum trust signal, and permanent.
+ *         If you ever want to recover the LP (you can't), don't burn.
+ *
+ *         Flow (default: BURN_LP=true):
+ *           1. Whitelist Aerodrome router on BRAWL.
+ *           2. Approve router to spend BRAWL_AMOUNT_WEI.
+ *           3. Call addLiquidityETH() → LP token minted to dev wallet.
+ *           4. Whitelist the resulting pair on BRAWL.
+ *           5. Transfer LP token balance to 0xdead (permanent burn).
+ *
+ *         Optional legacy path (BURN_LP=false + UNICRYPT_LOCKER=0x30e522...):
+ *           5b. Approve UNCX, lock LP for LOCK_SECONDS, pay UNCX fee.
  *
  *         Required env vars:
- *           PRIVATE_KEY         - dev key (signs all 5 txs)
+ *           PRIVATE_KEY         - deployer key (signs the LP seed + burn)
  *           BRAWL_ADDRESS       - deployed BRAWL ERC-20
- *           BRAWL_AMOUNT_WEI    - BRAWL to put in LP (e.g. 2500e18)
- *           ETH_AMOUNT_WEI      - paired ETH (e.g. 0.125e18)
+ *           BRAWL_AMOUNT_WEI    - BRAWL to put in LP (50_000e18 launch default)
+ *           ETH_AMOUNT_WEI      - paired ETH (~$200 worth at current price)
  *           AERODROME_ROUTER    - Base mainnet: 0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43
- *           UNICRYPT_LOCKER     - set to address(0) to skip locking. Verify the
- *                                 current Base mainnet address before launch
- *                                 (https://app.uncx.network/lockers).
- *           LOCK_SECONDS        - lock duration (default 6 months = 15_552_000)
- *           DEV_WALLET          - receives LP token (or owner of the lock)
+ *
+ *         Optional env vars:
+ *           BURN_LP             - default true. Set to false to use UNCX path.
+ *           UNICRYPT_LOCKER     - only used when BURN_LP=false.
+ *           LOCK_SECONDS        - UNCX path only (default 6 months = 15_552_000)
+ *           DEV_WALLET          - receives LP token before burn (default = signer)
  *
  *         Pre-conditions:
- *           - Dev wallet holds BRAWL_AMOUNT_WEI in BRAWL
- *           - Dev wallet has ETH_AMOUNT_WEI + ~0.005 ETH for gas
- *           - BRAWL is deployed and Aerodrome router is whitelisted in BRAWL
- *           - (For lock) Unicrypt locker is verified at the right address
+ *           - Deployer holds BRAWL_AMOUNT_WEI in BRAWL
+ *           - Deployer has ETH_AMOUNT_WEI + ~0.005 ETH for gas
+ *           - BRAWL deployed; trading may still be paused (deployer is
+ *             whitelisted from construction, so the seed flows through)
  */
 interface IAerodromeRouter {
     function addLiquidityETH(
@@ -143,11 +153,14 @@ contract SeedAndLockLP is Script {
             console2.log("Whitelisted LP pair on BRAWL");
         }
 
-        // ── 5. Lock the LP token on UNCX (or burn to 0xdead) ──
-        // BURN_LP=true sends the LP token to 0x000000000000000000000000000000000000dEaD
-        // permanently. Zero cost vs the 0.1 ETH UNCX fee, but unrecoverable.
-        // Path is set via env (BURN_LP / UNICRYPT_LOCKER); see LAUNCH_AUTOMATION.md §2.
-        bool burnLP = vm.envOr("BURN_LP", false);
+        // ── 5. Burn the LP token to 0xdead (default), or UNCX lock if BURN_LP=false ──
+        // Burn sends LP tokens to 0x000...dEaD permanently. Zero cost,
+        // unrecoverable, maximum scanner trust signal. The decision was made
+        // on 2026-05-15 launch-eve given the small LP size — UNCX's 0.1 ETH
+        // flat fee was ~50% of the LP itself, economically silly.
+        // To switch back to UNCX lock: set BURN_LP=false + UNICRYPT_LOCKER=0x30e522...
+        // See LAUNCH_AUTOMATION.md §2 for the full decision matrix.
+        bool burnLP = vm.envOr("BURN_LP", true);
         if (burnLP) {
             address burnAddr = address(0x000000000000000000000000000000000000dEaD);
             IERC20(pair).transfer(burnAddr, liquidity);

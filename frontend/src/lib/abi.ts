@@ -41,6 +41,8 @@ export const BRAWLERS_ABI = parseAbi([
   'function safeTransferFrom(address from, address to, uint256 tokenId)',
   'function transferFrom(address from, address to, uint256 tokenId)',
   'function approve(address to, uint256 tokenId)',
+  'function setApprovalForAll(address operator, bool approved)',
+  'function isApprovedForAll(address owner, address operator) view returns (bool)',
   'function setBaseURI(string newBaseURI)',
   'function setMintDrop(address _mintDrop)',
 
@@ -265,4 +267,34 @@ export const MINTDROP_ABI = parseAbi([
   'error ZeroAddress()',
   'error ZeroPrice()',
   'error InvalidCount(uint256 count)',
+]);
+
+/// DuelRouter — currency-aware fight wrapper. Players approve the router
+/// for their brawlers + BRAWL, then call `fight(quote, quoteSig, duelResult,
+/// duelSig)` with msg.value matching the ETH stakes.
+export const DUEL_ROUTER_ABI = parseAbi([
+  // --- Reads ---
+  'function fightCostBrawl() view returns (uint256)',
+  'function fightCostEth() view returns (uint256)',
+  'function devShareBps() view returns (uint16)',
+  'function devTreasury() view returns (address)',
+  'function founderDiscountBps() view returns (uint256)',
+  'function trustedSigner() view returns (address)',
+  'function fighterCostBrawl(uint256 tokenId) view returns (uint256)',
+  'function fighterCostEth(uint256 tokenId) view returns (uint256)',
+  'function usedNonces(uint256 nonce) view returns (bool)',
+  'function FOUNDER_FIGHT_DISCOUNT_CAP() view returns (uint256)',
+  // --- Writes ---
+  'function fight((uint256 nonce,uint256 expiry,uint256 tokenA,uint256 tokenB,address ownerA,address ownerB,uint8 modeA,uint8 modeB,uint256 ethCostA,uint256 ethCostB,uint256 brawlCostA,uint256 brawlCostB,uint8 swapDir,uint256 swapAmountIn,uint256 swapMinOut,address payoutAAddr,uint8 payoutACurrency,uint256 payoutAAmount,address payoutBAddr,uint8 payoutBCurrency,uint256 payoutBAmount,uint256 devEthAmount,uint256 devBrawlAmount) quote, bytes quoteSig, (uint256 tokenA,uint256 tokenB,uint32 winnerId,uint16 rounds,uint256 seed,uint32 newEloA,uint32 newEloB,uint256 nonce,uint256 expiry) result, bytes duelSig) payable',
+  // --- Events ---
+  'event FightSettled(uint256 indexed tokenA, uint256 indexed tokenB, uint8 modeA, uint8 modeB, address indexed winnerAddr, uint256 payoutAAmount, uint256 payoutBAmount, uint256 devEthAmount, uint256 devBrawlAmount)',
+]);
+
+/// Aerodrome V2 pair (volatile pool) — minimal read surface for the
+/// dashboard + the fight-quote builder. token0/token1 order is determined by
+/// address sort, so always check which is BRAWL.
+export const AERODROME_PAIR_ABI = parseAbi([
+  'function getReserves() view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)',
+  'function token0() view returns (address)',
+  'function token1() view returns (address)',
 ]);

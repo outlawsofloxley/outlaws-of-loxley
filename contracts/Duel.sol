@@ -122,6 +122,15 @@ contract Duel is Ownable, Pausable, ReentrancyGuard, EIP712 {
     ///         where Marketplace ships separately).
     address public marketplace;
 
+    /// @notice Authorized router (DuelRouter). When set (non-zero), ONLY this
+    ///         address can call submitDuel — direct calls from brawler owners
+    ///         are rejected. This is the production mode: the router becomes
+    ///         the sole economics layer, with currency-aware payouts. When
+    ///         unset (address(0)), submitDuel falls back to the legacy path
+    ///         where any brawler owner can submit (used by tests + dev
+    ///         networks without the router).
+    address public authorizedRouter;
+
     /// @notice Consumed nonces (replay protection).
     mapping(uint256 => bool) public usedNonces;
 
@@ -155,6 +164,7 @@ contract Duel is Ownable, Pausable, ReentrancyGuard, EIP712 {
     event TrustedSignerChanged(address indexed oldSigner, address indexed newSigner);
     event GraveyardContractSet(address indexed oldContract, address indexed newContract);
     event MarketplaceSet(address indexed oldContract, address indexed newContract);
+    event AuthorizedRouterSet(address indexed oldRouter, address indexed newRouter);
     event StreakReset(uint256 indexed tokenId);
     event BRAWLTokenChanged(address indexed oldToken, address indexed newToken);
     event FightEconomicsChanged(uint256 fightCost, uint16 devShareBps, address devTreasury);
@@ -177,6 +187,7 @@ contract Duel is Ownable, Pausable, ReentrancyGuard, EIP712 {
     ///         listing first, then duel.
     error BrawlerIsListed(uint256 tokenId);
     error NotOwnerOfEither();
+    error OnlyAuthorizedRouter();
     error SelfFight();
     error SignerMustBeNonZero();
     error NotGraveyard();
@@ -237,6 +248,16 @@ contract Duel is Ownable, Pausable, ReentrancyGuard, EIP712 {
     function setMarketplace(address _marketplace) external onlyOwner {
         emit MarketplaceSet(marketplace, _marketplace);
         marketplace = _marketplace;
+    }
+
+    /// @notice Wire the DuelRouter contract. When set (non-zero), submitDuel
+    ///         rejects any caller that is not exactly this address — the
+    ///         router becomes the sole entrypoint for fights. Setting back
+    ///         to zero re-enables the legacy owner-of-brawler authorization.
+    ///         Owner-only.
+    function setAuthorizedRouter(address _router) external onlyOwner {
+        emit AuthorizedRouterSet(authorizedRouter, _router);
+        authorizedRouter = _router;
     }
 
     /**
@@ -463,8 +484,17 @@ contract Duel is Ownable, Pausable, ReentrancyGuard, EIP712 {
             if (m.isListed(result.tokenB)) revert BrawlerIsListed(result.tokenB);
         }
 
-        // Authorization: caller must own at least one side
-        if (
+        // Authorization:
+        //   If `authorizedRouter` is set, ONLY that address may call submitDuel.
+        //   The router takes brawler custody before calling so it naturally
+        //   owns both sides during the tx — but we gate by msg.sender match
+        //   first because it's strictly cheaper than two ownerOf reads.
+        //   When unset (testing / dev networks), fall back to legacy auth:
+        //   caller must own at least one side.
+        address router = authorizedRouter;
+        if (router != address(0)) {
+            if (msg.sender != router) revert OnlyAuthorizedRouter();
+        } else if (
             brawlers.ownerOf(result.tokenA) != msg.sender
                 && brawlers.ownerOf(result.tokenB) != msg.sender
         ) {

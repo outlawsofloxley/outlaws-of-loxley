@@ -14,19 +14,23 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  *         must be off for non-whitelisted transfers, but the dev wallet
  *         + UNCX vesting contract can be pre-whitelisted to bypass.
  *
- *         Why this exists: trust.md commits to a "trust-based" 45,500
- *         BRAWL dev reserve with no contract enforcement. This script
- *         converts a chosen portion (default 22,750 = 50%) into an
- *         on-chain time-vested schedule so the "dev can't dump all at
- *         once" claim becomes verifiable on basescan + UNCX dashboard.
+ *         Why this exists: trust.md / launch allocation commits to time-
+ *         locked team tokens. This script converts 20,000 BRAWL (the
+ *         "team vault" slice of the 100k supply per the 2026-05-15 launch
+ *         allocation: 50k LP / 20k vault / 20k keeper / 10k dev) into an
+ *         on-chain linear vest so the "team can't dump all at once" claim
+ *         becomes verifiable on basescan + UNCX dashboard.
  *
  *         See LAUNCH_AUTOMATION.md §3 for the decision rationale.
  *
  *         Required env vars:
- *           PRIVATE_KEY            - dev key (signs the lock tx)
+ *           PRIVATE_KEY            - deployer key (script runs from the wallet
+ *                                    that held the initial 100k BRAWL; it
+ *                                    still has 70k after Deploy auto-pushes
+ *                                    dev+keeper allocations)
  *           BRAWL_ADDRESS          - deployed BRAWL ERC-20
  *           UNCX_VESTING           - 0x7ca3dE7D58A0bCAd115184597553485A919320c5 (Base)
- *           VEST_AMOUNT_WEI        - BRAWL to vest (default 22_750e18)
+ *           VEST_AMOUNT_WEI        - BRAWL to vest (default 20_000e18)
  *           VEST_DURATION_SECONDS  - linear-vest length (default 180 days)
  *           VEST_BENEFICIARY       - who can withdraw vested tokens
  *                                    (default = dev = PRIVATE_KEY signer)
@@ -68,7 +72,7 @@ contract LockTeamTokens is Script {
             "UNCX_VESTING",
             address(0x7ca3dE7D58A0bCAd115184597553485A919320c5)
         );
-        uint256 amount = vm.envOr("VEST_AMOUNT_WEI", uint256(22_750 * 10 ** 18));
+        uint256 amount = vm.envOr("VEST_AMOUNT_WEI", uint256(20_000 * 10 ** 18));
         uint256 duration = vm.envOr("VEST_DURATION_SECONDS", uint256(180 days));
         address beneficiary = vm.envOr("VEST_BENEFICIARY", dev);
         uint256 fee = vm.envOr("UNCX_FEE_WEI", uint256(0.05 ether));

@@ -14,7 +14,7 @@ yes. on a brawler's detail page, click **owner actions → transfer**, paste the
 
 ## can i sell them outside the in-app market?
 
-yes. token metadata at `/api/token/{id}` is opensea-spec compliant, so brawlers appear on opensea (and any other marketplace that reads the same standard) without any extra work from us. the in-app market takes 5%, opensea takes 2.5%. trade-off: external buyers don't see the live duel history embed inside the listing.
+yes. token metadata at `/api/token/{id}` is opensea-spec compliant, so brawlers appear on opensea (and any other marketplace that reads the same standard) without any extra work from us. the in-app market takes 7.5%, opensea takes 2.5%. trade-off: external buyers don't see the live duel history embed inside the listing.
 
 ## is this safe?
 
@@ -76,7 +76,7 @@ yes, 1, 2, 5, 10, or 20. bulk discount applies (see **minting**).
 
 ## what's the fight cost in dollars?
 
-calibrated to about $1 worth of brawl per fight per side (so ~$2 in the pot, winner gets ~$1.80). founders pay 75% of that. the keeper recalculates the per-fight brawl quantity every few minutes.
+$1 per side per fight, period. you pay in brawl OR eth — your choice, per-fighter. $2 in the pot, winner takes 90% (~$1.80), dev treasury takes 10%. on ties each side gets their stake back, no dev cut. founders pay 75% of the per-side cost ($0.75). a keeper bot watches chainlink eth/usd + the aerodrome brawl/eth pool and repegs the per-fight brawl/eth quantities every 5 minutes so $1 stays $1.
 
 ## my brawler died, can i play with another wallet to resurrect cheaper?
 

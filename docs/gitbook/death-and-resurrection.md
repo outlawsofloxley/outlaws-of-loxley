@@ -24,7 +24,7 @@ cost = base × tierMult / 10 × (10 + wins) / 10
 ```
 
 where:
-- **base** is the dev-set base cost in eth, currently calibrated to about $10 worth of eth on base.
+- **base** is the dev-set base cost in eth, calibrated to $100 USD. a keeper bot watches chainlink eth/usd and repegs the base every 5 minutes via `setResurrectionCost`, so $100 stays $100 regardless of eth price.
 - **tierMult** is:
   - common: 1×
   - uncommon: 1.5×
@@ -34,13 +34,13 @@ where:
   - king: 15×
 - **wins** is your brawler's total recorded wins.
 
-a few worked examples (rounded, eth/usd will fluctuate):
+a few worked examples (the duel page shows the live number for your specific brawler before you click):
 
-- a fresh common at 0 wins: ~$10
-- an uncommon with 3 wins: ~$20
-- a legendary with 5 wins: ~$60
-- an epic with 10 wins: ~$140
-- a king with any wins: north of $150 base, plus the win multiplier. you don't want to find out.
+- a fresh common at 0 wins: ~$100
+- an uncommon with 3 wins: ~$200
+- a legendary with 5 wins: ~$600
+- an epic with 10 wins: ~$1,400
+- a king with any wins: $1,500 base, plus the win multiplier. you don't want to find out.
 
 founders (slots 1-100) get **the first resurrection free.** doesn't matter when it happens, doesn't expire. the second one onward costs full price.
 

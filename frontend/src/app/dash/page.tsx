@@ -5,6 +5,7 @@ import { StatsPanels } from '@/components/dash/StatsPanels';
 import { SettingsEditors } from '@/components/dash/SettingsEditors';
 import { HouseManagementPanel } from '@/components/dash/HouseManagementPanel';
 import { BrawlPricePanel } from '@/components/dash/BrawlPricePanel';
+import { LiveEconomicsPanel } from '@/components/dash/LiveEconomicsPanel';
 import { EmergencyUnstickPanel } from '@/components/dash/EmergencyUnstickPanel';
 import { LaunchChecklist } from '@/components/dash/LaunchChecklist';
 import { RosterReadyPanel } from '@/components/dash/RosterReadyPanel';
@@ -26,6 +27,9 @@ export default function DashPage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           <RosterReadyPanel />
+          <LiveEconomicsPanel />
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
           <BrawlPricePanel />
         </div>
         <div className="grid gap-6 md:grid-cols-2">

@@ -366,8 +366,9 @@ export default function MintPage() {
           <div className="brawl-card p-3 border-2 border-brawl-orange">
             <div className="brawl-header text-brawl-orange mb-1">⚔ FIGHTER PERK</div>
             <div className="text-brawl-text-dim">
-              Founder 100 fighters pay <strong>25% less BRAWL</strong> per
-              duel. Cheaper to play, just as profitable to win.
+              Founder 100 fighters pay <strong>$0.75 per fight</strong>{' '}
+              instead of $1 (25% discount in BRAWL or ETH, forever). Cheaper
+              to play, just as profitable to win.
             </div>
           </div>
         </div>

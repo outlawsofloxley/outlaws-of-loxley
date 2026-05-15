@@ -10,25 +10,29 @@ don't like the match? hit **reroll opponent** and we'll find someone else. there
 
 ## the stake
 
-each duel costs:
+each duel costs **$1 per fighter, $2 total pot**. you can pay in brawl OR in eth, your choice. winner takes 90% of the pot, dev treasury takes 10%. on a tie, each fighter gets their own stake back (no dev cut on ties).
 
-- **non-founder**: 10 brawl from each side. winner takes 90% of the 20-brawl pot (= 18 brawl), dev treasury takes 10% (= 2 brawl). on a tie, the 18 brawl winner-share splits 50/50 between both fighters.
-- **founder 100**: 25% off forever. founders pay 5 brawl per fight, win 10 brawl on victory.
+- **non-founder**: $1 per side. at launch that's roughly 500 brawl or 0.00025 eth — the exact number floats with price and the duel page shows the live quote before you sign.
+- **founder 100**: 25% off forever. founders pay $0.75 per fight.
 
-both fighters need brawl in their wallet **and** they need to have approved the duel contract once. the first time you fight, the site bundles the approve and the submit into one wallet popup so you don't have to confirm twice.
+**dual-currency model**: when both fighters pay brawl, dev cut is paid in brawl. when both pay eth, dev cut is paid in eth. when one pays brawl and the other pays eth (mixed), dev always gets eth and the winner gets paid in whichever currency they chose (the loser's currency gets auto-swapped on aerodrome in the same transaction).
 
-stakes auto-rebalance to track around $1 worth of brawl. the keeper bot recalculates every few minutes off the brawl/eth pair price. translation: when brawl pumps, the per-fight cost in brawl drops. when brawl dumps, it rises. the dollar value stays roughly stable.
+stakes auto-rebalance to track $1 USD. a keeper bot watches brawl/eth + the chainlink eth/usd feed every 5 minutes and repegs the brawl side via `setFightEconomics`. translation: when brawl pumps, the per-fight brawl amount drops. when brawl dumps, it rises. the dollar value stays at $1.
+
+**approvals**: first fight from a wallet pops a few setup prompts — approve brawl, approve brawlers nft transfer, then the fight itself. after that, fights are one click. eth-side payment doesn't need any approval, you just attach msg.value to the fight.
+
+**sandwich protection**: the eth↔brawl swap leg (mixed fights only) has a signed `amountOutMin` baked into the fight quote. if an mev bot tries to sandwich your fight, the swap output falls below the signed minimum and the tx reverts. no silent slippage.
 
 ## the click-by-click
 
 1. press **fight**.
 2. the server simulates the duel deterministically using on-chain stats and a chain-bound seed.
-3. the server signs the result (eip-712) and sends it back to your browser.
-4. your wallet pops up. you sign **submitDuel(result, signature)** to put the result on chain.
+3. the server signs **two** eip-712 structs: the DuelResult (for the duel contract) and the FightQuote (for the router, with signed swap amounts so sandwiches revert).
+4. your wallet pops up. you sign **DuelRouter.fight(quote, qsig, result, dsig)** with msg.value matching whichever ETH stakes you chose. the router takes brawler custody, runs the fight, redistributes the pot, returns your brawler.
 5. the animation plays: stare-down, three feint strikes, then the real combat rolled from chain data.
-6. the screen settles on the outcome, your new rating, your new brawl balance, and buttons for the next move.
+6. the screen settles on the outcome, your new rating, your new brawl/eth balance, and buttons for the next move.
 
-the server signs duels so the chain doesn't have to do off-chain randomness, and so re-running the same duel can't change the outcome (the seed is chain-bound). the duel contract verifies the signature before accepting the result.
+the server signs duels so the chain doesn't have to do off-chain randomness, and so re-running the same duel can't change the outcome (the seed is chain-bound). the duel contract verifies the result signature. the router verifies the quote signature. both happen before any token movement.
 
 ## combat mechanics
 
@@ -46,7 +50,7 @@ first to zero hp loses. if both go to zero in the same round, it's a **tie** and
 
 ties are rare but real. when they happen:
 - both brawlers count it as a tie (not a win, not a loss). doesn't break a loss streak.
-- the 18-brawl winner-share splits 50/50.
+- each fighter gets their own stake back (whatever currency they paid). no dev cut on ties.
 - both keep their existing rating delta as if they'd drawn (small, near-zero rating change).
 - ties don't trigger death. neither brawler advances toward 3 losses.
 

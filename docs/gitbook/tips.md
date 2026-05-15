@@ -6,7 +6,7 @@ things i'd tell a friend before their first duel.
 
 the matchmaker pairs you with brawlers near your rating. at rating 1,000 (everyone's starting point), the pool is huge and average. early wins are cheap to find.
 
-don't pick fights above you until your brawl stack is deep enough to absorb a couple of losses. if you're at rating 1,000 with 10 brawl in your wallet (one fight worth), losing it is the same as quitting.
+don't pick fights above you until your brawl/eth stack is deep enough to absorb a couple of losses. if you're at rating 1,000 with one fight's worth ($1) of brawl or eth left, losing it is the same as quitting. top up before you tilt-fight.
 
 ## watch the combat log
 
@@ -22,7 +22,7 @@ these are different problems with different fixes (re-roll, sell, retire to art 
 
 ## don't die
 
-resurrection costs real eth. rating drops with every loss. if your brawler is on a two-loss streak and the third loss would put them in the graveyard at common-tier price ($10), maybe the right play is **stop dueling for the day**.
+resurrection costs real eth. rating drops with every loss. if your brawler is on a two-loss streak and the third loss would put them in the graveyard at common-tier price ($100), maybe the right play is **stop dueling for the day**.
 
 you don't have to fight just because you can. a brawler at 2 losses with a high rating is more valuable alive than dead.
 
@@ -62,7 +62,7 @@ a common at rating 950 with 0 wins isn't worthless. someone wants it. list them 
 
 ## play around the keeper rebalance
 
-the fight cost in brawl recalculates every few minutes. if you can see the brawl/eth chart, fights are cheapest right after a brawl pump and most expensive right after a dump. doesn't move much, but it's free alpha if you're already watching.
+the fight cost in brawl recalculates every 5 minutes. if you can see the brawl/eth chart, brawl-side fights are cheapest right after a brawl pump and most expensive right after a dump. eth-side stays pegged to chainlink so it doesn't drift mid-block. doesn't move much, but it's free alpha if you're already watching.
 
 ## talk in #strategy, not #duels
 

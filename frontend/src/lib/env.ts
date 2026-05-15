@@ -26,6 +26,9 @@ export const envRaw = {
   usdcAddress: process.env.NEXT_PUBLIC_USDC_ADDRESS,
   marketplaceAddress: process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS,
   houseKeeperAddress: process.env.NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS,
+  duelRouterAddress: process.env.NEXT_PUBLIC_DUEL_ROUTER_ADDRESS,
+  brawlPairAddress: process.env.NEXT_PUBLIC_BRAWL_PAIR_ADDRESS,
+  aerodromeRouterAddress: process.env.NEXT_PUBLIC_AERODROME_ROUTER,
   walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
 } as const;
 
@@ -73,6 +76,16 @@ export type EnvValidation =
         marketplaceAddress: `0x${string}`;
         /** Optional, when set, brawlers owned by this address are labeled "HOUSE" and auto-resurrected. */
         houseKeeperAddress: `0x${string}` | null;
+        /** DuelRouter address. When set, the duel page routes fights through it
+         *  (currency-aware ETH/BRAWL fights). When null, falls back to direct
+         *  Duel.submitDuel (legacy BRAWL-only path). */
+        duelRouterAddress: `0x${string}` | null;
+        /** Aerodrome BRAWL/ETH pair (volatile pool) address. Used by the API
+         *  + dashboard to read spot price. Null pre-LP-seed. */
+        brawlPairAddress: `0x${string}` | null;
+        /** Aerodrome V2 router address. Used by the API to compute swap
+         *  amountOutMin values for sandwich-resistant FightQuotes. */
+        aerodromeRouterAddress: `0x${string}` | null;
         /** Optional, WalletConnect cloud project id — when set, the wallet
          *  picker offers WalletConnect (QR code for mobile wallets:
          *  Rainbow, Trust, Binance, MetaMask Mobile, etc.). */
@@ -137,6 +150,14 @@ export function validateEnv(): EnvValidation {
     }
   }
 
+  function tryOptional(raw: string | undefined): `0x${string}` | null {
+    if (!raw || !isHex40(raw)) return null;
+    try { return getAddress(raw); } catch { return null; }
+  }
+  const duelRouterAddress = tryOptional(envRaw.duelRouterAddress);
+  const brawlPairAddress = tryOptional(envRaw.brawlPairAddress);
+  const aerodromeRouterAddress = tryOptional(envRaw.aerodromeRouterAddress);
+
   // Optional: WalletConnect cloud project id. WalletConnect IDs are 32-char
   // hex (no 0x prefix). If unset/blank, the picker simply omits the
   // WalletConnect option — we degrade gracefully rather than throw.
@@ -161,6 +182,9 @@ export function validateEnv(): EnvValidation {
       usdcAddress: usdcAddress!,
       marketplaceAddress: marketplaceAddress!,
       houseKeeperAddress,
+      duelRouterAddress,
+      brawlPairAddress,
+      aerodromeRouterAddress,
       walletConnectProjectId,
     },
   };

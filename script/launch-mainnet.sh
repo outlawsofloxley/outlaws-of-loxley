@@ -76,13 +76,21 @@ want_step() {
   [[ -z "$ONLY_STEP" || "$ONLY_STEP" == "$1" ]]
 }
 
-# Source env (split: dotenv-style for the BB_* mainnet config).
+# Source env. Uses the unprefixed names in .env.base-mainnet (DEPLOYER_KEY,
+# MAINNET_RPC, etc) — no legacy BB_ prefix.
 [[ -f "$ROOT/.env.base-mainnet" ]] && set -a && source "$ROOT/.env.base-mainnet" && set +a
 
-# Grep-extract BB_DEPLOYER_KEY without sourcing the whole secrets.env (it
-# has bash-breaking placeholders).
-export PRIVATE_KEY="${BB_DEPLOYER_KEY:-$(grep '^BB_DEPLOYER_KEY=' "$HOME/.claude/secrets/secrets.env" | cut -d= -f2-)}"
-[[ -n "${PRIVATE_KEY:-}" ]] || { echo "PRIVATE_KEY missing"; exit 1; }
+# Foundry's vm.envUint reads PRIVATE_KEY, so export it from DEPLOYER_KEY.
+# Both 0x-prefixed and non-prefixed values work.
+DEPLOYER_KEY="${DEPLOYER_KEY:-${BB_DEPLOYER_KEY:-}}"
+[[ -n "$DEPLOYER_KEY" ]] || { echo "DEPLOYER_KEY missing in .env.base-mainnet"; exit 1; }
+case "$DEPLOYER_KEY" in
+  0x*) export PRIVATE_KEY="$DEPLOYER_KEY" ;;
+  *)   export PRIVATE_KEY="0x$DEPLOYER_KEY" ;;
+esac
+
+# Alias the RPC url for both naming conventions.
+export BB_MAINNET_RPC="${MAINNET_RPC:-${BB_MAINNET_RPC:-https://mainnet.base.org}}"
 
 echo "=== BASEic Brawlers mainnet launch ==="
 echo "Dry-run: $DRY_RUN"
@@ -152,7 +160,14 @@ if want_step lp; then
       --var PAIR_ADDRESS="$PAIR_ADDRESS" \
       --var TX_HASH="$LP_TX"
 
-    if [[ -n "${UNICRYPT_LOCKER:-}" && "${BURN_LP:-false}" != "true" ]]; then
+    if [[ "${BURN_LP:-true}" == "true" ]]; then
+      # Burn path (default since 2026-05-15): R5-lp-burned receipt
+      BURN_TX=$(jq -r '[.transactions[]|select(.function|test("transfer\\("))][-1].hash' "$BROADCAST")
+      post_receipt R5 \
+        --var PAIR_ADDR="$PAIR_ADDRESS" \
+        --var TX_HASH="$BURN_TX"
+    elif [[ -n "${UNICRYPT_LOCKER:-}" ]]; then
+      # Legacy UNCX path (only if explicitly opted in via BURN_LP=false + UNICRYPT_LOCKER)
       LOCK_DAYS=$(( ${LOCK_SECONDS:-15552000} / 86400 ))
       LOCK_URL="https://app.uncx.network/lockers/univ2/address/$PAIR_ADDRESS"
       LOCK_TX=$(jq -r '[.transactions[]|select(.function|test("lockLPToken"))][0].hash' "$BROADCAST")
@@ -174,7 +189,7 @@ if want_step vest; then
   if [[ $DRY_RUN -eq 0 ]]; then
     BROADCAST="broadcast/LockTeamTokens.s.sol/8453/run-latest.json"
     VEST_TX=$(jq -r '[.transactions[]|select(.function|test("lock\\("))][0].hash' "$BROADCAST")
-    VEST_AMOUNT_INT=$(printf '%.0f' "$(echo "${VEST_AMOUNT_WEI:-22750000000000000000000} / 10^18" | bc -l)")
+    VEST_AMOUNT_INT=$(printf '%.0f' "$(echo "${VEST_AMOUNT_WEI:-20000000000000000000000} / 10^18" | bc -l)")
     VEST_DAYS=$(( ${VEST_DURATION_SECONDS:-15552000} / 86400 ))
     post_receipt R6 \
       --var VEST_AMOUNT="$VEST_AMOUNT_INT" \
@@ -198,7 +213,7 @@ if want_step trading; then
     # Triggered manually for now; queue via a future post-thread.mjs.
     echo
     echo "now fire the 12-tweet launch thread from marketing/content/x-launch-thread.md."
-    echo "address placeholders to fill: BRAWL_ADDRESS=$BRAWL_ADDRESS  PAIR_ADDRESS=$PAIR_ADDRESS  UNICRYPT_LOCK_URL=https://app.uncx.network/lockers/univ2/address/$PAIR_ADDRESS"
+    echo "address placeholders to fill: BRAWL_ADDRESS=$BRAWL_ADDRESS  PAIR_ADDRESS=$PAIR_ADDRESS  BURN_RECEIPT=https://basescan.org/address/0x000000000000000000000000000000000000dEaD#tokentxns"
   fi
 fi
 

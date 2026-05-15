@@ -21,9 +21,11 @@ it's a known pattern from other on-chain games. we're not pretending we invented
 
 ## why they're flagged
 
-the founder discount, the brawl bonus airdrop, the free resurrection, those exist as a perk for early human players. if 10 brawlers from the dev wallet got those perks too, the dev would be effectively double-dipping (already paying $0 for them, also taking 25% off every fight, also getting the brawl airdrop on each).
+the founder discount + the free first resurrection exist as a perk for early human players. if 10 brawlers from the dev wallet got those perks too, the dev would be effectively double-dipping (already paying $0 for them, also taking 25% off every fight, also getting a free revive).
 
-the `isHouseBrawler` flag explicitly carves them out. on-chain, you can verify any house brawler against its token id and confirm the discount and airdrop logic skips them.
+(the 20-brawl founder airdrop bonus was dropped pre-launch as part of the lean allocation — see `links` / `trust`. founders still get the free first revive + the 25% fight discount.)
+
+the `isHouseBrawler` flag explicitly carves the dev's 10 house fighters out. on-chain, you can verify any house brawler against its token id and confirm the discount + free-revive logic skips them.
 
 ## how you can tell a house fighter
 

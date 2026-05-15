@@ -24,7 +24,7 @@ import { useHouseWhitelist } from '@/hooks/useHouseWhitelist';
 import { useMarketListings } from '@/hooks/useMarketListings';
 import type { Brawler as UIBrawler } from '@/hooks/useBrawler';
 import { PixelAvatar } from '@/components/PixelAvatar';
-import { BRAWL_ABI, DUEL_ABI } from '@/lib/abi';
+import { BRAWL_ABI, DUEL_ABI, DUEL_ROUTER_ABI, BRAWLERS_ABI } from '@/lib/abi';
 import { requireEnv } from '@/lib/env';
 import { WrongChainPrompt } from '@/components/WrongChainPrompt';
 import type { CombatEvent } from '@/core/types';
@@ -46,6 +46,32 @@ interface SerializedResult {
   expiry: string;
 }
 
+interface SerializedFightQuote {
+  nonce: string;
+  expiry: string;
+  tokenA: string;
+  tokenB: string;
+  ownerA: `0x${string}`;
+  ownerB: `0x${string}`;
+  modeA: number;
+  modeB: number;
+  ethCostA: string;
+  ethCostB: string;
+  brawlCostA: string;
+  brawlCostB: string;
+  swapDir: number;
+  swapAmountIn: string;
+  swapMinOut: string;
+  payoutAAddr: `0x${string}`;
+  payoutACurrency: number;
+  payoutAAmount: string;
+  payoutBAddr: `0x${string}`;
+  payoutBCurrency: number;
+  payoutBAmount: string;
+  devEthAmount: string;
+  devBrawlAmount: string;
+}
+
 interface ApiResponse {
   result: SerializedResult;
   signature: `0x${string}`;
@@ -56,6 +82,11 @@ interface ApiResponse {
   newEloB: number;
   deltaA: number;
   deltaB: number;
+  /** Set when the API is configured against a DuelRouter — frontend should
+   *  call DuelRouter.fight(quote, quoteSignature, result, signature) with
+   *  msg.value derived from the quote, instead of Duel.submitDuel directly. */
+  quote?: SerializedFightQuote;
+  quoteSignature?: `0x${string}`;
 }
 
 type Phase =
@@ -80,6 +111,13 @@ export default function DuelPage() {
   const [bId, setBId] = useState<number | null>(null);
   const [rerollTick, setRerollTick] = useState(0);
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
+  // Currency picker: how does the connected user want to pay? Per-fighter
+  // mode lives in the FightQuote signed by the API, but the user only picks
+  // their OWN side. Opponent side defaults to BRAWL — house brawlers always
+  // pay BRAWL, PvP opponents will get the picker on their end when they
+  // submit. Day-1 most fights are vs house so BRAWL on both sides is the
+  // dominant path.
+  const [myMode, setMyMode] = useState<'BRAWL' | 'ETH'>('BRAWL');
 
   // Kick the house keeper on mount. Fire-and-forget, any dead dev-owned
   // brawlers get auto-resurrected within seconds so the matchmaking pool
@@ -108,25 +146,51 @@ export default function DuelPage() {
     return aliveBrawlers.filter((br) => br.owner.toLowerCase() === lower);
   }, [aliveBrawlers, address]);
 
-  // Read the fight cost + the BRAWL allowance for every unique owner of an
-  // alive brawler. A "duel-ready" owner is one with allowance ≥ fightCost, 
-  // only their brawlers can actually be submitted without reverting. The
-  // matchmaker filters to duel-ready candidates so friends who haven't
-  // approved yet don't get paired into a guaranteed revert.
-  const { data: fightCostData } = useReadContract({
+  // Read the fight cost + BRAWL allowance for every unique owner of an alive
+  // brawler. When the router is wired in env, fightCost lives there and dev
+  // economics are zeroed on Duel; fall back to Duel.fightCost for legacy
+  // deploys. Matchmaker filters to duel-ready candidates (BRAWL allowance OK
+  // + NFT approval OK in router mode) so friends who haven't approved yet
+  // don't get paired into a guaranteed revert.
+  const allowanceTarget = env.duelRouterAddress ?? env.duelAddress;
+  const { data: fightCostRouterData } = useReadContract({
+    abi: DUEL_ROUTER_ABI,
+    address: env.duelRouterAddress ?? undefined,
+    functionName: 'fightCostBrawl',
+    chainId: env.chainId,
+    query: { enabled: !!env.duelRouterAddress },
+  });
+  const { data: fightCostEthData } = useReadContract({
+    abi: DUEL_ROUTER_ABI,
+    address: env.duelRouterAddress ?? undefined,
+    functionName: 'fightCostEth',
+    chainId: env.chainId,
+    query: { enabled: !!env.duelRouterAddress },
+  });
+  const { data: fightCostLegacyData } = useReadContract({
     abi: DUEL_ABI,
     address: env.duelAddress,
     functionName: 'fightCost',
     chainId: env.chainId,
+    query: { enabled: !env.duelRouterAddress },
   });
-  const fightCost = fightCostData as bigint | undefined;
-  const { data: devShareData } = useReadContract({
+  const fightCost = (env.duelRouterAddress ? fightCostRouterData : fightCostLegacyData) as bigint | undefined;
+  const fightCostEthVal = fightCostEthData as bigint | undefined;
+  const { data: devShareRouterData } = useReadContract({
+    abi: DUEL_ROUTER_ABI,
+    address: env.duelRouterAddress ?? undefined,
+    functionName: 'devShareBps',
+    chainId: env.chainId,
+    query: { enabled: !!env.duelRouterAddress },
+  });
+  const { data: devShareLegacyData } = useReadContract({
     abi: DUEL_ABI,
     address: env.duelAddress,
     functionName: 'devShareBps',
     chainId: env.chainId,
+    query: { enabled: !env.duelRouterAddress },
   });
-  const devShareBpsCfg = devShareData as number | undefined;
+  const devShareBpsCfg = (env.duelRouterAddress ? devShareRouterData : devShareLegacyData) as number | undefined;
 
   const uniqueOwners = useMemo(() => {
     const set = new Set<string>();
@@ -139,7 +203,7 @@ export default function DuelPage() {
       abi: BRAWL_ABI,
       address: env.brawlAddress,
       functionName: 'allowance' as const,
-      args: [owner as `0x${string}`, env.duelAddress] as const,
+      args: [owner as `0x${string}`, allowanceTarget] as const,
       chainId: env.chainId,
     })),
     query: { enabled: uniqueOwners.length > 0 },
@@ -234,10 +298,24 @@ export default function DuelPage() {
     if (a === null || b === null) return;
     setPhase({ kind: 'running' });
     try {
+      // Resolve which side is the connected user — they pick the mode for
+      // their own side. Opponent (the side the user doesn't own) defaults
+      // to BRAWL. This means player-vs-house fights always have a BRAWL
+      // house side; player-vs-player picks line up on submit.
+      const userLower = address?.toLowerCase();
+      const userIsA = userLower !== undefined && a.owner.toLowerCase() === userLower;
+      const userIsB = userLower !== undefined && b.owner.toLowerCase() === userLower;
+      const modeA = userIsA ? myMode : 'BRAWL';
+      const modeB = userIsB ? myMode : 'BRAWL';
       const res = await fetch('/api/run-duel', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ tokenA: a.tokenId, tokenB: b.tokenId }),
+        body: JSON.stringify({
+          tokenA: a.tokenId,
+          tokenB: b.tokenId,
+          modeA,
+          modeB,
+        }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -261,25 +339,24 @@ export default function DuelPage() {
         <p className="text-sm text-brawl-text-dim">
           Pick your fighter. We auto-match you against an alive brawler near your
           Rating (±75 first, widening if nobody&rsquo;s close). Don&rsquo;t like the match?
-          Reroll for another.{' '}
+          Reroll for another.
+        </p>
+        <p className="text-sm text-brawl-text-dim mt-2">
           {fightCost !== undefined && devShareBpsCfg !== undefined ? (
             <>
-              <strong>{formatUnits(fightCost, 18)} BRAWL</strong> per fighter
-              ({formatUnits(fightCost * 2n, 18)} pot){' '}
+              <strong className="text-brawl-orange">$1 per fighter</strong>{' '}
+              ($2 pot). Pay in BRAWL or ETH, per side.{' '}
+              <span className="text-brawl-text-faint">
+                ≈ {formatUnits(fightCost, 18)} BRAWL
+                {fightCostEthVal !== undefined ? <> or {Number(formatUnits(fightCostEthVal, 18)).toFixed(6)} ETH</> : null}
+              </span>{' '}
               · winner takes{' '}
-              <strong>
-                {formatUnits(
-                  (fightCost * 2n * BigInt(10000 - devShareBpsCfg)) / 10000n,
-                  18,
-                )}{' '}
-                BRAWL
+              <strong className="text-brawl-green">
+                {((10000 - devShareBpsCfg) / 100).toFixed(1)}%
               </strong>{' '}
-              · dev share{' '}
-              {formatUnits(
-                (fightCost * 2n * BigInt(devShareBpsCfg)) / 10000n,
-                18,
-              )}{' '}
-              BRAWL.
+              of the pot ($
+              {(2 * (10000 - devShareBpsCfg) / 10000).toFixed(2)}) · dev{' '}
+              {(devShareBpsCfg / 100).toFixed(1)}%. Founders pay $0.75.
             </>
           ) : (
             <>Stake + payout reads from chain, loading…</>
@@ -446,13 +523,52 @@ export default function DuelPage() {
                     {!isConnected && (
                       <p className="text-xs text-brawl-red">Connect your wallet to run the duel.</p>
                     )}
+                    {/* Currency picker: only meaningful when router is wired in env */}
+                    {env.duelRouterAddress && isConnected && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-brawl-text-dim">Pay with:</span>
+                        <button
+                          type="button"
+                          className={
+                            'px-3 py-1 brawl-btn ' +
+                            (myMode === 'BRAWL' ? 'brawl-btn-orange' : 'brawl-btn-secondary')
+                          }
+                          onClick={() => setMyMode('BRAWL')}
+                        >
+                          BRAWL{' '}
+                          {fightCost !== undefined && (
+                            <span className="text-brawl-text-faint text-xs">
+                              (~{formatUnits(fightCost, 18)})
+                            </span>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          className={
+                            'px-3 py-1 brawl-btn ' +
+                            (myMode === 'ETH' ? 'brawl-btn-orange' : 'brawl-btn-secondary')
+                          }
+                          onClick={() => setMyMode('ETH')}
+                        >
+                          ETH{' '}
+                          {fightCostEthVal !== undefined && (
+                            <span className="text-brawl-text-faint text-xs">
+                              (~{Number(formatUnits(fightCostEthVal, 18)).toFixed(6)})
+                            </span>
+                          )}
+                        </button>
+                        <span className="text-brawl-text-faint text-xs ml-auto">
+                          ≈ $1 either way
+                        </span>
+                      </div>
+                    )}
                     <button
                       type="button"
                       className="brawl-btn w-full"
                       disabled={!canRun}
                       onClick={runDuel}
                     >
-                      Fight
+                      Fight {env.duelRouterAddress ? `($1 in ${myMode})` : ''}
                     </button>
                   </div>
                 </>
@@ -616,6 +732,9 @@ interface ReviewPanelProps {
     brawlersAddress: `0x${string}`;
     duelAddress: `0x${string}`;
     brawlAddress: `0x${string}`;
+    /** When set + response.quote present, fights route through the router
+     *  instead of calling Duel.submitDuel directly. */
+    duelRouterAddress: `0x${string}` | null;
     chainId: number;
   };
   connectedAddress: `0x${string}` | undefined;
@@ -638,13 +757,32 @@ function ReviewPanel({
 
   const animating = !animationDone;
 
+  // When the router is configured AND the API returned a quote, fights
+  // route through DuelRouter.fight (currency-aware + sandwich-resistant).
+  // Falls back to legacy Duel.submitDuel when the router isn't deployed yet
+  // (e.g. local dev networks without Aerodrome).
+  const useRouter = !!(env.duelRouterAddress && response.quote && response.quoteSignature);
+  const submitTarget = useRouter ? env.duelRouterAddress! : env.duelAddress;
+
   // ─── BRAWL preflight: both owners must have balance + allowance ≥ fightCost ──
-  const { data: fightCost } = useReadContract({
+  // When using the router, fightCost lives at router.fightCostBrawl. Either
+  // way the value is denominated in BRAWL wei and represents the per-fighter
+  // stake before founder discount.
+  const { data: fightCostRouter } = useReadContract({
+    abi: DUEL_ROUTER_ABI,
+    address: env.duelRouterAddress ?? undefined,
+    functionName: 'fightCostBrawl',
+    chainId: env.chainId,
+    query: { enabled: !!env.duelRouterAddress },
+  });
+  const { data: fightCostLegacy } = useReadContract({
     abi: DUEL_ABI,
     address: env.duelAddress,
     functionName: 'fightCost',
     chainId: env.chainId,
+    query: { enabled: !env.duelRouterAddress },
   });
+  const fightCost = (useRouter ? fightCostRouter : fightCostLegacy) as bigint | undefined;
 
   const { data: balanceA, refetch: refetchBalanceA } = useReadContract({
     abi: BRAWL_ABI,
@@ -664,15 +802,36 @@ function ReviewPanel({
     abi: BRAWL_ABI,
     address: env.brawlAddress,
     functionName: 'allowance',
-    args: [a.owner, env.duelAddress],
+    args: [a.owner, submitTarget],
     chainId: env.chainId,
   });
   const { data: allowanceB, refetch: refetchAllowanceB } = useReadContract({
     abi: BRAWL_ABI,
     address: env.brawlAddress,
     functionName: 'allowance',
-    args: [b.owner, env.duelAddress],
+    args: [b.owner, submitTarget],
     chainId: env.chainId,
+  });
+
+  // Brawler-NFT approval (router-only). The router takes custody of both
+  // brawlers mid-fight, so each owner must have setApprovalForAll on the
+  // Brawlers contract for the router address. Default-false reads while
+  // router is null.
+  const { data: nftApprovedA, refetch: refetchNftApprovedA } = useReadContract({
+    abi: BRAWLERS_ABI,
+    address: env.brawlersAddress,
+    functionName: 'isApprovedForAll',
+    args: useRouter ? [a.owner, env.duelRouterAddress!] : undefined,
+    chainId: env.chainId,
+    query: { enabled: useRouter },
+  });
+  const { data: nftApprovedB, refetch: refetchNftApprovedB } = useReadContract({
+    abi: BRAWLERS_ABI,
+    address: env.brawlersAddress,
+    functionName: 'isApprovedForAll',
+    args: useRouter ? [b.owner, env.duelRouterAddress!] : undefined,
+    chainId: env.chainId,
+    query: { enabled: useRouter },
   });
 
   // Pre-fight consecutive-loss streaks. Used to predict whether the loser
@@ -725,49 +884,117 @@ function ReviewPanel({
   // after the approve mines we auto-fire submit without a second click.
   const [autoSubmitQueued, setAutoSubmitQueued] = useState(false);
 
+  // Preflight status, undefined while loading, true/false once reads complete.
+  const balanceAok = fightCost !== undefined && balanceA !== undefined && balanceA >= fightCost;
+  const balanceBok = fightCost !== undefined && balanceB !== undefined && balanceB >= fightCost;
+  const allowanceAok = fightCost !== undefined && allowanceA !== undefined && allowanceA >= fightCost;
+  const allowanceBok = fightCost !== undefined && allowanceB !== undefined && allowanceB >= fightCost;
+
+  const isMeA = !!connectedAddress && a.owner.toLowerCase() === connectedAddress.toLowerCase();
+  const isMeB = !!connectedAddress && b.owner.toLowerCase() === connectedAddress.toLowerCase();
+  const myNeedsBrawlApproval = (isMeA && !allowanceAok) || (isMeB && !allowanceBok);
+  // Router mode adds an NFT-side approval: the router takes brawler custody
+  // mid-fight, so each owner of a participating brawler must have set
+  // setApprovalForAll(router, true). One-time per user; persists across fights.
+  const myNeedsNftApproval = useRouter && (
+    (isMeA && nftApprovedA === false) || (isMeB && nftApprovedB === false)
+  );
+  const myNeedsApproval = myNeedsBrawlApproval || myNeedsNftApproval;
+
   const doSubmit = async () => {
     setLastThrow(null);
     const r = response.result;
+    const duelResult = {
+      tokenA: BigInt(r.tokenA),
+      tokenB: BigInt(r.tokenB),
+      winnerId: r.winnerId,
+      rounds: r.rounds,
+      seed: BigInt(r.seed),
+      newEloA: r.newEloA,
+      newEloB: r.newEloB,
+      nonce: BigInt(r.nonce),
+      expiry: BigInt(r.expiry),
+    } as const;
     try {
-      await writeContractAsync({
-        abi: DUEL_ABI,
-        address: env.duelAddress,
-        chainId: env.chainId,
-        functionName: 'submitDuel',
-        args: [
-          {
-            tokenA: BigInt(r.tokenA),
-            tokenB: BigInt(r.tokenB),
-            winnerId: r.winnerId,
-            rounds: r.rounds,
-            seed: BigInt(r.seed),
-            newEloA: r.newEloA,
-            newEloB: r.newEloB,
-            nonce: BigInt(r.nonce),
-            expiry: BigInt(r.expiry),
-          },
-          response.signature,
-        ],
-      });
+      if (useRouter && response.quote && response.quoteSignature) {
+        const q = response.quote;
+        const quoteStruct = {
+          nonce: BigInt(q.nonce),
+          expiry: BigInt(q.expiry),
+          tokenA: BigInt(q.tokenA),
+          tokenB: BigInt(q.tokenB),
+          ownerA: q.ownerA,
+          ownerB: q.ownerB,
+          modeA: q.modeA,
+          modeB: q.modeB,
+          ethCostA: BigInt(q.ethCostA),
+          ethCostB: BigInt(q.ethCostB),
+          brawlCostA: BigInt(q.brawlCostA),
+          brawlCostB: BigInt(q.brawlCostB),
+          swapDir: q.swapDir,
+          swapAmountIn: BigInt(q.swapAmountIn),
+          swapMinOut: BigInt(q.swapMinOut),
+          payoutAAddr: q.payoutAAddr,
+          payoutACurrency: q.payoutACurrency,
+          payoutAAmount: BigInt(q.payoutAAmount),
+          payoutBAddr: q.payoutBAddr,
+          payoutBCurrency: q.payoutBCurrency,
+          payoutBAmount: BigInt(q.payoutBAmount),
+          devEthAmount: BigInt(q.devEthAmount),
+          devBrawlAmount: BigInt(q.devBrawlAmount),
+        } as const;
+        // msg.value = total ETH stakes the sender is putting up for THIS fight.
+        // BRAWL/BRAWL fights pass 0. ETH-side fights pass the matching cost(s).
+        const value = quoteStruct.ethCostA + quoteStruct.ethCostB;
+        await writeContractAsync({
+          abi: DUEL_ROUTER_ABI,
+          address: env.duelRouterAddress!,
+          chainId: env.chainId,
+          functionName: 'fight',
+          args: [quoteStruct, response.quoteSignature, duelResult, response.signature],
+          value,
+        });
+      } else {
+        await writeContractAsync({
+          abi: DUEL_ABI,
+          address: env.duelAddress,
+          chainId: env.chainId,
+          functionName: 'submitDuel',
+          args: [duelResult, response.signature],
+        });
+      }
     } catch (e) {
       setLastThrow(e instanceof Error ? `${e.name}: ${e.message}` : String(e));
     }
   };
 
-  // After approve mines: refetch allowances, then fire submit immediately
-  // if the user queued it (single-click flow). Gate on !txHash so we only
-  // fire once even if the effect re-runs.
+  // After an approve mines: refetch ALL approvals (BRAWL + NFT for router
+  // mode), then advance through the queued sequence:
+  //   needs BRAWL approve  → doApprove
+  //   needs NFT approve    → doApproveAllBrawlers
+  //   both approved        → doSubmit (fight)
+  // We don't reset autoSubmitQueued until the final submit fires, so the
+  // effect re-runs naturally as each approval tx confirms.
   useEffect(() => {
     if (!approveMined) return;
     void refetchAllowanceA();
     void refetchAllowanceB();
-    if (autoSubmitQueued && !txHash && !isSigning) {
-      setAutoSubmitQueued(false);
-      doSubmit();
+    if (useRouter) {
+      void refetchNftApprovedA();
+      void refetchNftApprovedB();
     }
-    // doSubmit is stable-enough for this single-fire pattern.
+    if (!autoSubmitQueued || txHash || isSigning || isApproving || isApproveMining) return;
+    if (myNeedsBrawlApproval) {
+      void doApprove();
+    } else if (myNeedsNftApproval) {
+      void doApproveAllBrawlers();
+    } else {
+      setAutoSubmitQueued(false);
+      void doSubmit();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [approveMined, autoSubmitQueued, txHash, isSigning]);
+  }, [approveMined, autoSubmitQueued, txHash, isSigning, isApproving, isApproveMining,
+      myNeedsBrawlApproval, myNeedsNftApproval, useRouter]);
 
   useEffect(() => {
     // When BOTH the tx mined AND the animation finished, refresh the
@@ -785,22 +1012,51 @@ function ReviewPanel({
   const doApprove = async () => {
     setLastThrow(null);
     try {
+      // Approve BRAWL for the active submit target (router when configured,
+      // Duel in legacy mode).
       await approveWriteAsync({
         abi: BRAWL_ABI,
         address: env.brawlAddress,
         chainId: env.chainId,
         functionName: 'approve',
-        args: [env.duelAddress, (1n << 256n) - 1n],
+        args: [submitTarget, (1n << 256n) - 1n],
       });
     } catch (e) {
       setLastThrow(e instanceof Error ? `${e.name}: ${e.message}` : String(e));
     }
   };
 
-  // Single-click path: queue the submit, then trigger approve.
+  // Brawler-NFT approveAll for the router. Required (once per user) when the
+  // router is the submit target — router takes brawler custody mid-fight to
+  // satisfy Duel's msg.sender = owner check.
+  const doApproveAllBrawlers = async () => {
+    if (!env.duelRouterAddress) return;
+    setLastThrow(null);
+    try {
+      await approveWriteAsync({
+        abi: BRAWLERS_ABI,
+        address: env.brawlersAddress,
+        chainId: env.chainId,
+        functionName: 'setApprovalForAll',
+        args: [env.duelRouterAddress, true],
+      });
+    } catch (e) {
+      setLastThrow(e instanceof Error ? `${e.name}: ${e.message}` : String(e));
+    }
+  };
+
+  // Single-click path: queue the submit, then fire whichever approval is
+  // currently missing. The post-approve effect chains the next step.
   const doApproveAndSubmit = async () => {
     setAutoSubmitQueued(true);
-    await doApprove();
+    if (myNeedsBrawlApproval) {
+      await doApprove();
+    } else if (myNeedsNftApproval) {
+      await doApproveAllBrawlers();
+    } else {
+      setAutoSubmitQueued(false);
+      await doSubmit();
+    }
   };
 
   const winnerName =
@@ -810,15 +1066,8 @@ function ReviewPanel({
         ? a.name
         : b.name;
 
-  // Preflight status, undefined while loading, true/false once reads complete.
-  const balanceAok = fightCost !== undefined && balanceA !== undefined && balanceA >= fightCost;
-  const balanceBok = fightCost !== undefined && balanceB !== undefined && balanceB >= fightCost;
-  const allowanceAok = fightCost !== undefined && allowanceA !== undefined && allowanceA >= fightCost;
-  const allowanceBok = fightCost !== undefined && allowanceB !== undefined && allowanceB >= fightCost;
-
-  const isMeA = !!connectedAddress && a.owner.toLowerCase() === connectedAddress.toLowerCase();
-  const isMeB = !!connectedAddress && b.owner.toLowerCase() === connectedAddress.toLowerCase();
-  const myNeedsApproval = (isMeA && !allowanceAok) || (isMeB && !allowanceBok);
+  // (Preflight vars moved up above the post-approve effect to fix TS use-
+  // before-declaration. See the block immediately following the write hooks.)
 
   // Split the old monolithic `preflightGreen` into two parts:
   //   - opponentReady: the OTHER side must have balance + allowance BEFORE
@@ -826,11 +1075,17 @@ function ReviewPanel({
   //     but we double-check on chain data here.
   //   - mySideReady: MY balance must be sufficient. My allowance is NOT
   //     required, if missing, the approve-then-submit flow handles it.
-  const opponentReady = isMeA
+  // Router mode also requires the opponent to have setApprovalForAll(router).
+  // Treat missing NFT approval the same as missing BRAWL allowance — the
+  // matchmaker filters that out via /api/house/sync for house brawlers; for
+  // PvP, the fight reverts and the user re-rolls.
+  const opponentNftOk = !useRouter
+    || (isMeA ? nftApprovedB !== false : isMeB ? nftApprovedA !== false : true);
+  const opponentReady = (isMeA
     ? balanceBok && allowanceBok
     : isMeB
       ? balanceAok && allowanceAok
-      : balanceAok && balanceBok && allowanceAok && allowanceBok;
+      : balanceAok && balanceBok && allowanceAok && allowanceBok) && opponentNftOk;
   const mySideReady = isMeA ? balanceAok : isMeB ? balanceBok : true;
   const readyToStart =
     fightCost !== undefined && opponentReady && mySideReady && !!connectedAddress;

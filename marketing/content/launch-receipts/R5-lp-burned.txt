@@ -1,0 +1,9 @@
+🔥 LP burned to 0xdead. permanent.
+
+the LP tokens are gone. not locked for X months. burned. nobody can ever pull liquidity, ever.
+
+pair: https://basescan.org/address/{{PAIR_ADDR}}
+burn tx: https://basescan.org/tx/{{TX_HASH}}
+burned LP tokens at: https://basescan.org/address/0x000000000000000000000000000000000000dEaD#tokentxns
+
+trust on-chain, not promises.

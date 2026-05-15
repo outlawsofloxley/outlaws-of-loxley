@@ -4,6 +4,82 @@ Living doc for Claude Code sessions on this project. Append to the top, prune th
 
 ---
 
+## Session 2026-05-15 (launch eve, take 2 — currency-aware fights)
+
+### What got shipped
+
+**DuelRouter — currency-aware fight wrapper (Option B)**
+- New `contracts/DuelRouter.sol` (~600 LOC). Brawler-custody pattern: router takes temp ownership of both fighters, satisfies Duel's `msg.sender == owner` check, calls Duel.submitDuel, redistributes per signed FightQuote. Returns brawlers atomically.
+- Supports BRAWL/BRAWL, ETH/ETH, ETH+BRAWL mixed (winner ETH), ETH+BRAWL mixed (winner BRAWL), and tie scenarios per Darren's currency rules:
+  - BRAWL vs BRAWL → dev BRAWL
+  - any ETH involved → dev ETH (swap leg if needed)
+  - tie → each player gets own currency back, no dev cut
+- Sandwich resistance: every swap leg's `amountOutMin` is signed into the FightQuote by `trustedSigner`. If on-chain Aerodrome reserves move adversely beyond the signed tolerance (2% slip + 0.3% pool fee), tx reverts.
+- EIP-712 quote replay protection (per-quote nonce, expiry, owner-snapshot).
+- Hard caps: MAX_DEV_BPS=2000, MAX_FIGHT_COST_BRAWL=10k BRAWL, MAX_FIGHT_COST_ETH=0.5 ETH.
+- `rescueETH` + `rescueERC20` for owner cleanup of dust/stuck balances.
+
+**Duel.sol minimal change**
+- Added `authorizedRouter` field + `setAuthorizedRouter`. When set, ONLY the router can call `submitDuel`. When unset (legacy mode), brawler owner can submit directly.
+- Backward-compatible: existing 17 Duel tests still pass.
+
+**Test coverage**
+- New `test/solidity/DuelRouter.t.sol` (12 tests). Includes mock Aerodrome router with configurable rate + slippage haircut for sandwich simulation.
+- Coverage: all 4 currency combos × winner-A/winner-B, expired quote, replay nonce, invalid sig, owner-changed snapshot, stale BRAWL cost peg, sandwich slippage, wrong msg.value, direct Duel call blocked when router authorized.
+- **Total: 151 forge tests pass, 0 fail.**
+
+**Off-chain signer (Vercel API)**
+- `/api/run-duel` extended with `modeA` / `modeB` body params + builds + signs FightQuote when `NEXT_PUBLIC_DUEL_ROUTER_ADDRESS` is configured.
+- For mixed pots, reads Aerodrome pair reserves + Chainlink ETH/USD off-chain to compute swap min-out with 2% safety buffer on top of the 30 bps pool fee.
+- Returns both the existing DuelResult sig (for Duel.submitDuel) AND the new FightQuote sig (for DuelRouter.fight).
+
+**Dev dashboard live-economics panel**
+- New `LiveEconomicsPanel.tsx` reads: Chainlink ETH/USD, Aerodrome BRAWL/ETH spot, fight cost (router preferred, falls back to Duel.fightCost), resurrect base cost, marketplace fee, keeper wallet ETH+BRAWL balances. Polls every 30s. Shows USD equivalents + Chainlink staleness.
+
+**Resurrection-cost keeper bot**
+- New `marketing/keeper/resurrection-cost-keeper.mjs`. Mirrors fight-cost-keeper's structure but pegs `Graveyard.resurrectionCost` to $100 USD (TARGET_USD_CENTS=10000) via Chainlink ETH/USD. Hard cap MAX = 0.5 ETH.
+
+**Deploy + launch script updates**
+- `Deploy.s.sol` deploys DuelRouter when `AERODROME_ROUTER` env set.
+- **Staged-rollout default**: router deployed but `authorizedRouter` NOT set automatically. Duel runs in legacy BRAWL-only mode for day-1. Set `ACTIVATE_ROUTER=true` to flip immediately, or call `duel.setAuthorizedRouter(router); duel.setFightEconomics(0, 0, devTreasury)` as a post-launch step once the frontend currency-picker is shipped.
+- Allocation revised: 50k LP / 20k team vault / 20k keeper / 10k dev / 0 MintDrop airdrop pool. Founder bonus dropped (founders keep free Tier 1 mint + 25% fight discount + 1 free revive).
+- `RESURRECTION_COST` default → 0.025 ETH (~$100 base at $4k ETH).
+- `FEE_BPS` default → 750 (7.5% marketplace fee).
+- `SeedAndLockLP.s.sol` → BURN_LP=true default. UNCX path preserved as opt-in.
+- `LockTeamTokens.s.sol` → 22,750 → 20,000 BRAWL vest.
+- `launch-mainnet.sh` → R5 receipt fires the new "LP burned" template; R6 uses 20k default vest amount.
+- New keeper EOA generated: `0x613794Dc02cc1a9f29Fbbdc8C5A82d08162bc04E` (privkey in `.env.base-mainnet`).
+
+### Decisions logged
+
+- **LP**: burn to 0xdead, $200 ETH + 50k BRAWL (Darren's call).
+- **Marketplace fee**: 7.5%.
+- **Fight cost**: $1 USD via keeper-pegged BRAWL OR ETH (router path).
+- **Resurrect base**: $100 USD via keeper-pegged base ETH cost (tier mults still apply).
+- **House brawlers**: keep at token IDs 1-10 (founder range with `isHouseBrawler` flag). The contract-level perks are already excluded; pushing IDs to 1500+ would require a contract change too risky on launch eve. UI badge labels them clearly.
+- **Router activation**: STAGED. Deploy router inert, flip post-launch once frontend duel-page currency picker ships. Avoids day-1 UI breakage.
+
+### Open items / next session priorities
+
+1. **MAINNET DEPLOY**: env vars are populated, run `bash script/launch-mainnet.sh`. Router deploys inert; legacy BRAWL fights work day-1.
+2. **Frontend duel-page currency picker (v13 hot-fix, 24-48h post-launch)**:
+   - Read `env.duelRouterAddress`; when set, branch to router flow.
+   - Add per-side ETH/BRAWL picker.
+   - Replace `Duel.submitDuel(...)` writeContract with `DuelRouter.fight(quote, qsig, result, dsig, value: msg.value)`.
+   - Replace `BRAWL.approve(duelAddr, ...)` with `BRAWL.approve(routerAddr, ...)` + `Brawlers.setApprovalForAll(routerAddr, true)`.
+   - Once shipped + verified, call `duel.setAuthorizedRouter(router); duel.setFightEconomics(0,0,devTreasury)` to lock Duel into router-only mode.
+3. **Keeper bot deploy**: copy `marketing/keeper/.env.example` → `.env`, fill in `KEEPER_PRIVATE_KEY` + addresses, run both `fight-cost-keeper.mjs` and `resurrection-cost-keeper.mjs` as long-lived processes (Docker / pm2). Transfer Duel + Graveyard ownership to keeper EOA so it can call setFightEconomics + setResurrectionCost.
+4. **`scripts/sim-duels.mjs` upgrade**: when router is activated, this script also has to route through router (otherwise direct Duel call reverts). Add quote-building + router.fight call.
+
+### Convention notes
+
+- **Router IS the economics layer when active**: fightCost + dev cut + founder discount all live in DuelRouter. Duel becomes a pure result-recorder (ELO + death + listed-brawler + signed-result verification). Don't touch Duel.fightCost when router is on — it must stay 0.
+- **`authorizedRouter` is the kill-switch**: setting it to address(0) reverts router to inert and re-enables legacy direct Duel calls. Useful if router has a bug post-launch.
+- **Brawler approval**: `setApprovalForAll(router, true)` is one-time per user. Router transfers the brawler in, calls Duel, transfers out — atomic on revert.
+- **Quote signer keys**: same `BRAWLERS_SIGNER_KEY` used for both DuelResult and FightQuote sigs. Router sigs use the `BASEicBrawlersDuelRouter` EIP-712 domain (note the "Router" suffix vs Duel's `BASEicBrawlersDuel`); rotating the key invalidates both at once.
+
+---
+
 ## Session 2026-05-13 → 2026-05-14 (mainnet eve)
 
 ### What got shipped

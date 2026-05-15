@@ -49,8 +49,10 @@ export default function GraveyardPage() {
         <div>
           <h1 className="brawl-header text-2xl md:text-3xl text-brawl-text mb-2">Graveyard</h1>
           <p className="text-sm text-brawl-text-dim">
-            Brawlers who lost three in a row. Resurrect your own for{' '}
-            <span className="text-brawl-orange">{costEth} {symbol}</span>.
+            Brawlers who lost three in a row. Resurrect your own — base cost{' '}
+            <span className="text-brawl-orange">{costEth} {symbol}</span>{' '}
+            (~$100), scaled by rarity tier and total wins. Founders 1-100 get
+            the first revive free.
           </p>
         </div>
         <div className="text-right text-sm font-mono text-brawl-text-dim">
