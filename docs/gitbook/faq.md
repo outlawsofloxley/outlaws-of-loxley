@@ -18,7 +18,7 @@ yes. token metadata at `/api/token/{id}` is opensea-spec compliant, so brawlers 
 
 ## is this safe?
 
-contracts are open-source on github. mint randomness uses chainlink VRF, the rarity shuffle is provably random and committed pre-mint. the brawl token's ownership is renounced (verify `owner()` on basescan, returns `0x0`). the LP is locked on unicrypt for 6 months (lock url in #links on the discord).
+contracts are open-source on github. the rarity shuffle is committed pre-mint via `initialRarityHash` so anyone can re-derive and verify it from the public `masterSeed`. the brawl token's ownership is renounced shortly after deploy (verify `owner()` on basescan returns `0x0`). the LP tokens were burned to `0x000...dEaD` at launch — permanent, no key, no recovery (check `basescan.org/address/0x000...dEaD#tokentxns` for the brawl/eth pair).
 
 what's not in scope: a paid security audit, a multisig on the game contracts. if you want full institutional-grade safety, this isn't it. if you want a small game with public proofs and a one-person team being honest about it, this is it.
 

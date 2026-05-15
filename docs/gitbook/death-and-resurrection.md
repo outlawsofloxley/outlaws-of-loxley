@@ -38,11 +38,13 @@ a few worked examples (the duel page shows the live number for your specific bra
 
 - a fresh common at 0 wins: ~$100
 - an uncommon with 3 wins: ~$200
-- a legendary with 5 wins: ~$600
-- an epic with 10 wins: ~$1,400
-- a king with any wins: $1,500 base, plus the win multiplier. you don't want to find out.
+- a legendary with 5 wins: **$500** (cap)
+- an epic with 10 wins: **$500** (cap)
+- a king at any wins: **$500** (cap)
 
-founders (slots 1-100) get **the first resurrection free.** doesn't matter when it happens, doesn't expire. the second one onward costs full price.
+**hard cap: $500 per revive.** every cost the formula above produces is clamped at $500 (=`Graveyard.resurrectionCap`). the resurrect-cost-keeper bot mirrors this cap to USD as eth/usd drifts, so it stays at $500 regardless of ETH price. the dev can adjust the cap from the dashboard. so even a maxed-out king with twenty wins still costs $500, not the formula's three-grand worst case. it keeps the late game survivable.
+
+founders (slots 1-100) get **the first resurrection free.** doesn't matter when it happens, doesn't expire. the second one onward costs full price (capped).
 
 ## resurrecting
 

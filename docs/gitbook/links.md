@@ -43,9 +43,9 @@ anyone doing any of those things is a scammer. block, report, post in #help so w
 ## acknowledgements
 
 - **base** for the chain.
-- **chainlink VRF** for the rarity shuffle.
-- **unicrypt** for the LP lock contract.
-- **aerodrome** for the launch DEX.
+- **chainlink** for the eth/usd price feed used by the keeper bots.
+- **aerodrome** for the launch DEX (brawl/eth pair, volatile pool).
+- **uncx (unicrypt)** for the team-token vesting contract (20k brawl, 6mo linear).
 - **opensea-compatible metadata** for off-site discoverability.
 - **coinbase wallet sdk** for smart wallet integration.
 - **walletconnect** for mobile wallet connectivity.

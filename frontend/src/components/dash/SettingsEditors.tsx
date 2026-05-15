@@ -59,6 +59,11 @@ export function SettingsEditors() {
     address: env.graveyardAddress,
     functionName: 'resurrectionCost',
   });
+  const graveyardCap = useReadContract({
+    abi: GRAVEYARD_ABI,
+    address: env.graveyardAddress,
+    functionName: 'resurrectionCap',
+  });
   const mintEth = useReadContract({
     abi: MINTDROP_ABI,
     address: env.mintDropAddress,
@@ -111,6 +116,7 @@ export function SettingsEditors() {
     void devShareBps.refetch();
     void devTreasury.refetch();
     void graveyardCost.refetch();
+    void graveyardCap.refetch();
     void mintEth.refetch();
     void mintUsdt.refetch();
     void mintUsdc.refetch();
@@ -145,6 +151,11 @@ export function SettingsEditors() {
       <Section title="Graveyard">
         <GraveyardCostEditor
           current={graveyardCost.data as Wei}
+          symbol={sym}
+          onSuccess={refetchAll}
+        />
+        <GraveyardCapEditor
+          current={graveyardCap.data as Wei}
           symbol={sym}
           onSuccess={refetchAll}
         />
@@ -376,7 +387,72 @@ function GraveyardCostEditor({
         currentHint={`current: ${current !== undefined ? formatEther(current) : ', '} ${symbol}`}
       />
       <div className="text-sm text-brawl-text-faint font-mono">
-        Per-brawler cost = base × tierMult/10 × (10 + wins)/10.
+        Per-brawler cost = base × tierMult/10 × (10 + wins)/10, then capped
+        at resurrectionCap (below). Set base via the resurrection-cost-keeper
+        bot to peg to $100 USD as ETH price drifts.
+      </div>
+    </div>
+  );
+}
+
+function GraveyardCapEditor({
+  current,
+  symbol,
+  onSuccess,
+}: {
+  current: Wei;
+  symbol: string;
+  onSuccess: () => void;
+}) {
+  const { env } = requireEnv();
+  const { writeContract, isPending, isMining, err, hash, isSuccess, reset } = useTxWrite(onSuccess);
+  const postAudit = useAuditPost();
+  const [val, setVal] = useState('');
+
+  useEffect(() => {
+    if (current !== undefined) setVal(formatEther(current));
+  }, [current]);
+
+  const handle = async () => {
+    try {
+      const wei = parseEther(val);
+      writeContract({
+        abi: GRAVEYARD_ABI,
+        address: env.graveyardAddress,
+        functionName: 'setResurrectionCap' as never,
+        args: [wei] as never,
+      });
+      void postAudit('graveyard:setResurrectionCap', { wei: wei.toString() });
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'invalid amount');
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Row label={`resurrectionCap (per-revive max, in ${symbol})`}>
+        <input
+          className="brawl-input"
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          inputMode="decimal"
+        />
+      </Row>
+      <TxFooter
+        onClick={handle}
+        busy={isPending || isMining}
+        success={isSuccess}
+        err={err}
+        hash={hash}
+        reset={reset}
+        label="Update per-revive cap"
+        currentHint={`current: ${current !== undefined ? formatEther(current) : ', '} ${symbol} (≈ $${current !== undefined ? (Number(formatEther(current)) * 4000).toFixed(0) : '—'} @ $4k ETH)`}
+      />
+      <div className="text-sm text-brawl-text-faint font-mono">
+        Hard ceiling per resurrect. Default 0.125 ETH (~$500). The formula
+        cost = base × tierMult × (10+wins)/100 gets clamped to this value
+        when it would otherwise exceed it. Set 0 to disable the cap and let
+        the formula run uncapped (worst case ~$3k for King with many wins).
       </div>
     </div>
   );

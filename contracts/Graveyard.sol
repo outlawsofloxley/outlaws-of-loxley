@@ -88,6 +88,11 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
         // Default curve per 2026-04-24 spec: min $100 at Common+0wins; scales
         // up by rarity and by wins. Values are multipliers × 10 (so 15 → 1.5×).
         tierMults = [uint256(10), 15, 25, 40, 70, 150];
+        // Default per-revive cap: $500 at $4k ETH = 0.125 ETH. Owner can
+        // adjust via setResurrectionCap; resurrect-cost-keeper bot mirrors
+        // it to USD as ETH price drifts. Set to 0 to disable the cap (then
+        // only MAX_RESURRECTION_COST × highest-mult × wins-mult bounds apply).
+        resurrectionCap = 0.125 ether;
     }
 
     // ─── Admin ───────────────────────────────────────────────────────
@@ -102,6 +107,25 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
     ///         100x). Stops a compromised owner from making revives unaffordable
     ///         or overflowing the cost formula.
     uint256 public constant MAX_TIER_MULT = 1_000;
+
+    /// @notice Max total a single resurrect can charge, in ETH wei. Applied
+    ///         AFTER the tier + wins formula. Stops a 10-win king from being
+    ///         priced out at $3000+ when the dev wants to keep the worst-case
+    ///         single revive at $500 (= 0.125 ETH @ $4k ETH). Adjustable via
+    ///         setResurrectionCap. Set 0 to disable the cap and fall back to
+    ///         the original tier×wins formula.
+    uint256 public resurrectionCap;
+
+    event ResurrectionCapChanged(uint256 oldCap, uint256 newCap);
+
+    /// @notice Update the per-revive USD cap (in ETH wei). Capped at
+    ///         MAX_RESURRECTION_COST so a compromised owner can't disable
+    ///         the safety ceiling. Owner-only.
+    function setResurrectionCap(uint256 newCap) external onlyOwner {
+        if (newCap > MAX_RESURRECTION_COST) revert CostTooHigh(newCap, MAX_RESURRECTION_COST);
+        emit ResurrectionCapChanged(resurrectionCap, newCap);
+        resurrectionCap = newCap;
+    }
 
     function setResurrectionCost(uint256 newCost) external onlyOwner {
         if (newCost > MAX_RESURRECTION_COST) revert CostTooHigh(newCost, MAX_RESURRECTION_COST);
@@ -182,7 +206,12 @@ contract Graveyard is Ownable, Pausable, ReentrancyGuard {
         uint256 mult = tierMults[tier];
         uint32 wins = brawlers.getBrawler(tokenId).wins;
         // cost = base × mult × (10 + wins) / 100
-        return (resurrectionCost * mult * (10 + wins)) / 100;
+        uint256 raw = (resurrectionCost * mult * (10 + wins)) / 100;
+        // Apply per-revive cap if set. Caps the worst-case (king with many
+        // wins) at the dev-set ceiling ($500 default = 0.125 ETH @ $4k).
+        uint256 cap = resurrectionCap;
+        if (cap > 0 && raw > cap) return cap;
+        return raw;
     }
 
     // ─── External: resurrect ─────────────────────────────────────────

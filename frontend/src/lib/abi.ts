@@ -123,13 +123,19 @@ export const GRAVEYARD_ABI = parseAbi([
   'function duel() view returns (address)',
   'function treasury() view returns (address)',
   'function resurrectionCost() view returns (uint256)',
+  'function resurrectionCap() view returns (uint256)',
   'function costFor(uint256 tokenId) view returns (uint256)',
   'function hasUsedFreeResurrect(uint256 tokenId) view returns (bool)',
   'function FOUNDER_FREE_RESURRECT_CAP() view returns (uint256)',
+  'function MAX_RESURRECTION_COST() view returns (uint256)',
   'function paused() view returns (bool)',
 
+  'function setResurrectionCost(uint256 newCost)',
+  'function setResurrectionCap(uint256 newCap)',
   'function resurrect(uint256 tokenId) payable',
 
+  'event ResurrectionCostChanged(uint256 oldCost, uint256 newCost)',
+  'event ResurrectionCapChanged(uint256 oldCap, uint256 newCap)',
   'event Resurrected(uint256 indexed tokenId, address indexed by, uint256 paid)',
 ]);
 

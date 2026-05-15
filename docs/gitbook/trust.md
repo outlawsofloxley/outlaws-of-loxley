@@ -13,39 +13,44 @@ the brawl ERC-20 launched with two safety nets:
 
 these were anti-sniper limits. block 0 of trading is bot territory. the limits stopped any one bot from front-running everyone and dumping into the pool.
 
-**24-48 hours after launch settled**, the dev called `renounceOwnership()` on the brawl contract. from that point:
+**shortly after the deploy** (once the launch volatility settles), the dev will call `renounceOwnership()` on the brawl contract. from that point on:
 - nobody can change the limits ever again
 - nobody can mint new brawl
 - nobody can blacklist or whitelist anyone
 - nobody can pause trading
 
-the token is a true fixed-supply ERC-20 with zero admin functions. verify on basescan: `owner()` returns the zero address.
+the token becomes a true fixed-supply ERC-20 with zero admin functions. verify on basescan: `owner()` returns the zero address.
 
-## LP locked for 6 months on unicrypt
+## LP burned to 0xdead
 
-at launch, the brawl/eth liquidity pool was seeded on aerodrome and the LP token was immediately deposited into [unicrypt](https://app.uncx.network) for **6 months**.
+at launch, the brawl/eth liquidity pool was seeded on aerodrome v2 and **the LP tokens were sent straight to `0x000...dEaD`**. permanent.
 
-while the lock is active, nobody can pull the liquidity. not the dev, not anyone. the lock URL is in #links on the discord. anyone can verify on-chain.
+we considered locking on unicrypt instead, but the flat 0.1 ETH lock fee was nearly half the LP itself (small launch on purpose). burning is cheaper, simpler, and stronger: the LP can never be pulled, full stop. no lock to renew, no 6-month deadline, no "what happens when it unlocks" question.
 
-when the 6-month lock expires, the LP token releases back to the dev wallet. the dev's options at that point are: re-lock for another period, migrate the pool, or pull liquidity. i'll be transparent about which one and why when the time comes.
+verify on-chain: the LP token contract for the brawl/eth aerodrome pair shows `0x000...dEaD` holding the entire LP supply (or close to it, modulo any swap fees that accrue back into the pool and don't tokenize). that address has no private key. nobody can withdraw.
 
 ## game contracts stay dev-controlled (intentionally)
 
-the **duel**, **mintdrop**, **graveyard**, and **marketplace** contracts stay owned by the dev wallet. that's deliberate.
+the **duel**, **duelrouter**, **mintdrop**, **graveyard**, **marketplace**, and **brawlers** contracts stay owned by the dev wallet. that's deliberate, and it's separate from the brawl-token renouncement.
 
 these are *game* contracts. they need ongoing tuning:
-- fight cost calibration as brawl price moves
-- mint price tweaks if a tier sells out and the meta needs adjusting
-- marketplace fee changes if competitive forces it
-- pause / unpause if a bug appears (escape hatch)
+- **fight cost** calibration as brawl/eth prices move (the keeper bot repegs to $1 USD automatically)
+- **resurrect cost** calibration (the keeper bot repegs to $100 base, capped at $500 per single revive)
+- **mint price** tweaks if a tier sells out and the meta needs adjusting
+- **marketplace fee** changes if competitive forces it (currently 7.5%, hard-capped at 10% in the contract)
+- **pause / unpause** if a bug appears (escape hatch)
 
 what these contracts can NOT do:
 - mint brawl (locked off behind the renounced ERC-20)
-- drain the LP (locked on unicrypt)
-- take user funds beyond the documented fight stakes, mint prices, and marketplace fees
+- drain the LP (burned to `0xdead`, no key, no recovery)
+- take user funds beyond the documented fight stakes, mint prices, marketplace fees, and resurrect costs
 - transfer your nfts without your approval
 
 the difference between **game tuning** and **rug capability** matters. you should know which is which.
+
+## per-revive cap
+
+even with a high-rarity king at 10+ wins, the resurrection formula (`base × tierMult × (10+wins)/100`) is **capped at $500 per single revive** by `Graveyard.resurrectionCap` (default 0.125 ETH). this stops the late-game from pricing out players entirely. the cap is dev-settable and the resurrect-cost-keeper bot mirrors it to USD as ETH price drifts, so $500 stays $500.
 
 ## no team allocation, no presale, no vc round
 
@@ -64,7 +69,7 @@ this isn't a token where the team holds half. there's no vesting cliff to fear. 
 ## what you should keep an eye on
 
 - **basescan** the brawl token contract: confirm `owner()` returns `0x0`.
-- **the unicrypt lock URL** (in #links on the discord).
+- **the LP burn address** on basescan: `0x000000000000000000000000000000000000dEaD` holding the brawl/eth pair tokens. anyone can verify.
 - **the dev wallet** on basescan: any large brawl transfer out is worth a question.
 - **#announcements** in discord for upgrades or major changes.
 
