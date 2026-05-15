@@ -88,9 +88,13 @@ they own a dead brawler. they can resurrect them at full cost (founder freebie d
 
 ## founder perks transfer with the nft, right?
 
-yes. the nft carries the perks, not the wallet. so if you buy founder #42 from someone, you now have founder #42's perks (25% off, free first resurrect if it hasn't been used, +20 brawl was already given to the original minter).
+yes. the nft carries the perks, not the wallet. on-chain checks key off `tokenId`, not `msg.sender` or the original minter. so if you buy founder #42 from someone, you now have founder #42's perks:
 
-caveat: the **first free resurrect** is one-shot. if the original minter died, used the free resurrect, then sold, the new owner doesn't get a second free one.
+- **25% fight discount** — Duel.fighterCost(42) returns $0.75 worth regardless of who owns it.
+- **free first resurrect** if the flag `hasUsedFreeResurrect[42]` is still false. Graveyard tracks this per tokenId, so the freebie travels with the nft until consumed.
+- **founder badge** in the UI — rendered from tokenId.
+
+caveat: the **first free resurrect** is one-shot. if the original minter died, used the free resurrect, then sold, the new owner doesn't get a second free one (the on-chain flag is sticky once flipped).
 
 ## i hit "approve & list" on the marketplace and only got one popup, not two
 

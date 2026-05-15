@@ -51,12 +51,13 @@ the difference between **game tuning** and **rug capability** matters. you shoul
 
 100,000 brawl supply, transparent split:
 
-- **initial LP seed**: 2,500 brawl + ~$500 eth, paired and locked.
-- **auto-paired into LP via mintdrop**: 50,000 brawl. as people mint, brawl drips into the LP at a calibrated rate. the more public mints, the deeper the liquidity.
-- **founder airdrops**: 2,000 brawl total. distributed automatically to the first 100 minters (20 each, on top of the standard 50 mint airdrop = 70 brawl per founder).
-- **dev / treasury / season prizes**: 45,500 brawl on the dev wallet. trust-based reserve for future seasons, partnerships, prize pools, and ongoing development. no vesting contract. you're trusting me not to dump it. if i do, you'll see it on basescan within seconds and the project is over.
+- **initial LP**: 50,000 brawl + ~$200 eth, paired on Aerodrome v2 and the LP token burned to `0xdead`. permanent. no team unlock, no rug path.
+- **team vault**: 20,000 brawl locked on UNCX V2 token vesting. 6-month linear vest, no cliff, single beneficiary = dev wallet. verifiable on app.uncx.network.
+- **auto-fight keeper wallet**: 20,000 brawl held by the keeper EOA. used as the per-fight stake float for the 10 house brawlers + as fightCost dust. recycles through duels (winner gets the pot back), doesn't deplete.
+- **dev / ops / season prizes**: 10,000 brawl on the dev wallet. ops budget for infra, future seasons, partnerships. no contract enforcement on this slice — trust-based.
+- **MintDrop airdrop pool**: 0 brawl. the per-mint and founder airdrop bonuses were both dropped at launch to keep allocation lean. founders keep the free first revive + 25% fight discount + free Tier-1 mint; players don't get BRAWL on mint.
 
-that's 100,000 brawl total, no team cliff hidden anywhere. the 50-brawl per-mint airdrop comes out of the 50,000-brawl auto-paired pool (the same pool that drips into LP). the founder bonus is the only separate budget.
+that's 100,000 brawl total. no presale, no team cliff hidden anywhere. 70% of supply is either burned (LP) or locked (team vault) at launch. the remaining 30% is auto-fight float + ops budget.
 
 this isn't a token where the team holds half. there's no vesting cliff to fear. there's also no "team's gonna sell" clock, because there isn't a team in the institutional sense. just me.
 

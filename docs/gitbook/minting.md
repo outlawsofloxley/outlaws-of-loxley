@@ -23,7 +23,6 @@ mint money goes 100% to the dev wallet. no LP siphon, no buy/sell tax, no invent
 
 token ids 1-100 carry founder status forever. doesn't matter who owns them later, the perks stick to the brawler:
 
-- **+20 brawl bonus** airdropped on mint. standard mint drops 50, founders drop 70.
 - **25% off every duel stake.** non-founders pay $1 per fight (in brawl or eth, their pick), founders pay $0.75. forever.
 - **first resurrection free.** your first death doesn't cost eth. only the first.
 - **founder badge** on every card. gold for slots 1-50, cyan for 51-100. the gold ones are the trophy case.

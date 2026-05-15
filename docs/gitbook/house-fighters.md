@@ -10,7 +10,7 @@ regular brawlers. token ids in the founder range (1-100), randomly rolled rarity
 
 the difference: they carry an **on-chain `isHouseBrawler` flag**. that flag does two things:
 
-1. **they get NO founder perks.** even though their token id falls in the 1-100 founder range, the contract specifically checks `isHouseBrawler` and skips the discount, the bonus brawl airdrop, the free first resurrect, and the founder badge. they pay full stake, get the standard 50 brawl on mint, and pay full eth for resurrection.
+1. **they get NO founder perks.** even though their token id falls in the 1-100 founder range, the contract specifically checks `isHouseBrawler` and skips the discount, the free first resurrect, and the founder badge. they pay full stake and full eth for resurrection — same as a non-founder brawler.
 2. **the keeper bot auto-resurrects them.** if a house brawler dies, a keeper service (running off the dev wallet's eth) resurrects them within seconds. the pool never thins out from human attrition.
 
 ## why this matters
