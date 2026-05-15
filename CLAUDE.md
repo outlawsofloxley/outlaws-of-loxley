@@ -4,6 +4,75 @@ Living doc for Claude Code sessions on this project. Append to the top, prune th
 
 ---
 
+## Session 2026-05-15 afternoon — paused mid-launch (next: bash script/launch-mainnet.sh)
+
+### Where we are at session-end
+
+**Everything is staged. Launch script has not run.** Push to main and Vercel redeploy both done. Discord wiped. X bio + TG group description carry the Discord invite. Three commits today on top of `2393912`:
+- `bd9318b` — gitbook: drop +20 BRAWL airdrop refs + clarify perks transferability
+- `2287785` — Graveyard $500 cap (`resurrectionCap` field) + dashboard editor + gitbook fixes
+- `ad4e755` — set-bio.mjs script + X bio + TG desc both carry Discord
+- `a411593` — trust.md: drop UNCX-considered paragraph, rename allocation header
+- `c673de7` — USD-cents targets ON-CHAIN (`fightCostUsdCents`, `resurrectionCostUsdCents`, `resurrectionCapUsdCents`); dashboard editors; keepers rewritten to read targets from chain; MIN_FIGHT_COST_BRAWL_WEI lowered to 1e6 (peg extends to ~$10T FDV).
+
+**Wallets:**
+- DEV wallet (deployer + treasury): `0x5b1A749cc7bF1dE8ecA505769BD34Ba65f456805` — DEPLOYER_KEY in `.env.base-mainnet`. Funded.
+- SIGNER wallet (Vercel-only): `0x64b20FF702224e6DB03A5faeA3F162B2714fb283` — SIGNER_KEY in `.env.base-mainnet` line 34. Also live in Vercel as `BRAWLERS_SIGNER_KEY` (rotated 3s before session paused). Not funded (doesn't need to be).
+- KEEPER wallet (auto-fight + cost-peg): `0x613794Dc02cc1a9f29Fbbdc8C5A82d08162bc04E` — KEEPER_KEY in `.env.base-mainnet` line 42. Funded.
+
+**Marketing:**
+- X bio updated: `on-chain arena on @base. 2,000 pixel-art warriors. $1 per fight (brawl or eth). win, die, resurrect. discord.gg/RjvBEA5CVd` (script at `marketing/scripts/x/set-bio.mjs`).
+- TG group `baseicbrawlers` (-1003806059531) description set via Bot API. Bot has `can_change_info=true` admin.
+- Prelaunch tweet fired: https://x.com/BASEicBrawlers/status/2055130848555319325 — "today. contracts ship in hours. LP burns at seed..."
+
+**Discord:**
+- Bot wiped 11 messages (1 graveyard, 10 duels, 0 marketplace) via WIPE_*_ON_STARTUP=true → restart → flags reset to false.
+- Bot still pointing at Sepolia config. Post-launch cutover (task #25) flips RPC + addresses + wipes again + restart.
+
+### Open / pending
+
+| Task | Status |
+|---|---|
+| #22 Vercel env updater script | pending — write a one-shot that takes deploy output JSON, sets all NEXT_PUBLIC_* in Vercel prod, redeploys |
+| #23 Keeper bot Docker configs on TrueNAS | pending — fight-cost + resurrection-cost stacks to copy from `baseic-discord` pattern |
+| #24 Run launch-mainnet.sh step by step | **pending — waiting on Darren's "go"**. Will pipe `go` through Bash tool, ask in chat between steps |
+| #25 Post-launch Discord cutover (mainnet flip) | pending — SSH + edit compose + restart + reset wipe flags |
+| #26 USD-cents on-chain | ✅ shipped (c673de7) |
+
+### Test + build state
+
+- 151/151 forge tests pass.
+- Frontend `npx tsc --noEmit` exit 0.
+- All pages render HTTP 200 in dev server.
+- Launch script `--dry-run --step deploy` validated: estimated 0.000343 ETH gas for the biggest tx.
+
+### Critical for next session
+
+1. **Darren wants to run `bash script/launch-mainnet.sh`** — but he's on Windows PowerShell, no native bash. Plan: I run it via Claude Code Bash tool, pipe `go` through after he answers in chat. 5 chat exchanges + the launch is done.
+2. **ETH budget for launch**: ~0.103 ETH from dev wallet (0.05 LP + 0.05 UNCX vest + 0.003 gas). Plus ~0.02 ETH on keeper. Both already funded per his confirmation.
+3. **Post-launch sequence** (after launch script completes):
+   - Capture deployed addresses from `broadcast/Deploy.s.sol/8453/run-latest.json`
+   - Update Vercel env: `NEXT_PUBLIC_DUEL_ROUTER_ADDRESS`, `NEXT_PUBLIC_BRAWL_PAIR_ADDRESS`, `NEXT_PUBLIC_MARKETPLACE_ADDRESS`, `NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS=0x613794Dc02cc1a9f29Fbbdc8C5A82d08162bc04E`
+   - Redeploy Vercel
+   - SSH `truenas-discord`: edit compose to flip RPC + 6 contract addresses to mainnet + WIPE_*_ON_STARTUP=true, restart, then reset wipe flags
+   - Spin up keeper bots (Docker on TrueNAS, same pattern as `baseic-discord` stack)
+   - Transfer Duel + Graveyard + DuelRouter ownership to keeper EOA so it can call the setters
+4. **24-48h later**: run `script/RenounceOwnership.s.sol` to renounce BRAWL token. Game contracts stay dev-owned.
+
+### Convention notes
+
+- **Vercel CLI is authed on this machine as `ghubbers`**. Project ID `prj_iRuNcprC8ueTz8ulnhiAhWP32oLP` in `ghubbers-projects` team. `vercel env add/rm` works.
+- **GitHub repo is now PUBLIC**. Contract NatSpec @custom:github tags resolve. Local git user is correctly set to `baseicbrawlers@users.noreply.github.com` (override of global `smartiesbox` default).
+- **USD targets live on-chain post-c673de7**. Dashboard writes cents, keeper bots read from chain. No more env-var-based USD targets.
+- **Bash tool is the launch driver** — Darren has no native bash on Windows. For interactive scripts I'll run them, pipe `go` per chat instruction.
+
+### Live infra (deltas)
+
+- Last successful Vercel deploy: ID from `c673de7` push, aliased to baseicbrawlers.com. Frontend pointing at Sepolia contracts until post-launch flip.
+- GitBook: docs.baseicbrawlers.com fully synced to `c673de7`. All economics text reflects launch reality.
+
+---
+
 ## Session 2026-05-15 (launch eve, take 2 — currency-aware fights)
 
 ### What got shipped
