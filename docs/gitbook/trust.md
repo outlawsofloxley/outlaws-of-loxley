@@ -23,9 +23,7 @@ the token becomes a true fixed-supply ERC-20 with zero admin functions. verify o
 
 ## LP burned to 0xdead
 
-at launch, the brawl/eth liquidity pool was seeded on aerodrome v2 and **the LP tokens were sent straight to `0x000...dEaD`**. permanent.
-
-we considered locking on unicrypt instead, but the flat 0.1 ETH lock fee was nearly half the LP itself (small launch on purpose). burning is cheaper, simpler, and stronger: the LP can never be pulled, full stop. no lock to renew, no 6-month deadline, no "what happens when it unlocks" question.
+at launch, the brawl/eth liquidity pool was seeded on aerodrome v2 and **the LP tokens were sent straight to `0x000...dEaD`**. permanent. the LP can never be pulled, full stop. no lock to renew, no unlock date, no "what happens later" question.
 
 verify on-chain: the LP token contract for the brawl/eth aerodrome pair shows `0x000...dEaD` holding the entire LP supply (or close to it, modulo any swap fees that accrue back into the pool and don't tokenize). that address has no private key. nobody can withdraw.
 
@@ -52,7 +50,7 @@ the difference between **game tuning** and **rug capability** matters. you shoul
 
 even with a high-rarity king at 10+ wins, the resurrection formula (`base × tierMult × (10+wins)/100`) is **capped at $500 per single revive** by `Graveyard.resurrectionCap` (default 0.125 ETH). this stops the late-game from pricing out players entirely. the cap is dev-settable and the resurrect-cost-keeper bot mirrors it to USD as ETH price drifts, so $500 stays $500.
 
-## no team allocation, no presale, no vc round
+## no presale, no vc round, team tokens locked
 
 100,000 brawl supply, transparent split:
 
