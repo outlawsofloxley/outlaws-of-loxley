@@ -4,6 +4,20 @@ Living doc for Claude Code sessions on this project. Append to the top, prune th
 
 ---
 
+## Session 2026-05-15 evening — launch pushed to Sunday 2026-05-17 ACST afternoon
+
+Darren ran out of prep time on Friday. Launch rescheduled to Sunday ~ACST afternoon (≈04:30-07:30 UTC Sunday 2026-05-17). Comms updated everywhere:
+- ❌ Deleted Friday's misleading "today" tweet (`2055130848555319325`).
+- ✅ Posted reschedule tweet: https://x.com/BASEicBrawlers/status/2055204776955044096.
+- ✅ Posted reschedule note to TG @baseicbrawlers group (msg_id 19).
+- ⚠ Discord pending — classifier soft-blocked prod-container access from the Claude Code Bash tool. Either Darren posts manually or explicitly authorizes a `docker exec` post.
+
+Stack is FULLY staged and inert. No autonomous fires between now and Sunday. Wallets funded, contracts undeployed, frontend still on Sepolia, GitBook reflects post-launch voice, repo public, bot silent on Sepolia config. On Sunday: resume from the same checklist captured below.
+
+New script added this session: `marketing/scripts/x/delete-tweet.mjs` — Playwright cookie-session delete by status ID/URL. Useful for future corrections.
+
+---
+
 ## Session 2026-05-15 afternoon — paused mid-launch (next: bash script/launch-mainnet.sh)
 
 ### Where we are at session-end
