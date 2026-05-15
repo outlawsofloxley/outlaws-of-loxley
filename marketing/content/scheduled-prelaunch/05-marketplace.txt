@@ -1,0 +1,7 @@
+marketplace runs on the same site. list a brawler, set a price in eth, keep it in your wallet until it sells.
+
+7.5% dev fee. seller gets the rest.
+
+listed brawlers can't fight (no buying corpses mid-duel). graveyard brawlers can be listed too — some people collect them.
+
+IMAGE: marketing/art/brawler_2001.png

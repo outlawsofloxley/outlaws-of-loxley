@@ -1,0 +1,9 @@
+how a fight works:
+
+each round, both sides roll d20+dex against each other's armour. land = damage. miss = nothing. nat 20 = crit, double damage. first to zero hp loses.
+
+3 losses in a row = the graveyard. tie resets the clock.
+
+that's the whole loop. no flash, no cope.
+
+IMAGE: marketing/art/brawler_3.png
