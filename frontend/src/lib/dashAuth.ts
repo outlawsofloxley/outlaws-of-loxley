@@ -147,7 +147,10 @@ export async function verifySessionCookie(
 
 /** The address we'll compare the recovered-from-signature address against. */
 export function getAuthorizedDevAddress(): string | null {
-  const raw = process.env.NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS;
+  // Prefer the explicit DEV wallet env (deployer / owner of contracts).
+  // Falls back to HOUSE_KEEPER_ADDRESS for backward-compat with pre-launch
+  // setups where the keeper double-duty'd as the dashboard signer.
+  const raw = process.env.NEXT_PUBLIC_DEV_WALLET || process.env.NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS;
   if (!raw || !/^0x[0-9a-fA-F]{40}$/.test(raw)) return null;
   return raw.toLowerCase();
 }
