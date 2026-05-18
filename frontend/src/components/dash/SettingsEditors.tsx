@@ -1048,19 +1048,21 @@ function TierPricingEditor({
 
   const handle = () => {
     try {
-      // Validate + convert.
+      // Validate + convert. upToSold is uint128 in the contract so accept
+      // anything up to MAX_MINT (2000) — used to be range-capped at 65535
+      // because of an incorrect uint16 ABI declaration.
       const parsed = tiers.map((r, i) => {
-        const upTo = Number.parseInt(r.upToSold, 10);
+        const upToN = Number.parseInt(r.upToSold, 10);
         const eth = BigInt(r.ethPrice || '0');
         const usdc = BigInt(r.usdcPrice || '0');
         const usdt = BigInt(r.usdtPrice || '0');
-        if (!Number.isFinite(upTo) || upTo < 1 || upTo > 65535) {
-          throw new Error(`tier ${i + 1}: upToSold must be 1..65535`);
+        if (!Number.isFinite(upToN) || upToN < 1 || upToN > 1_000_000) {
+          throw new Error(`tier ${i + 1}: upToSold must be 1..1,000,000`);
         }
         if (eth < 0n || usdc < 0n || usdt < 0n) {
           throw new Error(`tier ${i + 1}: prices must be >= 0`);
         }
-        return { upToSold: upTo, ethPrice: eth, usdcPrice: usdc, usdtPrice: usdt };
+        return { upToSold: BigInt(upToN), ethPrice: eth, usdcPrice: usdc, usdtPrice: usdt };
       });
       // Ascending check.
       for (let i = 1; i < parsed.length; i++) {
