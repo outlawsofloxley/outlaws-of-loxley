@@ -74,7 +74,7 @@ const TIER_USDC_USDT = [20_000_000n, 25_000_000n, 30_000_000n, 35_000_000n, 40_0
 
 const MINTDROP_ABI = [
   'function priceTierCount() view returns (uint256)',
-  'function priceTiers(uint256) view returns (uint128 upToSold, uint128 ethPrice, uint128 usdcPrice, uint128 usdtPrice)',
+  'function priceTierAt(uint256 i) view returns ((uint128 upToSold, uint128 ethPrice, uint128 usdcPrice, uint128 usdtPrice))',
   'function setPriceTiers((uint128,uint128,uint128,uint128)[])',
 ];
 const FEED_ABI = [
@@ -109,7 +109,7 @@ async function tick() {
     ethUsdMicros = await getEthUsdMicros();
     count = Number(await mintDrop.priceTierCount());
     currentTiers = await Promise.all(
-      Array.from({ length: count }, (_, i) => mintDrop.priceTiers(i)),
+      Array.from({ length: count }, (_, i) => mintDrop.priceTierAt(i)),
     );
   } catch (e) {
     console.log(`[${ts}] ! read failed: ${e.message}`);
