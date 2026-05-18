@@ -358,9 +358,8 @@ export default function MintPage() {
           <div className="brawl-card p-3 border-2 border-brawl-cyan">
             <div className="brawl-header text-brawl-cyan mb-1">★ FOUNDER 100</div>
             <div className="text-brawl-text-dim">
-              Token IDs <strong>1–100</strong>, silver founder badge, bonus
-              <strong> 20 BRAWL</strong> airdrop (enough for 2 fights), and
-              your <strong>first resurrect is free</strong>.
+              Token IDs <strong>1–100</strong>, silver founder badge, and your{' '}
+              <strong>first resurrect is free</strong>.
             </div>
           </div>
           <div className="brawl-card p-3 border-2 border-brawl-orange">
@@ -612,11 +611,10 @@ function IdlePanel(props: IdlePanelProps) {
             active={paymentType === 'eth'}
             onClick={() => setPaymentType('eth')}
           />
-          <PaymentTab
-            label={`USDT · ${usdtPriceLabel}`}
-            active={paymentType === 'usdt'}
-            onClick={() => setPaymentType('usdt')}
-          />
+          {/* USDT/USDC paths temporarily hidden — mainnet deploy wired MintDrop
+              to a MockUSDT test token (env-var oversight). ETH path works
+              correctly. USDT/USDC will return once MintDrop is repointed at
+              real USDT (0xfde4...699bb2) + USDC (0x83358...02913) on Base. */}
         </div>
       </div>
 
