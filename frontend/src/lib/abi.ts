@@ -237,7 +237,7 @@ export const MINTDROP_ABI = parseAbi([
   'function paused() view returns (bool)',
   // v5+ tier pricing reads (revert on v4, handle defensively in UI)
   'function priceTierCount() view returns (uint256)',
-  'function priceTierAt(uint256 i) view returns ((uint16 upToSold, uint128 ethPrice, uint128 usdcPrice, uint128 usdtPrice))',
+  'function priceTierAt(uint256 i) view returns ((uint128 upToSold, uint128 ethPrice, uint128 usdcPrice, uint128 usdtPrice))',
   'function priceForMint(uint256 mintNumber) view returns (uint256 eth, uint256 usdc, uint256 usdt)',
   'function batchCost(uint256 count) view returns (uint256 ethTotal, uint256 usdcTotal, uint256 usdtTotal)',
 
@@ -249,7 +249,7 @@ export const MINTDROP_ABI = parseAbi([
   'function mintMultipleWithUSDT(address to, uint256 count) returns (uint256[] tokenIds)',
   'function mintMultipleWithUSDC(address to, uint256 count) returns (uint256[] tokenIds)',
   'function setPrices(uint256 _ethPrice, uint256 _usdtPrice, uint256 _usdcPrice)',
-  'function setPriceTiers((uint16 upToSold, uint128 ethPrice, uint128 usdcPrice, uint128 usdtPrice)[] tiers)',
+  'function setPriceTiers((uint128 upToSold, uint128 ethPrice, uint128 usdcPrice, uint128 usdtPrice)[] tiers)',
   'function setAirdropPerMint(uint256 _airdrop)',
   'function setFounderAirdrop(uint256 _amount)',
   'function setLpShare(uint256 _bps)',
