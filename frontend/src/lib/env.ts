@@ -30,6 +30,9 @@ export const envRaw = {
   brawlPairAddress: process.env.NEXT_PUBLIC_BRAWL_PAIR_ADDRESS,
   aerodromeRouterAddress: process.env.NEXT_PUBLIC_AERODROME_ROUTER,
   walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+  /** BRAWLTimelock deployment, holds the team-vault BRAWL with linear vest.
+   *  Null pre-deploy; the /lock page degrades to a "not deployed yet" notice. */
+  brawlTimelockAddress: process.env.NEXT_PUBLIC_BRAWL_TIMELOCK_ADDRESS,
 } as const;
 
 function isHex40(s: string): s is `0x${string}` {
@@ -90,6 +93,10 @@ export type EnvValidation =
          *  picker offers WalletConnect (QR code for mobile wallets:
          *  Rainbow, Trust, Binance, MetaMask Mobile, etc.). */
         walletConnectProjectId: string | null;
+        /** BRAWLTimelock contract address. When set, the /lock page renders
+         *  a countdown + verifiable on-chain data; when null, /lock shows
+         *  a "lock contract not deployed yet" placeholder. */
+        brawlTimelockAddress: `0x${string}` | null;
       };
     }
   | { ok: false; errors: string[] };
@@ -157,6 +164,7 @@ export function validateEnv(): EnvValidation {
   const duelRouterAddress = tryOptional(envRaw.duelRouterAddress);
   const brawlPairAddress = tryOptional(envRaw.brawlPairAddress);
   const aerodromeRouterAddress = tryOptional(envRaw.aerodromeRouterAddress);
+  const brawlTimelockAddress = tryOptional(envRaw.brawlTimelockAddress);
 
   // Optional: WalletConnect cloud project id. WalletConnect IDs are 32-char
   // hex (no 0x prefix). If unset/blank, the picker simply omits the
@@ -186,6 +194,7 @@ export function validateEnv(): EnvValidation {
       brawlPairAddress,
       aerodromeRouterAddress,
       walletConnectProjectId,
+      brawlTimelockAddress,
     },
   };
 }

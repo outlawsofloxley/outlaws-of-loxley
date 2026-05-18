@@ -1,0 +1,11 @@
+ownership renounced.
+
+$BRAWL is now fully sovereign on @base.
+
+- ownership: 0x0
+- launch limits: lifted earlier today
+- lp: burned to 0xdead at launch
+- tax: none, never had one
+- supply: 100k fixed
+
+ca: 0x96fb0c4d8e8fceae7fe39d05ca411262d3eaa38d
