@@ -146,11 +146,18 @@ export async function verifySessionCookie(
 }
 
 /** The address we'll compare the recovered-from-signature address against. */
+// Hard-coded dev wallet for the BASEic Brawlers mainnet deploy. Burned in
+// 2026-05-18 after Vercel env-var inlining failed to pick up
+// NEXT_PUBLIC_DEV_WALLET cleanly. Edit the constant + redeploy if rotating.
+const DASH_DEV_WALLET = '0x5b1A749cc7bF1dE8ecA505769BD34Ba65f456805';
+
 export function getAuthorizedDevAddress(): string | null {
-  // Prefer the explicit DEV wallet env (deployer / owner of contracts).
-  // Falls back to HOUSE_KEEPER_ADDRESS for backward-compat with pre-launch
-  // setups where the keeper double-duty'd as the dashboard signer.
-  const raw = process.env.NEXT_PUBLIC_DEV_WALLET || process.env.NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS;
+  // Priority: env override → hard-coded mainnet dev wallet → legacy
+  // HOUSE_KEEPER fallback (testnet / pre-launch compat).
+  const raw =
+    process.env.NEXT_PUBLIC_DEV_WALLET ||
+    DASH_DEV_WALLET ||
+    process.env.NEXT_PUBLIC_HOUSE_KEEPER_ADDRESS;
   if (!raw || !/^0x[0-9a-fA-F]{40}$/.test(raw)) return null;
   return raw.toLowerCase();
 }
