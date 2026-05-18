@@ -14,6 +14,7 @@ import { parseEther, parseUnits, formatEther, formatUnits } from 'viem';
 import {
   useAccount,
   useReadContract,
+  useReadContracts,
   useWriteContract,
   useWaitForTransactionReceipt,
 } from 'wagmi';
@@ -1018,14 +1019,46 @@ function TierPricingEditor({
   const { env } = requireEnv();
   const { writeContract, isPending, isMining, err, hash, isSuccess, reset } = useTxWrite(onSuccess);
   const postAudit = useAuditPost();
-  // Pre-fill with the locked-in mainnet 5-tier table; user can edit + add/remove.
-  const [tiers, setTiers] = useState<TierRow[]>([
-    { upToSold: '100', ethPrice: '0', usdcPrice: '0', usdtPrice: '0' },
-    { upToSold: '500', ethPrice: '10000000000000000', usdcPrice: '40000000', usdtPrice: '40000000' },
-    { upToSold: '1000', ethPrice: '11250000000000000', usdcPrice: '45000000', usdtPrice: '45000000' },
-    { upToSold: '1500', ethPrice: '12500000000000000', usdcPrice: '50000000', usdtPrice: '50000000' },
-    { upToSold: '2000', ethPrice: '15000000000000000', usdcPrice: '60000000', usdtPrice: '60000000' },
-  ]);
+  const [tiers, setTiers] = useState<TierRow[]>([]);
+  const [tiersPrefilled, setTiersPrefilled] = useState(false);
+
+  // Pull each on-chain tier so the editor reflects what's actually deployed
+  // (instead of a stale hardcoded default — which caused the editor to show
+  // the original $0/$40/$45/$50/$60 ladder long after the keeper repegged).
+  const tierCountN = tierCount !== undefined ? Number(tierCount) : 0;
+  const tierReads = useReadContracts({
+    contracts: Array.from({ length: tierCountN }, (_, i) => ({
+      abi: MINTDROP_ABI,
+      address: env.mintDropAddress,
+      functionName: 'priceTierAt' as const,
+      args: [BigInt(i)] as const,
+    })),
+    query: { enabled: available && tierCountN > 0 },
+  });
+
+  useEffect(() => {
+    if (tiersPrefilled) return;
+    if (!tierReads.data || tierReads.data.length === 0) return;
+    const rows: TierRow[] = tierReads.data.map((r) => {
+      const v = r.result as unknown;
+      if (!v) return { ...EMPTY_TIER };
+      // viem returns the struct as a named-fields object for named ABIs.
+      const o = v as {
+        upToSold?: number | bigint;
+        ethPrice?: bigint;
+        usdcPrice?: bigint;
+        usdtPrice?: bigint;
+      };
+      return {
+        upToSold: String(o.upToSold ?? 0),
+        ethPrice: String(o.ethPrice ?? 0n),
+        usdcPrice: String(o.usdcPrice ?? 0n),
+        usdtPrice: String(o.usdtPrice ?? 0n),
+      };
+    });
+    setTiers(rows);
+    setTiersPrefilled(true);
+  }, [tierReads.data, tiersPrefilled]);
 
   if (!available) {
     return (

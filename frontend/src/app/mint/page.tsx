@@ -30,7 +30,7 @@ import { BRAWLERS_ABI, ERC20_ABI, MINTDROP_ABI } from '@/lib/abi';
 
 // Chainlink ETH/USD aggregator on Base mainnet — used to display "(~$X)"
 // USD equivalents next to ETH amounts on the mint UI.
-const CHAINLINK_ETH_USD = '0x71041dDdAd3595F9CEd3DcCFBe3D1F4b0a16Bb70' as const;
+const CHAINLINK_ETH_USD = '0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70' as const;
 const AGGREGATOR_V3_ABI = parseAbi([
   'function latestRoundData() view returns (uint80,int256 answer,uint256,uint256 updatedAt,uint80)',
   'function decimals() view returns (uint8)',

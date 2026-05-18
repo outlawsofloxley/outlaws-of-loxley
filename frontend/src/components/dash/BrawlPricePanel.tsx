@@ -11,7 +11,7 @@ import { formatUnits, parseAbi, type Address } from 'viem';
 import { BRAWL_ABI, AERODROME_PAIR_ABI } from '@/lib/abi';
 import { requireEnv } from '@/lib/env';
 
-const CHAINLINK_ETH_USD_BASE: Address = '0x71041dDdAd3595F9CEd3DcCFBe3D1F4b0a16Bb70';
+const CHAINLINK_ETH_USD_BASE: Address = '0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70';
 const AGGREGATOR_V3_ABI = parseAbi([
   'function latestRoundData() view returns (uint80,int256,uint256,uint256,uint80)',
   'function decimals() view returns (uint8)',

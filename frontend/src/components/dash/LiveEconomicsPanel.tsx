@@ -7,7 +7,7 @@
  *
  * Sources:
  *   - BRAWL/ETH from the Aerodrome v2 pair reserves (NEXT_PUBLIC_BRAWL_PAIR_ADDRESS).
- *   - ETH/USD from Chainlink (Base mainnet: 0x71041dDdAd3595F9CEd3DcCFBe3D1F4b0a16Bb70).
+ *   - ETH/USD from Chainlink (Base mainnet: 0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70).
  *   - Fight cost (BRAWL wei) from DuelRouter.fightCostBrawl (when configured)
  *     or Duel.fightCost (legacy fallback).
  *   - Resurrect base cost (ETH wei) from Graveyard.resurrectionCost.
@@ -28,7 +28,7 @@ import {
 } from '@/lib/abi';
 import { requireEnv } from '@/lib/env';
 
-const CHAINLINK_ETH_USD_BASE: Address = '0x71041dDdAd3595F9CEd3DcCFBe3D1F4b0a16Bb70';
+const CHAINLINK_ETH_USD_BASE: Address = '0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70';
 const AGGREGATOR_V3_ABI = parseAbi([
   'function latestRoundData() view returns (uint80,int256 answer,uint256,uint256 updatedAt,uint80)',
   'function decimals() view returns (uint8)',
@@ -149,6 +149,18 @@ export function LiveEconomicsPanel() {
     ? Number(marketplaceFee.data as number) / 100
     : null;
 
+  // ── BRAWL total supply, for market cap ──
+  const brawlSupply = useReadContract({
+    abi: BRAWL_ABI,
+    address: env.brawlAddress,
+    functionName: 'totalSupply',
+    query: { refetchInterval: refreshMs },
+  });
+  const marketCapUsd = useMemo(() => {
+    if (!brawlSupply.data || brawlUsd === null) return null;
+    return Number(formatUnits(brawlSupply.data as bigint, 18)) * brawlUsd;
+  }, [brawlSupply.data, brawlUsd]);
+
   // ── Keeper wallet balances ──
   const keeperAddr = env.houseKeeperAddress;
   const keeperEth = useBalance({
@@ -189,8 +201,24 @@ export function LiveEconomicsPanel() {
         </div>
 
         <div className="text-brawl-text-dim">BRAWL/USD (Aerodrome)</div>
-        <div className="text-brawl-text text-right">
+        <div className="text-brawl-text text-right font-mono">
           {brawlUsd !== null ? fmtUsd(brawlUsd, 6) : '—'}
+        </div>
+
+        <div className="text-brawl-text-dim">Market cap</div>
+        <div className="text-brawl-text text-right font-mono">
+          {marketCapUsd !== null ? (
+            <span>
+              ${marketCapUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              <span className="text-brawl-text-faint ml-2">
+                ({brawlSupply.data
+                  ? Number(formatUnits(brawlSupply.data as bigint, 18)).toLocaleString()
+                  : '—'} BRAWL)
+              </span>
+            </span>
+          ) : (
+            '—'
+          )}
         </div>
 
         <div className="text-brawl-text-dim">BRAWL/ETH spot</div>
