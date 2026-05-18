@@ -127,6 +127,15 @@ export function Footer() {
                   → Chart on DexScreener
                 </a>
               )}
+              {env?.brawlTimelockAddress && (
+                <a
+                  href="/lock"
+                  className="brawl-header text-[0.7rem] text-brawl-green hover:text-brawl-orange transition-colors"
+                  title="20k team BRAWL locked, 6mo linear vest — live countdown"
+                >
+                  → Team Lock
+                </a>
+              )}
             </div>
           </div>
         )}

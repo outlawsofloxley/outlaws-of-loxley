@@ -1,6 +1,7 @@
-🔒 {{VEST_AMOUNT}} $BRAWL of the dev allocation now vests linearly over {{VEST_DAYS}} days on @UNCX_token.
+🔒 {{VEST_AMOUNT}} $BRAWL of the team allocation now vests linearly over {{VEST_DAYS}} days in our own on-chain timelock.
 
-half the dev bag is on a timer. you can watch it unlock block by block.
+no third party, no platform fee, no admin function. beneficiary is immutable. anyone can call release().
 
-vesting dashboard: https://app.uncx.network/services/token-vesting
+live countdown: https://baseicbrawlers.com/lock
+lock contract: https://basescan.org/address/{{TIMELOCK_ADDR}}#code
 tx: https://basescan.org/tx/{{TX_HASH}}

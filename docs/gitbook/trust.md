@@ -55,7 +55,7 @@ even with a high-rarity king at 10+ wins, the resurrection formula (`base × tie
 100,000 brawl supply, transparent split:
 
 - **initial LP**: 50,000 brawl + ~$200 eth, paired on Aerodrome v2 and the LP token burned to `0xdead`. permanent. no team unlock, no rug path.
-- **team vault**: 20,000 brawl locked on UNCX V2 token vesting. 6-month linear vest, no cliff, single beneficiary = dev wallet. verifiable on app.uncx.network.
+- **team vault**: 20,000 brawl locked in our own `BRAWLTimelock` contract at [`0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761`](https://basescan.org/address/0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761#code). 6-month linear vest, no cliff, immutable beneficiary = dev wallet. no admin function, no owner, no escape hatch. anyone can call `release()` to push the vested portion to the beneficiary. live countdown + on-chain stats at [baseicbrawlers.com/lock](https://baseicbrawlers.com/lock).
 - **auto-fight keeper wallet**: 20,000 brawl held by the keeper EOA. used as the per-fight stake float for the 10 house brawlers + as fightCost dust. recycles through duels (winner gets the pot back), doesn't deplete.
 - **dev / ops / season prizes**: 10,000 brawl on the dev wallet. ops budget for infra, future seasons, partnerships. no contract enforcement on this slice — trust-based.
 - **MintDrop airdrop pool**: 0 brawl. the per-mint and founder airdrop bonuses were both dropped at launch to keep allocation lean. founders keep the free first revive + 25% fight discount + free Tier-1 mint; players don't get BRAWL on mint.
@@ -68,7 +68,8 @@ this isn't a token where the team holds half. there's no vesting cliff to fear. 
 
 - **basescan** the brawl token contract: confirm `owner()` returns `0x0`.
 - **the LP burn address** on basescan: `0x000000000000000000000000000000000000dEaD` holding the brawl/eth pair tokens. anyone can verify.
-- **the dev wallet** on basescan: any large brawl transfer out is worth a question.
+- **the team-lock contract**: visit [baseicbrawlers.com/lock](https://baseicbrawlers.com/lock) for the live countdown, or read the [80-line source on basescan](https://basescan.org/address/0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761#code).
+- **the dev wallet** on basescan: any large brawl transfer out is worth a question (note: the 20k team allocation has already left the dev wallet for the timelock — that transfer is the expected one).
 - **#announcements** in discord for upgrades or major changes.
 
 if i ever do something sketchy, the on-chain receipts will be public within seconds. that's the only enforcement i can really offer. but it's better than nothing, and it's better than most projects.

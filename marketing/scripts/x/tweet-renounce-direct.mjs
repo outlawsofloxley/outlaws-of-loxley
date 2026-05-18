@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
-const text = readFileSync('./drafts/soft-shill-1.txt', 'utf8').trim();
+const text = readFileSync('./drafts/team-lock.txt', 'utf8').trim();
 const browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext({ storageState: './.session.json', viewport: { width: 1280, height: 900 } });
 const page = await ctx.newPage();

@@ -44,7 +44,14 @@ a solo dev. me. building on base. everything ships under the same wallet, same h
 
 ## are there team tokens / vesting / advisors?
 
-no team tokens, no vesting cliff, no advisors. 100,000 brawl supply, allocation listed in **trust signals**. dev treasury (45,500 brawl) is on a single eoa, not a vesting contract. that's a trust-based commitment, not a contractual one. if i dump it, you'll see it on basescan, the project is over, you act accordingly.
+no advisors. team tokens YES — 20,000 brawl is locked in our own [`BRAWLTimelock`](https://basescan.org/address/0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761#code) vesting contract. 6-month linear vest, no cliff, immutable beneficiary = dev wallet, no admin function on the contract. anyone can call `release()` to push the vested portion to the beneficiary. countdown UI lives at [baseicbrawlers.com/lock](https://baseicbrawlers.com/lock).
+
+the rest of the supply (full breakdown in **trust signals**):
+- 27,500 brawl in the burned LP (effectively gone forever)
+- 20,000 brawl on the keeper EOA (auto-fight stake float, recycles through duels)
+- 10,000 brawl dev liquid (ops, infra, season prizes — trust-based, not vested)
+
+so 70% of supply is either burned-LP or locked-vest at launch. 20% is keeper float that recycles. 10% is dev ops.
 
 ## what if a contract has a bug?
 
@@ -62,9 +69,13 @@ a small service that runs off the dev wallet. its job:
 
 the keeper holds a small eth budget for gas (~0.005 eth covers months at base prices). it only has permission to call `setFightEconomics` on the duel contract.
 
-## what happens at the end of the 6-month LP lock?
+## what happens to the LP after launch?
 
-i'll re-lock or migrate. the choice will be in #announcements on discord. unilateral pull is technically possible once the lock expires but it's career-ending, so it's not a real option.
+nothing. the LP was burned to `0xdead` at launch — there's no unlock date, no re-lock, no "what if". the brawl/eth aerodrome pair will keep accruing swap fees back into itself, and those fees compound for the players holding brawl. there is no key for the burn address, so the LP can never be pulled. the only way out for liquidity is for users to swap their brawl back.
+
+## what happens at the end of the 6-month team-lock vest?
+
+the dev wallet will hold the full 20k once it's done linearly streaming over the 180 days. those tokens become liquid in the dev wallet at that point — same trust-based commitment as the 10k that's already there. countdown on [/lock](https://baseicbrawlers.com/lock).
 
 ## are there going to be more drops?
 

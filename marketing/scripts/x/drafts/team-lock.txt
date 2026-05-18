@@ -1,0 +1,8 @@
+20k team BRAWL locked.
+
+own vesting contract: 6 months linear, no cliff. beneficiary immutable. no admin function. no escape hatch.
+
+verify the source, audit the math, watch the countdown:
+baseicbrawlers.com/lock
+
+ca: 0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761
