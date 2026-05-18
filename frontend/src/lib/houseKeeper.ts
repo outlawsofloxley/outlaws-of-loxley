@@ -23,10 +23,35 @@ import {
   createPublicClient,
   createWalletClient,
   defineChain,
+  fallback,
   http,
   parseAbi,
   type Address,
 } from 'viem';
+
+// Server-side RPC pool. mainnet.base.org rate-limits aggressively (429s after
+// a handful of eth_call hits within a minute), which silently broke
+// /api/house/status — endpoint returned ok:false and the frontend rendered
+// "0 fighters in roster" while on-chain reality was 10. publicnode +
+// blockpi are way more generous; we keep the env-configured URL first
+// (for chain consistency) and only fall back on rate-limit/timeout.
+function basePool(chainId: number, primary: string): string[] {
+  if (chainId === 8453) {
+    return [
+      primary,
+      'https://base-rpc.publicnode.com',
+      'https://base.blockpi.network/v1/rpc/public',
+    ].filter((u, i, a) => a.indexOf(u) === i);
+  }
+  if (chainId === 84532) {
+    return [
+      primary,
+      'https://base-sepolia-rpc.publicnode.com',
+      'https://sepolia.base.org',
+    ].filter((u, i, a) => a.indexOf(u) === i);
+  }
+  return [primary];
+}
 import { privateKeyToAccount } from 'viem/accounts';
 import {
   ensureDashSchema,
@@ -163,7 +188,12 @@ export async function readHouseState(): Promise<HouseStatus> {
 
   const client = createPublicClient({
     chain: chain(env.chainId, env.rpcUrl),
-    transport: http(env.rpcUrl),
+    transport: fallback(
+      basePool(env.chainId, env.rpcUrl).map((u) =>
+        http(u, { timeout: 5000, retryCount: 1 }),
+      ),
+      { rank: false },
+    ),
   });
 
   const nextTokenIdRaw = await client.readContract({
@@ -312,11 +342,17 @@ export async function runHouseMaintenance(): Promise<MaintenanceResult> {
   }
 
   const chainDef = chain(env.chainId, env.rpcUrl);
-  const publicClient = createPublicClient({ chain: chainDef, transport: http(env.rpcUrl) });
+  const rpcTransport = fallback(
+    basePool(env.chainId, env.rpcUrl).map((u) =>
+      http(u, { timeout: 5000, retryCount: 1 }),
+    ),
+    { rank: false },
+  );
+  const publicClient = createPublicClient({ chain: chainDef, transport: rpcTransport });
   const walletClient = createWalletClient({
     account,
     chain: chainDef,
-    transport: http(env.rpcUrl),
+    transport: rpcTransport,
   });
 
   // 1) Ensure the keeper has approved the Duel contract to spend BRAWL.
