@@ -195,7 +195,18 @@ export function LiveEconomicsPanel() {
 
         <div className="text-brawl-text-dim">BRAWL/ETH spot</div>
         <div className="text-brawl-text text-right">
-          {brawlEthSpot !== null ? brawlEthSpot.toExponential(3) : '—'} ETH
+          {brawlEthSpot !== null ? (
+            <span className="font-mono">
+              {brawlEthSpot.toFixed(8)} <span className="text-brawl-text-faint">ETH</span>
+              {brawlUsd !== null && (
+                <span className="text-brawl-text-faint ml-2">
+                  ({fmtUsd(brawlUsd, 6)})
+                </span>
+              )}
+            </span>
+          ) : (
+            '—'
+          )}
         </div>
       </div>
 

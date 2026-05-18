@@ -340,19 +340,29 @@ export default function MintPage() {
     const cents = (wei * ans * 100n) / (10n ** BigInt(18 + Number(ethUsdDecimals)));
     return `$${(Number(cents) / 100).toFixed(2)}`;
   };
+  // Trim ETH display to a sane number of digits. formatEther emits the full
+  // 18-decimal repr (e.g. "0.009460909173749671") which is unreadable as a
+  // price label. 5 decimals covers down to 0.00001 ETH (~$0.02 at $2k ETH).
+  const fmtEth = (wei: bigint): string => {
+    const s = formatEther(wei);
+    const [int, frac = ''] = s.split('.');
+    if (!frac) return int ?? '0';
+    return `${int}.${frac.slice(0, 5).padEnd(5, '0')}`;
+  };
   const perEthWei = batchEthTotal !== undefined && batchCount > 0n
     ? batchEthTotal / batchCount
     : ethPrice;
   const perEthUsd = ethToUsd(perEthWei);
+  // Lead with USD (it's the stable thing); ETH shown after as the wire amount.
   const ethPriceLabel = perEthWei !== undefined
-    ? `${formatEther(perEthWei)} ${symbol}${perEthUsd ? ` (~${perEthUsd})` : ''}`
+    ? `${perEthUsd ?? '…'} · ${fmtEth(perEthWei)} ${symbol}`
     : '…';
   const usdtPriceLabel = batchUsdtTotal !== undefined && batchCount > 0n
     ? `${formatUnits(batchUsdtTotal / batchCount, 6)} USDT`
     : usdtPrice !== undefined ? `${formatUnits(usdtPrice, 6)} USDT` : '…';
   const ethTotalUsd = ethToUsd(batchEthTotal);
   const ethTotalLabel = batchEthTotal !== undefined
-    ? `${formatEther(batchEthTotal)} ${symbol}${ethTotalUsd ? ` (~${ethTotalUsd})` : ''}`
+    ? `${ethTotalUsd ?? '…'} · ${fmtEth(batchEthTotal)} ${symbol}`
     : '…';
   const usdtTotalLabel = batchUsdtTotal !== undefined
     ? `${formatUnits(batchUsdtTotal, 6)} USDT`
@@ -704,6 +714,10 @@ function CountPicker({
   setCount: (n: number) => void;
 }) {
   const presets = [1, 2, 5, 10, 20];
+  // Show the input ONLY when the active count isn't one of the presets — so
+  // we don't render "1 2 5 10 20 1" (the trailing 1 was the input mirroring
+  // the active preset and looked like a duplicate).
+  const isCustom = !presets.includes(count);
   return (
     <div>
       <div className="text-xs brawl-header text-brawl-text-faint mb-2">
@@ -725,19 +739,30 @@ function CountPicker({
             {n}
           </button>
         ))}
-        <input
-          type="number"
-          inputMode="numeric"
-          min={1}
-          max={20}
-          value={count}
-          onChange={(e) => {
-            const n = Number.parseInt(e.target.value, 10);
-            if (Number.isInteger(n) && n >= 1 && n <= 20) setCount(n);
-          }}
-          className="w-20 px-2 py-2 bg-brawl-bg border-2 border-brawl-border text-brawl-text font-mono text-base focus:border-brawl-orange focus:outline-none min-h-[2.5rem]"
-          aria-label="custom mint count"
-        />
+        {isCustom ? (
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={20}
+            value={count}
+            onChange={(e) => {
+              const n = Number.parseInt(e.target.value, 10);
+              if (Number.isInteger(n) && n >= 1 && n <= 20) setCount(n);
+            }}
+            className="w-20 px-2 py-2 bg-brawl-bg border-2 border-brawl-orange text-brawl-orange font-mono text-base focus:outline-none min-h-[2.5rem]"
+            aria-label="custom mint count"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setCount(3)}
+            className="brawl-header text-xs px-3 py-2 border-2 border-brawl-border-dim text-brawl-text-faint hover:text-brawl-text hover:border-brawl-orange min-h-[2.5rem]"
+            aria-label="custom mint count"
+          >
+            …
+          </button>
+        )}
       </div>
     </div>
   );
