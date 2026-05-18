@@ -163,6 +163,7 @@ function requireEnv() {
     graveyard: v.env.graveyardAddress,
     brawl: v.env.brawlAddress,
     duel: v.env.duelAddress,
+    duelRouter: v.env.duelRouterAddress,
   };
 }
 
@@ -273,13 +274,17 @@ export async function readHouseState(): Promise<HouseStatus> {
     }),
   );
 
+  // When the DuelRouter is active the relevant BRAWL spender is the router,
+  // not the Duel contract. Duel.fightCost is 0 in router mode. Fall back to
+  // Duel only for pre-router (legacy testnet) deployments.
+  const brawlSpender: Address = env.duelRouter ?? env.duel;
   const [allowance, balance, fightCost] = await Promise.all([
     client
       .readContract({
         abi: BRAWL_ABI,
         address: env.brawl,
         functionName: 'allowance',
-        args: [keeperAddress, env.duel],
+        args: [keeperAddress, brawlSpender],
       })
       .then((r) => (r as bigint).toString()),
     client
