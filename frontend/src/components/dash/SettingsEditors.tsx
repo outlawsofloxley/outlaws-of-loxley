@@ -254,6 +254,119 @@ export function SettingsEditors() {
           onSuccess={refetchAll}
         />
       </Section>
+
+      <Section title="Admin actions">
+        <WipeEventsButton />
+      </Section>
+    </div>
+  );
+}
+
+function WipeEventsButton() {
+  const [phase, setPhase] = useState<
+    | { kind: 'idle' }
+    | { kind: 'confirming' }
+    | { kind: 'running' }
+    | { kind: 'done'; wiped: Record<string, number>; cursorReset: string }
+    | { kind: 'error'; message: string }
+  >({ kind: 'idle' });
+  const [fromBlock, setFromBlock] = useState<string>('46050000');
+
+  const run = async () => {
+    setPhase({ kind: 'running' });
+    try {
+      const res = await fetch('/api/dash/wipe-events', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ fromBlock: fromBlock.trim() || undefined }),
+      });
+      const json = (await res.json()) as
+        | { ok: true; wiped: Record<string, number>; cursorReset: string }
+        | { ok: false; error: string };
+      if (!('ok' in json) || !json.ok) {
+        setPhase({ kind: 'error', message: ('error' in json && json.error) || 'wipe failed' });
+        return;
+      }
+      setPhase({ kind: 'done', wiped: json.wiped, cursorReset: json.cursorReset });
+    } catch (e) {
+      setPhase({ kind: 'error', message: e instanceof Error ? e.message : String(e) });
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="brawl-header text-sm text-brawl-text">Wipe stale event tables</div>
+      <div className="text-xs text-brawl-text-faint font-mono">
+        TRUNCATEs <code>mint_events</code>, <code>resurrect_events</code>,{' '}
+        <code>market_sales</code> and resets the dash sync cursor to the block
+        below minus 1. Use after a chain switch (e.g. Sepolia → mainnet) so the
+        revenue widgets stop showing rows from the wrong deployment. The next
+        /api/dash/sync poll walks forward from this block and rebuilds the
+        tables with mainnet-only data.
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="text-xs font-mono text-brawl-text-dim">
+          Resume from block
+          <input
+            type="text"
+            inputMode="numeric"
+            value={fromBlock}
+            onChange={(e) => setFromBlock(e.target.value)}
+            className="ml-2 w-32 px-2 py-1 bg-brawl-bg border-2 border-brawl-border text-brawl-text font-mono text-xs focus:border-brawl-orange focus:outline-none"
+            aria-label="resume from block"
+            disabled={phase.kind === 'running'}
+          />
+        </label>
+        {phase.kind === 'idle' || phase.kind === 'error' ? (
+          <button
+            type="button"
+            onClick={() => setPhase({ kind: 'confirming' })}
+            className="brawl-btn brawl-btn-secondary text-xs px-3 py-2"
+          >
+            Wipe stale events…
+          </button>
+        ) : null}
+        {phase.kind === 'confirming' && (
+          <>
+            <button
+              type="button"
+              onClick={run}
+              className="brawl-btn text-xs px-3 py-2 bg-brawl-red border-brawl-red text-brawl-bg hover:bg-brawl-red"
+            >
+              Confirm wipe
+            </button>
+            <button
+              type="button"
+              onClick={() => setPhase({ kind: 'idle' })}
+              className="brawl-btn brawl-btn-secondary text-xs px-3 py-2"
+            >
+              Cancel
+            </button>
+          </>
+        )}
+        {phase.kind === 'running' && (
+          <span className="text-xs font-mono text-brawl-orange">wiping…</span>
+        )}
+      </div>
+      {phase.kind === 'done' && (
+        <div className="text-xs font-mono text-brawl-green space-y-1">
+          <div>✓ wiped:</div>
+          {Object.entries(phase.wiped).map(([table, n]) => (
+            <div key={table} className="pl-3">
+              <span className="text-brawl-text-dim">{table}:</span>{' '}
+              <span className="text-brawl-text">{n} rows</span>
+            </div>
+          ))}
+          <div className="text-brawl-text-faint pt-1">
+            cursor: {phase.cursorReset}
+          </div>
+        </div>
+      )}
+      {phase.kind === 'error' && (
+        <div className="text-xs font-mono text-brawl-red">
+          ✗ {phase.message}
+        </div>
+      )}
     </div>
   );
 }
