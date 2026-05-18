@@ -92,19 +92,27 @@ async function main() {
       await shot(page, 'image-not-previewed');
       throw new Error('image upload preview never appeared');
     });
-    await page.waitForTimeout(800);
   }
-  await shot(page, 'pre-post');
-
   // Post button — data-testid changed over time, accept both names.
   const postBtn = page.locator('[data-testid="tweetButtonInline"], [data-testid="tweetButton"]').first();
   await postBtn.waitFor({ state: 'visible', timeout: 10_000 });
-  // Make sure it's enabled (X disables when text is empty / over limit).
-  const disabled = await postBtn.getAttribute('aria-disabled');
-  if (disabled === 'true') {
-    await shot(page, 'post-button-disabled');
-    throw new Error('Post button is disabled — check character count or media upload state.');
+
+  // Poll the Post button's enabled state. X sets aria-disabled=true while
+  // images are still uploading (even after the preview thumbnail appears) —
+  // the previous fixed 800ms wait was too short for some attachments and
+  // tripped the "disabled" guard. Poll up to 30s for the button to enable.
+  let enabled = false;
+  const enableDeadline = Date.now() + 30_000;
+  while (Date.now() < enableDeadline) {
+    const disabled = await postBtn.getAttribute('aria-disabled');
+    if (disabled !== 'true') { enabled = true; break; }
+    await page.waitForTimeout(400);
   }
+  if (!enabled) {
+    await shot(page, 'post-button-disabled');
+    throw new Error('Post button never enabled within 30s — check character count or media upload state.');
+  }
+  await shot(page, 'pre-post');
   await postBtn.click();
   console.log('[tweet] post clicked');
   await page.waitForTimeout(4000);

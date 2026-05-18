@@ -4,6 +4,7 @@
  * external dep) so the bundle stays tiny.
  */
 import type { ReactElement } from 'react';
+import { requireEnv } from '@/lib/env';
 
 interface SocialLink {
   href: string;
@@ -54,6 +55,23 @@ const SOCIALS: SocialLink[] = [
 ];
 
 export function Footer() {
+  // Pull live contract + pair addresses from env so the trading links always
+  // point at whatever's actually deployed on mainnet.
+  const env = (() => {
+    try { return requireEnv().env; } catch { return null; }
+  })();
+  const brawlAddr = env?.brawlAddress;
+  const pairAddr = env?.brawlPairAddress;
+  const aerodromeSwap = brawlAddr
+    ? `https://aerodrome.finance/swap?from=eth&to=${brawlAddr}`
+    : null;
+  const dexScreener = pairAddr
+    ? `https://dexscreener.com/base/${pairAddr}`
+    : null;
+  const basescanToken = brawlAddr
+    ? `https://basescan.org/token/${brawlAddr}`
+    : null;
+
   return (
     <footer className="border-t border-brawl-border bg-brawl-bg/95 mt-12">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 flex flex-col items-center gap-3">
@@ -74,6 +92,44 @@ export function Footer() {
             </li>
           ))}
         </ul>
+        {brawlAddr && (
+          <div className="flex flex-col items-center gap-1.5 text-xs">
+            <div className="text-brawl-text-faint font-mono">
+              $BRAWL CA:{' '}
+              <a
+                href={basescanToken ?? '#'}
+                target="_blank"
+                rel="noreferrer"
+                className="text-brawl-orange hover:underline break-all"
+                title="View on Basescan"
+              >
+                {brawlAddr}
+              </a>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap justify-center">
+              {aerodromeSwap && (
+                <a
+                  href={aerodromeSwap}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="brawl-header text-[0.7rem] text-brawl-cyan hover:text-brawl-orange transition-colors"
+                >
+                  → Trade on Aerodrome
+                </a>
+              )}
+              {dexScreener && (
+                <a
+                  href={dexScreener}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="brawl-header text-[0.7rem] text-brawl-cyan hover:text-brawl-orange transition-colors"
+                >
+                  → Chart on DexScreener
+                </a>
+              )}
+            </div>
+          </div>
+        )}
         <p className="brawl-header text-[0.65rem] text-brawl-text-faint tracking-wider">
           BASEic by name. Brutal by attitude.
         </p>
