@@ -25,8 +25,16 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from 'wagmi';
-import { formatEther, formatUnits, parseEventLogs } from 'viem';
+import { formatEther, formatUnits, parseAbi, parseEventLogs } from 'viem';
 import { BRAWLERS_ABI, ERC20_ABI, MINTDROP_ABI } from '@/lib/abi';
+
+// Chainlink ETH/USD aggregator on Base mainnet — used to display "(~$X)"
+// USD equivalents next to ETH amounts on the mint UI.
+const CHAINLINK_ETH_USD = '0x71041dDdAd3595F9CEd3DcCFBe3D1F4b0a16Bb70' as const;
+const AGGREGATOR_V3_ABI = parseAbi([
+  'function latestRoundData() view returns (uint80,int256 answer,uint256,uint256 updatedAt,uint80)',
+  'function decimals() view returns (uint8)',
+]);
 import { requireEnv } from '@/lib/env';
 import { nativeSymbol } from '@/lib/wagmi';
 import {
@@ -313,14 +321,38 @@ export default function MintPage() {
   // Per-unit label = total / count (cleaner than reading priceForMint(start)
   // separately). When tiered + batch straddles tiers, this averages, which is
   // fine for the at-a-glance label; the total is what's authoritative.
-  const ethPriceLabel = batchEthTotal !== undefined && batchCount > 0n
-    ? `${formatEther(batchEthTotal / batchCount)} ${symbol}`
-    : ethPrice !== undefined ? `${formatEther(ethPrice)} ${symbol}` : '…';
+  // Chainlink ETH/USD for displaying "(~$X)" alongside ETH amounts.
+  const { data: ethUsdRound } = useReadContract({
+    abi: AGGREGATOR_V3_ABI,
+    address: CHAINLINK_ETH_USD,
+    functionName: 'latestRoundData',
+  });
+  const { data: ethUsdDecimals } = useReadContract({
+    abi: AGGREGATOR_V3_ABI,
+    address: CHAINLINK_ETH_USD,
+    functionName: 'decimals',
+  });
+  const ethToUsd = (wei: bigint | undefined): string | null => {
+    if (!wei || !ethUsdRound || ethUsdDecimals === undefined) return null;
+    const ans = BigInt((ethUsdRound as readonly [bigint, bigint, bigint, bigint, bigint])[1]);
+    if (ans <= 0n) return null;
+    // dollars = wei * answer / 10^(18 + decimals)
+    const cents = (wei * ans * 100n) / (10n ** BigInt(18 + Number(ethUsdDecimals)));
+    return `$${(Number(cents) / 100).toFixed(2)}`;
+  };
+  const perEthWei = batchEthTotal !== undefined && batchCount > 0n
+    ? batchEthTotal / batchCount
+    : ethPrice;
+  const perEthUsd = ethToUsd(perEthWei);
+  const ethPriceLabel = perEthWei !== undefined
+    ? `${formatEther(perEthWei)} ${symbol}${perEthUsd ? ` (~${perEthUsd})` : ''}`
+    : '…';
   const usdtPriceLabel = batchUsdtTotal !== undefined && batchCount > 0n
     ? `${formatUnits(batchUsdtTotal / batchCount, 6)} USDT`
     : usdtPrice !== undefined ? `${formatUnits(usdtPrice, 6)} USDT` : '…';
+  const ethTotalUsd = ethToUsd(batchEthTotal);
   const ethTotalLabel = batchEthTotal !== undefined
-    ? `${formatEther(batchEthTotal)} ${symbol}`
+    ? `${formatEther(batchEthTotal)} ${symbol}${ethTotalUsd ? ` (~${ethTotalUsd})` : ''}`
     : '…';
   const usdtTotalLabel = batchUsdtTotal !== undefined
     ? `${formatUnits(batchUsdtTotal, 6)} USDT`
