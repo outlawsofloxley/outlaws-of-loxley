@@ -75,3 +75,7 @@ Thumbs.db
 *.key
 
 .vercel
+
+.duel-result.tmp.json
+*_dash.png
+discordmaybe.txt
