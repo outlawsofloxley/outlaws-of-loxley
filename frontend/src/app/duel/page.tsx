@@ -19,6 +19,13 @@ import {
   useWriteContract,
 } from 'wagmi';
 import { formatUnits } from 'viem';
+
+// BRAWL amounts on the duel UI render at 2 decimals — at ~$0.007/BRAWL,
+// anything beyond two decimal places is sub-cent noise and just makes the
+// number a wall of digits.
+function fmtBrawl(wei: bigint): string {
+  return Number(formatUnits(wei, 18)).toFixed(2);
+}
 import { useAllBrawlers } from '@/hooks/useAllBrawlers';
 import { useHouseWhitelist } from '@/hooks/useHouseWhitelist';
 import { useMarketListings } from '@/hooks/useMarketListings';
@@ -347,7 +354,7 @@ export default function DuelPage() {
               <strong className="text-brawl-orange">$1 per fighter</strong>{' '}
               ($2 pot). Pay in BRAWL or ETH, per side.{' '}
               <span className="text-brawl-text-faint">
-                ≈ {formatUnits(fightCost, 18)} BRAWL
+                ≈ {fmtBrawl(fightCost)} BRAWL
                 {fightCostEthVal !== undefined ? <> or {Number(formatUnits(fightCostEthVal, 18)).toFixed(6)} ETH</> : null}
               </span>{' '}
               · winner takes{' '}
@@ -1277,7 +1284,7 @@ function ReviewPanel({
             : isApproveMining
               ? 'Approval confirming, wallet will pop again for the stake'
               : isSigning
-                ? `Sign the ${fightCost !== undefined ? formatUnits(fightCost, 18) : ''} BRAWL stake in your wallet`
+                ? `Sign the ${fightCost !== undefined ? fmtBrawl(fightCost) : ''} BRAWL stake in your wallet`
                 : 'Ready, open your wallet to pay and start the fight'
         }
         gatedAction={{
@@ -1397,9 +1404,9 @@ function BrawlPreflight(props: BrawlPreflightProps) {
   }
 
   const pot = fightCost * 2n;
-  const stakeLabel = formatUnits(fightCost, 18);
-  const potLabel = formatUnits(pot, 18);
-  const balanceLabel = myBalance !== undefined ? `${formatUnits(myBalance, 18)} BRAWL` : '…';
+  const stakeLabel = fmtBrawl(fightCost);
+  const potLabel = fmtBrawl(pot);
+  const balanceLabel = myBalance !== undefined ? `${fmtBrawl(myBalance)} BRAWL` : '…';
 
   return (
     <div className="brawl-card p-3 space-y-2 text-sm font-mono">
