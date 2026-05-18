@@ -18,7 +18,7 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from 'wagmi';
-import { formatUnits } from 'viem';
+import { formatUnits, parseAbi } from 'viem';
 
 // BRAWL amounts on the duel UI render at 2 decimals — at ~$0.007/BRAWL,
 // anything beyond two decimal places is sub-cent noise and just makes the
@@ -183,6 +183,34 @@ export default function DuelPage() {
   });
   const fightCost = (env.duelRouterAddress ? fightCostRouterData : fightCostLegacyData) as bigint | undefined;
   const fightCostEthVal = fightCostEthData as bigint | undefined;
+
+  // Top-level "do I (the connected wallet) still need to set up router
+  // approvals?" check. Drives the first-time-fighter warning banner. We
+  // intentionally read at the outer scope (not inside MatchupPanel) so the
+  // banner shows BEFORE the user has picked a duel and clicked Fight —
+  // catches the trap of "I clicked but my wallet is doing weird stuff".
+  const { data: myRouterBrawlAllowance } = useReadContract({
+    abi: parseAbi(['function allowance(address,address) view returns (uint256)']),
+    address: env.brawlAddress,
+    functionName: 'allowance',
+    args: address && env.duelRouterAddress ? [address, env.duelRouterAddress] : undefined,
+    chainId: env.chainId,
+    query: { enabled: !!address && !!env.duelRouterAddress },
+  });
+  const { data: myRouterNftApproval } = useReadContract({
+    abi: parseAbi(['function isApprovedForAll(address,address) view returns (bool)']),
+    address: env.brawlersAddress,
+    functionName: 'isApprovedForAll',
+    args: address && env.duelRouterAddress ? [address, env.duelRouterAddress] : undefined,
+    chainId: env.chainId,
+    query: { enabled: !!address && !!env.duelRouterAddress },
+  });
+  const firstTimeFighter =
+    !!env.duelRouterAddress &&
+    !!address &&
+    fightCost !== undefined &&
+    ((typeof myRouterBrawlAllowance === 'bigint' && myRouterBrawlAllowance < fightCost) ||
+      myRouterNftApproval === false);
   const { data: devShareRouterData } = useReadContract({
     abi: DUEL_ROUTER_ABI,
     address: env.duelRouterAddress ?? undefined,
@@ -567,6 +595,25 @@ export default function DuelPage() {
                         <span className="text-brawl-text-faint text-xs ml-auto">
                           ≈ $1 either way
                         </span>
+                      </div>
+                    )}
+                    {firstTimeFighter && (
+                      <div className="border-2 border-brawl-orange bg-brawl-bg p-3 space-y-1.5">
+                        <div className="brawl-header text-xs text-brawl-orange">
+                          ⚠ first fight: 3 wallet popups
+                        </div>
+                        <div className="text-xs font-mono text-brawl-text-dim leading-relaxed">
+                          one-time setup, persists across all future fights. you&apos;ll
+                          see:
+                          <ol className="list-decimal list-inside mt-1 space-y-0.5 text-brawl-text">
+                            <li>approve BRAWL spending (gas)</li>
+                            <li>approve brawler NFT transfer (gas)</li>
+                            <li>sign the fight quote (free signature) + send tx (gas)</li>
+                          </ol>
+                          <div className="mt-1 text-brawl-text-faint">
+                            after this, every fight is just one signature + one tx.
+                          </div>
+                        </div>
                       </div>
                     )}
                     <button
