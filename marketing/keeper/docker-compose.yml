@@ -7,20 +7,41 @@
 #   2. docker compose up --build -d
 #   3. docker logs -f baseic-brawlers-keeper
 services:
-  keeper:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  fight-cost:
+    build: { context: ., dockerfile: Dockerfile }
     image: baseicbrawlers/keeper:latest
-    container_name: baseic-brawlers-keeper
-    env_file:
-      - .env
+    container_name: baseic-fight-cost
+    env_file: [.env]
+    command: ["node", "fight-cost-keeper.mjs"]
     restart: unless-stopped
     network_mode: bridge
     read_only: true
-    tmpfs:
-      - /tmp:size=8m
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
+    tmpfs: ["/tmp:size=8m"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
+  resurrect-cost:
+    build: { context: ., dockerfile: Dockerfile }
+    image: baseicbrawlers/keeper:latest
+    container_name: baseic-resurrect-cost
+    env_file: [.env]
+    command: ["node", "resurrection-cost-keeper.mjs"]
+    restart: unless-stopped
+    network_mode: bridge
+    read_only: true
+    tmpfs: ["/tmp:size=8m"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
+  mint-cost:
+    build: { context: ., dockerfile: Dockerfile }
+    image: baseicbrawlers/keeper:latest
+    container_name: baseic-mint-cost
+    env_file: [.env]
+    command: ["node", "mint-cost-keeper.mjs"]
+    restart: unless-stopped
+    network_mode: bridge
+    read_only: true
+    tmpfs: ["/tmp:size=8m"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
