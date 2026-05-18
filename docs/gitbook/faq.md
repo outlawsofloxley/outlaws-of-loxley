@@ -81,6 +81,10 @@ the dev wallet will hold the full 20k once it's done linearly streaming over the
 
 maybe seasons, maybe not. the project is "the 2,000 + 1 king brawlers exist forever." there's no plan to mint more. if i ever did add new content, it'd be a separate collection with its own contract and very loud signposting.
 
+## is there a roadmap?
+
+yes — full version on the [roadmap page](roadmap.md). short version: 2v2 duels and a weapons shop are next, 5v5 + tournaments + ranked seasons come after. it's a wishlist not a contract — dates are deliberately vague because the project is one person on one keyboard.
+
 ## can i mint multiple brawlers in one transaction?
 
 yes, 1, 2, 5, 10, or 20. bulk discount applies (see **minting**).

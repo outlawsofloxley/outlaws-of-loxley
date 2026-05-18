@@ -9,6 +9,7 @@
 * [Marketplace](marketplace.md)
 * [House fighters](house-fighters.md)
 * [Trust signals](trust.md)
+* [Roadmap](roadmap.md)
 * [Tips](tips.md)
 * [FAQ](faq.md)
 * [Links and contracts](links.md)

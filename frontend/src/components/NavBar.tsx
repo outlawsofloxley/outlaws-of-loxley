@@ -34,6 +34,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/browse', label: 'Browse' },
   { href: '/me', label: 'Profile' },
   { href: '/lock', label: 'Lock' },
+  { href: 'https://docs.baseicbrawlers.com/roadmap', label: 'Roadmap', external: true },
   { href: 'https://docs.baseicbrawlers.com', label: 'How to Play', external: true },
 ];
 

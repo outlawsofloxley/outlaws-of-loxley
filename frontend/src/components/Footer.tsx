@@ -153,6 +153,15 @@ export function Footer() {
           </a>
           <span className="mx-2">·</span>
           <a
+            href={`${GITBOOK_URL}/roadmap`}
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-brawl-orange transition-colors"
+          >
+            Roadmap
+          </a>
+          <span className="mx-2">·</span>
+          <a
             href="https://basescan.org"
             target="_blank"
             rel="noreferrer"
