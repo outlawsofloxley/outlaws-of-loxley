@@ -1,10 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo } from 'react';
 import { PixelAvatar } from './PixelAvatar';
 import type { Brawler } from '@/hooks/useAllBrawlers';
 import { rarityFromWeight, rarityLabel, rarityTextClass } from '@/lib/rarity';
 import { useBrawlerRanks } from '@/hooks/useBrawlerRanks';
+import { useHouseWhitelist } from '@/hooks/useHouseWhitelist';
+import { isHouseBrawler } from '@/lib/house';
+import { requireEnv } from '@/lib/env';
 
 interface BrawlerCardProps {
   brawler: Brawler;
@@ -18,9 +22,18 @@ export function BrawlerCard({ brawler }: BrawlerCardProps) {
   const rank = rankFor(brawler.tokenId);
   // Founder badges, purely cosmetic flex for the early minters. Token IDs
   // 1..50 = "FOUNDER 50" gold badge; 51..100 = "FOUNDER 100" silver.
-  // No stat / weapon / ELO impact, earned by being early.
-  const isFounder50 = brawler.tokenId >= 1 && brawler.tokenId <= 50;
-  const isFounder100 = brawler.tokenId > 50 && brawler.tokenId <= 100;
+  // EXCLUDES house brawlers (deploy-time keeper fighters) — even when their
+  // tokenId sits in 1..100, they're flagged isHouseBrawler on-chain and
+  // don't qualify for founder perks. UI gates the badge to match the
+  // contract-side exclusion in MintDrop / Duel / Graveyard.
+  const { env } = requireEnv();
+  const { whitelist: houseWhitelist } = useHouseWhitelist();
+  const houseIds = useMemo(() => new Set(houseWhitelist), [houseWhitelist]);
+  const isHouse = isHouseBrawler(
+    brawler.tokenId, brawler.owner, env.houseKeeperAddress, houseIds,
+  );
+  const isFounder50 = !isHouse && brawler.tokenId >= 1 && brawler.tokenId <= 50;
+  const isFounder100 = !isHouse && brawler.tokenId > 50 && brawler.tokenId <= 100;
 
   return (
     <Link
