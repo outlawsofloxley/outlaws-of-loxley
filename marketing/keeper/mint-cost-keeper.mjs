@@ -72,10 +72,15 @@ const TIER_USD_CENTS = [2000, 2500, 3000, 3500, 4000, 5000]; // $20, $25, $30, $
 const TIER_UP_TO_SOLD = [50, 100, 500, 1000, 1500, 2000];
 const TIER_USDC_USDT = [20_000_000n, 25_000_000n, 30_000_000n, 35_000_000n, 40_000_000n, 50_000_000n]; // 6-decimal
 
+// NOTE: the contract struct PriceTier uses `uint16 upToSold` (not uint128).
+// The selector for setPriceTiers depends on the exact tuple shape, so the
+// first field MUST be uint16 here or the call will hit a non-existent
+// selector and revert. The getter return tuple is forgiving (cast/ethers
+// decode either width), but keeping it consistent.
 const MINTDROP_ABI = [
   'function priceTierCount() view returns (uint256)',
-  'function priceTierAt(uint256 i) view returns ((uint128 upToSold, uint128 ethPrice, uint128 usdcPrice, uint128 usdtPrice))',
-  'function setPriceTiers((uint128,uint128,uint128,uint128)[])',
+  'function priceTierAt(uint256 i) view returns ((uint16 upToSold, uint128 ethPrice, uint128 usdcPrice, uint128 usdtPrice))',
+  'function setPriceTiers((uint16,uint128,uint128,uint128)[])',
 ];
 const FEED_ABI = [
   'function latestRoundData() view returns (uint80, int256 answer, uint256, uint256, uint80)',
@@ -134,7 +139,7 @@ async function tick() {
     console.log(`         T${i+1} $${TIER_USD_CENTS[i]/100} ${tag} ${Number(current)/1e18} → ${Number(target)/1e18} ETH (Δ ${(delta*100).toFixed(2)}%)`);
     if (delta >= DELTA_THRESHOLD) anyDrift = true;
     newTiers.push([
-      BigInt(TIER_UP_TO_SOLD[i]),
+      TIER_UP_TO_SOLD[i], // uint16 — keep as Number, ethers will encode
       target,
       TIER_USDC_USDT[i],
       TIER_USDC_USDT[i],
