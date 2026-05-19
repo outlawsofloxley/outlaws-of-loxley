@@ -818,6 +818,7 @@ const PIN_TARGETS = [
   { channel: 'general',       file: 'messages/seed-general.md' },
   { channel: 'introductions', file: 'messages/seed-introductions.md' },
   { channel: 'strategy',      file: 'messages/seed-strategy.md' },
+  { channel: 'brawl-token',   file: 'messages/seed-key-holders.md' },
 ];
 
 async function refreshPins(guild) {

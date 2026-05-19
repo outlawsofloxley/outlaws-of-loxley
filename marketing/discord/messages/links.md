@@ -4,32 +4,42 @@
 
 ## Site & app
 - 🌐 **Home** — https://baseicbrawlers.com
-- 📖 **How it works** — https://baseicbrawlers.com/about
+- 📖 **Handbook** — https://docs.baseicbrawlers.com
 - ⚔ **Arena** — https://baseicbrawlers.com/duel
 - 🏆 **Leaderboard** — https://baseicbrawlers.com/leaderboard
 - 🪦 **Graveyard** — https://baseicbrawlers.com/graveyard
 - 🛒 **Marketplace** — https://baseicbrawlers.com/market
+- 🔒 **Team-lock countdown** — https://baseicbrawlers.com/lock
+- 🗺️ **Roadmap** — https://docs.baseicbrawlers.com/roadmap
 
 ## Social
 - 🐦 **X** — https://x.com/BASEicBrawlers
 - 📣 **Telegram** — https://t.me/baseicbrawlers
 - 💬 **Discord** — you're already here
-
-## On-chain — currently Base Sepolia testnet (chain 84532)
-We're in **open beta**. Mint price is 0.0001 testnet ETH. Everything is real except the value.
-
-```
-Brawlers NFT  0x55695a72714a05ce1cab069e9d42341912f47602
-BRAWL token   0xf3b431d2afec0286723e058b7cf0110783323a0a
-Duel          0x09ac227ae70a030b5edb5c892a6c3ed730e4d4df
-Graveyard     0x7897a918e625e10b9658963d05e006980b0db918
-MintDrop      0xbf2db93fb3f642639a3a53942b224fa697ee31bd
-```
-
-Need testnet ETH? https://www.alchemy.com/faucets/base-sepolia
+- 🐙 **GitHub** — https://github.com/baseicbrawlers/baseic-brawlers
 
 ## On-chain — Base mainnet (chain 8453)
-Mainnet contracts will be posted in this exact message on launch day. Same wallet, same drill — just real money. LP gets seeded on Aerodrome and locked on Unicrypt for 6 months on day one. We'll post the lock URL here when it goes live.
+
+All 9 contracts verified on Basescan. Don't trust any address that isn't on this list.
+
+```
+BRAWL token     0x96fb0c4d8e8fceae7fe39d05ca411262d3eaa38d
+Brawlers (NFT)  0xb9701b88d717d9245927cb605df2b0f88718c0d3
+Duel            0xe0d53cf84d599a2257062152effc026cfef6205d
+DuelRouter      0xbd3abbf670afed06f6bcbe78ebcea93a58a0a4cb
+MintDrop        0x6394151f65b81359a47e193f8a0c80c4c2961544
+Marketplace     0xa2fea2f60a7f1010ee2f7f008801b365ddf79815
+Graveyard       0x3d5f560ef4fd09015bdd203a0e65d9aa94d96480
+BRAWLTimelock   0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761
+ArenaOptOut     0x60985c8426855d21F34a12d5e10892784aACD212
+BRAWL/ETH pair  0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c (Aerodrome v2)
+```
+
+## Trust receipts
+- 🔒 **LP burned** — LP tokens sent to `0x000…dEaD` at launch. The aerodrome BRAWL/ETH pool can never be pulled. [verify on basescan](https://basescan.org/address/0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c)
+- 🚫 **BRAWL ownership renounced** — `BRAWL.owner()` returns `0x0`. No mint, no blacklist, no limit changes possible. [verify on basescan](https://basescan.org/address/0x96fb0c4d8e8fceae7fe39d05ca411262d3eaa38d#readContract)
+- 🪙 **20k team vault locked** — Linear 6-month vest in our own BRAWLTimelock. Beneficiary immutable, no admin function exists. [contract source](https://basescan.org/address/0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761#code)
+- 🧾 **Full holder breakdown** — see https://docs.baseicbrawlers.com/key-holders for the address-by-address map of every large $BRAWL wallet.
 
 ---
 

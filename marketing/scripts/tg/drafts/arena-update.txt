@@ -1,0 +1,17 @@
+⚔️ arena update: per-brawler control + safer defaults
+
+just shipped some changes to /duel that fix two things people were running into:
+
+1. you no longer get stuck "in the arena" forever after one approval. the default is now 1 fight at a time — wallet pops, you fight, you auto-exit. want to queue 5/10/unlimited? pick from the dropdown in the arena status panel.
+
+2. own multiple brawlers? you can now opt individual brawlers out of the arena. tick / untick the checkbox per fighter. on-chain (advisory) so other players' clients honour it too — your rested brawler is invisible to everyone, not just you.
+
+new bits:
+- arena status panel on /duel shows your current allowance, balance, per-brawler toggles
+- "revoke approval" button for the nuclear option — full exit, nobody can pull from you until you re-approve
+- matchmaker now filters by balance too, so you won't get matched against a wallet with no $BRAWL (no more silent reverts)
+
+site: https://baseicbrawlers.com/duel
+new contract: https://basescan.org/address/0x60985c8426855d21F34a12d5e10892784aACD212#code
+
+hard refresh if you don't see the new panel yet.

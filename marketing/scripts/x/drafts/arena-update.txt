@@ -1,0 +1,9 @@
+⚔ arena update on $BRAWL
+
+shipped per-brawler control today.
+
+own multiple brawlers? you can now opt each one in or out individually. on-chain (advisory) so other players' clients honour it too, your rested brawler is invisible to everyone not just you.
+
+default also now 1 fight at a time, you auto-exit after.
+
+baseicbrawlers.com/duel

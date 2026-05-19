@@ -1,0 +1,44 @@
+===
+TWEET 1 (the hook):
+
+if you look at the $BRAWL top holders chart you'll see 4 wallets sitting at 10-20% each.
+
+before the FUD starts: here's what each of those wallets actually is.
+
+100k fixed supply. owner renounced. no more $BRAWL can ever exist.
+
+🧵
+===
+TWEET 2 (the breakdown):
+
+🔒 20,000 BRAWL — team vault
+locked in our own timelock. 6mo linear vest, beneficiary immutable, no admin function, no escape hatch. 40-line contract, verified on basescan.
+
+0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761
+===
+TWEET 3 (the LP):
+
+🏟 ~19,700 BRAWL — aerodrome LP
+
+the LP tokens that represent ownership of this pool were burned to 0xdead at launch. nobody can ever pull this liquidity. swap fees compound back into the pool forever.
+
+0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c
+===
+TWEET 4 (the keeper + dev):
+
+⚙ ~19,500 BRAWL — keeper
+game ops. stake float for the 10 house brawlers. recycles thru duels.
+
+👤 ~10,100 BRAWL — dev
+ongoing dev, marketing, future season prizes. no on-chain lock. trust-based. every move public on basescan.
+===
+TWEET 5 (the math):
+
+~69% locked, burned, or operational.
+~31% in players' hands.
+
+the timelock and the LP are both bytecode-enforced. no human can move those tokens early, ever.
+
+full breakdown + on-chain proofs:
+docs.baseicbrawlers.com/key-holders
+===

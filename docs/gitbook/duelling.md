@@ -19,7 +19,27 @@ each duel costs **$1 per fighter, $2 total pot**. you can pay in brawl OR in eth
 
 stakes auto-rebalance to track $1 USD. a keeper bot watches brawl/eth + the chainlink eth/usd feed every 5 minutes and repegs the brawl side via `setFightEconomics`. translation: when brawl pumps, the per-fight brawl amount drops. when brawl dumps, it rises. the dollar value stays at $1.
 
-**approvals**: first fight from a wallet pops a few setup prompts — approve brawl, approve brawlers nft transfer, then the fight itself. after that, fights are one click. eth-side payment doesn't need any approval, you just attach msg.value to the fight.
+**approvals + the arena**: first fight from a wallet pops a few setup prompts — approve brawl, approve brawlers nft transfer, then the fight itself. by default you approve **exactly one fight worth of brawl**, so after the duel mines you auto-exit the arena (no one else can pull from you until you re-approve). if you want to queue more fights, the arena status panel on the duel page lets you pick 1 / 5 / 10 / unlimited — top up any time.
+
+eth-side payment doesn't need any approval, you just attach msg.value to the fight.
+
+## the arena (who's in, who's out)
+
+"being in the arena" means: your brawler is alive, you've approved enough brawl for at least one fight, you have at least one fight worth of brawl in your wallet, and you haven't manually opted that brawler out.
+
+the arena status panel on [/duel](https://baseicbrawlers.com/duel) shows:
+
+- **your owner-level status**: in-arena or not, how many fights your current approval covers, how many your balance covers
+- **per-brawler in/out toggles**: if your wallet owns multiple brawlers you can untick individual ones. opting #15 out keeps it out of the arena globally (other players' clients honour the flag too via the [`ArenaOptOut`](https://basescan.org/address/0x60985c8426855d21F34a12d5e10892784aACD212#code) contract). useful for resting a brawler on a 2-loss streak you don't want graveyarded
+- **enter / top up button**: pick 1 / 5 / 10 / ∞ fights worth of brawl to approve
+- **revoke approval button**: nukes your brawl allowance to zero, full exit, nobody can pull from you until you re-approve
+
+you auto-exit the arena when:
+- your brawl allowance hits zero (you've used all the fights you approved for)
+- your brawl balance drops below the per-fight cost
+- your brawler dies (3 losses, off to the graveyard)
+
+opting a specific brawler out is on-chain — it costs about a cent in gas, and every other player's frontend respects the flag immediately. no one can match against an opted-out brawler through the official ui.
 
 **sandwich protection**: the eth↔brawl swap leg (mixed fights only) has a signed `amountOutMin` baked into the fight quote. if an mev bot tries to sandwich your fight, the swap output falls below the signed minimum and the tx reverts. no silent slippage.
 

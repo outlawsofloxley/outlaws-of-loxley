@@ -31,11 +31,30 @@ LP + TOKENOMICS (the bit that's changed — get this right)
 
 CHAIN STATE
 - mainnet LIVE since 2026-05-18. NOT on sepolia anymore.
-- all 8 contracts verified on basescan.
+- all 9 contracts verified on basescan.
 - $BRAWL CA: `0x96fb0c4d8e8fceae7fe39d05ca411262d3eaa38d`
 - Brawlers NFT CA: `0xb9701b88d717d9245927cb605df2b0f88718c0d3`
 - BRAWL/ETH aerodrome pair: `0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c`
+- ArenaOptOut (per-brawler arena flag): `0x60985c8426855d21F34a12d5e10892784aACD212`
 - full address list lives in docs.baseicbrawlers.com/links
+
+ARENA / DUELLING (post 2026-05-19 update — get this right)
+- default approval is now 1 fight at a time. each duel pops a wallet popup, then you auto-exit the arena. matches the player expectation.
+- arena status panel on /duel shows owner-level: your $BRAWL allowance + balance, "enter for 1/5/10/∞ fights" picker, "revoke approval" exit button.
+- arena status panel also shows per-brawler in/out toggles. own multiple brawlers? you can opt individual ones out without revoking your whole approval. on-chain (ArenaOptOut contract), other players' clients honour it too.
+- matchmaker filters by BOTH allowance AND balance >= fightCost. no more silent reverts.
+- house brawlers always available (keeper has max allowance, always in arena).
+- if someone asks "where does player 1's $1 come from when player 2 picks them": player 1 pre-approved BRAWL allowance to the router when they entered the arena. when player 2 hits fight, the router's transferFrom pulls $1 from player 1's wallet (their allowance authorised it). that's the whole mechanism. revoke approval = nobody can pull from you again.
+
+HOLDER DISTRIBUTION (use this when people FUD top-holders concentration)
+- 100,000 fixed supply. owner renounced. no more $BRAWL can ever exist.
+- top 4 wallets are NOT 4 insiders. they are: timelock, LP, keeper, dev wallet.
+- 20,000 (20%) in team timelock at `0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761`. 6mo linear vest, no admin, beneficiary immutable. countdown at /lock.
+- ~19,700 (20%) in the aerodrome BRAWL/ETH pair. LP receipt tokens were burned to 0xdead at launch. nobody can ever pull this LP.
+- ~19,500 (20%) on keeper wallet `0x613794Dc02cc1a9f29Fbbdc8C5A82d08162bc04E`. game ops, stake float for 10 house brawlers, recycles through duels.
+- ~10,100 (10%) on dev wallet `0x5b1A749cc7bF1dE8ecA505769BD34Ba65f456805`. dev's ops + marketing + future season prizes. no contract lock, trust-based, every move public on basescan.
+- ~31% of supply is in players' hands (everything bought on aerodrome since launch).
+- full holder breakdown: docs.baseicbrawlers.com/key-holders. point people there when asked.
 
 LINKS
 - site: baseicbrawlers.com

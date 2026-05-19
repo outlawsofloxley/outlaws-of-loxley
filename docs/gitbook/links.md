@@ -40,8 +40,9 @@ bookmark this page. anything not on it isn't us.
 - **Marketplace**: `0xa2fea2f60a7f1010ee2f7f008801b365ddf79815` ([basescan](https://basescan.org/address/0xa2fea2f60a7f1010ee2f7f008801b365ddf79815))
 - **BRAWLTimelock (team vault)**: `0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761` ([basescan](https://basescan.org/address/0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761#code)) — countdown UI at [/lock](https://baseicbrawlers.com/lock)
 - **BRAWL/ETH Aerodrome pair**: `0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c` ([basescan](https://basescan.org/address/0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c))
+- **ArenaOptOut (per-brawler arena flag)**: `0x60985c8426855d21F34a12d5e10892784aACD212` ([basescan](https://basescan.org/address/0x60985c8426855d21F34a12d5e10892784aACD212#code))
 
-all 8 contracts are verified on Basescan. don't trust an address that isn't on this gitbook page or pinned in **#links** on the discord.
+all 9 contracts are verified on Basescan. don't trust an address that isn't on this gitbook page or pinned in **#links** on the discord. for the holder distribution / "who can move what" breakdown, see [key holders](key-holders.md).
 
 ## things we never do
 

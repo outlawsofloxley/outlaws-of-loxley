@@ -64,6 +64,8 @@ that's 100,000 brawl total. no presale, no team cliff hidden anywhere. 70% of su
 
 this isn't a token where the team holds half. there's no vesting cliff to fear. there's also no "team's gonna sell" clock, because there isn't a team in the institutional sense. just me.
 
+> see also: [**key holders**](key-holders.md) — the full address-by-address breakdown of every large $BRAWL wallet, what it does, and what each one can / can't move.
+
 ## what you should keep an eye on
 
 - **basescan** the brawl token contract: confirm `owner()` returns `0x0`.
