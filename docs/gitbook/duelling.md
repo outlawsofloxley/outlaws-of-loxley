@@ -12,14 +12,14 @@ don't like the match? hit **reroll opponent** and we'll find someone else. there
 
 each duel costs **$1 per fighter, $2 total pot**. you can pay in brawl OR in eth, your choice. winner takes 90% of the pot, dev treasury takes 10%. on a tie, each fighter gets their own stake back (no dev cut on ties).
 
-- **non-founder**: $1 per side. at launch that's roughly 500 brawl or 0.00025 eth — the exact number floats with price and the duel page shows the live quote before you sign.
+- **non-founder**: $1 per side. at launch that's roughly 500 brawl or 0.00025 eth, the exact number floats with price and the duel page shows the live quote before you sign.
 - **founder 100**: 25% off forever. founders pay $0.75 per fight.
 
 **dual-currency model**: when both fighters pay brawl, dev cut is paid in brawl. when both pay eth, dev cut is paid in eth. when one pays brawl and the other pays eth (mixed), dev always gets eth and the winner gets paid in whichever currency they chose (the loser's currency gets auto-swapped on aerodrome in the same transaction).
 
 stakes auto-rebalance to track $1 USD. a keeper bot watches brawl/eth + the chainlink eth/usd feed every 5 minutes and repegs the brawl side via `setFightEconomics`. translation: when brawl pumps, the per-fight brawl amount drops. when brawl dumps, it rises. the dollar value stays at $1.
 
-**approvals + the arena**: first fight from a wallet pops a few setup prompts — approve brawl, approve brawlers nft transfer, then the fight itself. by default you approve **exactly one fight worth of brawl**, so after the duel mines you auto-exit the arena (no one else can pull from you until you re-approve). if you want to queue more fights, the arena status panel on the duel page lets you pick 1 / 5 / 10 / unlimited — top up any time.
+**approvals + the arena**: first fight from a wallet pops a few setup prompts, approve brawl, approve brawlers nft transfer, then the fight itself. by default you approve **exactly one fight worth of brawl**, so after the duel mines you auto-exit the arena (no one else can pull from you until you re-approve). if you want to queue more fights, the arena status panel on the duel page lets you pick 1 / 5 / 10 / unlimited, top up any time.
 
 eth-side payment doesn't need any approval, you just attach msg.value to the fight.
 
@@ -39,7 +39,7 @@ you auto-exit the arena when:
 - your brawl balance drops below the per-fight cost
 - your brawler dies (3 losses, off to the graveyard)
 
-opting a specific brawler out is on-chain — it costs about a cent in gas, and every other player's frontend respects the flag immediately. no one can match against an opted-out brawler through the official ui.
+opting a specific brawler out is on-chain, it costs about a cent in gas, and every other player's frontend respects the flag immediately. no one can match against an opted-out brawler through the official ui.
 
 **sandwich protection**: the eth↔brawl swap leg (mixed fights only) has a signed `amountOutMin` baked into the fight quote. if an mev bot tries to sandwich your fight, the swap output falls below the signed minimum and the tx reverts. no silent slippage.
 

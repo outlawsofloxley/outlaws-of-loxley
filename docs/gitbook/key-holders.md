@@ -22,9 +22,9 @@ every large $BRAWL holder, what it is, and how to verify:
 | role | address | balance | can it sell? |
 |------|---------|---------|--------------|
 | 🔒 **team vault timelock** | [`0xdD4F...C761`](https://basescan.org/address/0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761#code) | 20,000 BRAWL | only releases linearly over 6 months to dev wallet (beneficiary is immutable). live countdown at [/lock](https://baseicbrawlers.com/lock) |
-| 🏟️ **BRAWL/ETH aerodrome pair** | [`0xf99F...e3c`](https://basescan.org/address/0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c) | ~19,700 BRAWL | only via swaps. the LP tokens that represent ownership of this pool were burned to `0xdead` at launch — nobody can call `removeLiquidity()` ever |
-| ⚙️ **keeper (game ops)** | [`0x6137...c04E`](https://basescan.org/address/0x613794Dc02cc1a9f29Fbbdc8C5A82d08162bc04E) | ~19,500 BRAWL | controlled by the dev, used as stake float for the 10 house brawlers + arena auto-fights. recycles through duels (winners get the BRAWL back into the pool), doesn't drain. no on-chain lock — trust-based |
-| 👤 **dev wallet** | [`0x5b1A...6805`](https://basescan.org/address/0x5b1A749cc7bF1dE8ecA505769BD34Ba65f456805) | ~10,100 BRAWL | dev's wallet for ops, marketing, future season prizes. no on-chain lock — trust-based. any large transfer out shows on basescan within a block |
+| 🏟️ **BRAWL/ETH aerodrome pair** | [`0xf99F...e3c`](https://basescan.org/address/0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c) | ~19,700 BRAWL | only via swaps. the LP tokens that represent ownership of this pool were burned to `0xdead` at launch, nobody can call `removeLiquidity()` ever |
+| ⚙️ **keeper (game ops)** | [`0x6137...c04E`](https://basescan.org/address/0x613794Dc02cc1a9f29Fbbdc8C5A82d08162bc04E) | ~19,500 BRAWL | controlled by the dev, used as stake float for the 10 house brawlers + arena auto-fights. recycles through duels (winners get the BRAWL back into the pool), doesn't drain. no on-chain lock, trust-based |
+| 👤 **dev wallet** | [`0x5b1A...6805`](https://basescan.org/address/0x5b1A749cc7bF1dE8ecA505769BD34Ba65f456805) | ~10,100 BRAWL | dev's wallet for ops, marketing, future season prizes. no on-chain lock, trust-based. any large transfer out shows on basescan within a block |
 | 💀 **0xdead (LP burn target)** | [`0x000...dEaD`](https://basescan.org/address/0x000000000000000000000000000000000000dEaD) | holds the **LP tokens**, not BRAWL | the receipt tokens for the aerodrome pool. no private key. permanent. this is why the LP can never be pulled |
 
 ## what each address physically CAN'T do
@@ -32,7 +32,7 @@ every large $BRAWL holder, what it is, and how to verify:
 let's be specific about the on-chain enforcement.
 
 ### the timelock (20k)
-- **can't sell now**: the [`BRAWLTimelock` contract](https://basescan.org/address/0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761#code) only releases tokens linearly across 6 months. anyone (you, me, a random redditor) can call `release()` — it just pushes the currently-vested portion to the beneficiary.
+- **can't sell now**: the [`BRAWLTimelock` contract](https://basescan.org/address/0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761#code) only releases tokens linearly across 6 months. anyone (you, me, a random redditor) can call `release()`, it just pushes the currently-vested portion to the beneficiary.
 - **beneficiary can't be changed**: the `beneficiary` field is `immutable` in the constructor. no setter exists. read the source.
 - **can't be sped up**: the `startTimestamp`, `cliffSeconds`, and `durationSeconds` are also all `immutable`. no admin function, no upgrade path, no proxy.
 - **no owner**: the contract has no `Ownable` import. zero admin functions exist in the bytecode.
@@ -42,7 +42,7 @@ let's be specific about the on-chain enforcement.
 - **can only change via swaps**: as people trade BRAWL ↔ ETH on aerodrome, the ratio inside the pool shifts. that's normal AMM behaviour. fees from each swap accrue back to the pool, so the underlying value tends to grow slowly.
 
 ### the keeper (~19.5k)
-- this is operational — it stakes BRAWL when a house brawler fights, gets it back if the house wins, loses it if the house loses. over time the keeper's BRAWL float should stay roughly constant since house brawlers play to about 50% win rate.
+- this is operational, it stakes BRAWL when a house brawler fights, gets it back if the house wins, loses it if the house loses. over time the keeper's BRAWL float should stay roughly constant since house brawlers play to about 50% win rate.
 - **no contract lock** on this. if you don't trust the dev to keep using it as ops float, treat it as part of the dev allocation.
 
 ### the dev wallet (~10k)
@@ -80,10 +80,10 @@ every claim on this page is on-chain:
 1. **total supply is 100,000**: read `BRAWL.totalSupply()` on basescan.
 2. **owner is `0x0`**: read `BRAWL.owner()` on basescan. expect `0x000...0000`.
 3. **timelock holds 20k**: read `BRAWL.balanceOf(0xdD4F...C761)` on basescan, divide by 1e18.
-4. **timelock has no owner**: read the [contract source](https://basescan.org/address/0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761#code), search for `Ownable` — not there.
+4. **timelock has no owner**: read the [contract source](https://basescan.org/address/0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761#code), search for `Ownable`, not there.
 5. **LP burned**: find the LP token contract for the aerodrome BRAWL/ETH pair, read its `balanceOf(0x000...dEaD)`. expect it to hold the full LP token supply (modulo any accrued fee LPs).
 
-if anything on this page doesn't match what you see on basescan, **the on-chain truth wins** — and tell me in [#bug-reports](https://discord.gg/RjvBEA5CVd) so i can fix the page.
+if anything on this page doesn't match what you see on basescan, **the on-chain truth wins**, and tell me in [#bug-reports](https://discord.gg/RjvBEA5CVd) so i can fix the page.
 
 ## tl;dr for the scroll-past reader
 

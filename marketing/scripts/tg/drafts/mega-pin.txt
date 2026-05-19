@@ -1,0 +1,88 @@
+⚔️ BASEic BRAWLERS, on-chain arena on @base
+
+2,000 pixel-art warriors + 1 King. mint, duel, die, resurrect. all on-chain, all on base mainnet.
+
+🌐 site: https://baseicbrawlers.com
+📖 handbook: https://docs.baseicbrawlers.com
+🐦 x: https://x.com/BASEicBrawlers
+💬 discord: https://discord.gg/RjvBEA5CVd
+📈 chart: https://dexscreener.com/base/0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c
+
+━━━━━━━━━━━━━━━━━━━━━
+🎮 HOW IT WORKS
+━━━━━━━━━━━━━━━━━━━━━
+
+1. mint a brawler at /mint. 6 tiers $20 to $50, paid in ETH or USDC. founders are token IDs 1-100.
+2. enter the arena. fight cost ~$1 in $BRAWL or ETH.
+3. win = +ELO + share of the pot. lose = -ELO. 3 losses in a row = NFT dies.
+4. resurrect with ETH ($100 base, scales by rarity + wins, capped at $500). founders get one free.
+
+━━━━━━━━━━━━━━━━━━━━━
+⚔️ THE ARENA (per-brawler control, shipped 2026-05-19)
+━━━━━━━━━━━━━━━━━━━━━
+
+✅ approve 1 fight at a time by default, auto-exit after every duel
+✅ own multiple brawlers? individual on/off toggles per fighter (on-chain, other players honour it)
+✅ "revoke approval" button for instant full exit
+✅ matchmaker filters by $BRAWL balance too, no more silent reverts
+
+━━━━━━━━━━━━━━━━━━━━━
+🪙 $BRAWL HOLDER BREAKDOWN
+━━━━━━━━━━━━━━━━━━━━━
+
+100,000 fixed supply. owner renounced. no more $BRAWL can ever exist.
+
+if you see 4 wallets at 10-20% each on the top-holders chart, here's what each one is:
+
+🔒 20,000 (20%), team vault timelock
+   6mo linear vest, beneficiary immutable, no admin function
+   0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761
+
+🏟️ ~19,700 (20%), aerodrome BRAWL/ETH LP
+   LP receipt tokens burned to 0xdead at launch. nobody can ever pull this liquidity
+   0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c
+
+⚙️ ~19,500 (20%), keeper wallet
+   game ops, stake float for 10 house brawlers, recycles through duels
+   0x613794Dc02cc1a9f29Fbbdc8C5A82d08162bc04E
+
+👤 ~10,100 (10%), dev wallet
+   ongoing dev, marketing, future seasons. no contract lock, every move public on basescan
+   0x5b1A749cc7bF1dE8ecA505769BD34Ba65f456805
+
+~69% locked, burned, or operational. ~31% in players' hands.
+
+the timelock and the LP are both bytecode-enforced. no human can move them early, ever.
+
+full breakdown with on-chain proofs:
+https://docs.baseicbrawlers.com/key-holders
+
+━━━━━━━━━━━━━━━━━━━━━
+🔗 CONTRACT ADDRESSES (base mainnet, chain 8453)
+━━━━━━━━━━━━━━━━━━━━━
+
+all 9 contracts verified on basescan. if an address isn't on this list, it isn't us.
+
+$BRAWL token     0x96fb0c4d8e8fceae7fe39d05ca411262d3eaa38d
+Brawlers NFT     0xb9701b88d717d9245927cb605df2b0f88718c0d3
+Duel             0xe0d53cf84d599a2257062152effc026cfef6205d
+DuelRouter       0xbd3abbf670afed06f6bcbe78ebcea93a58a0a4cb
+MintDrop         0x6394151f65b81359a47e193f8a0c80c4c2961544
+Marketplace      0xa2fea2f60a7f1010ee2f7f008801b365ddf79815
+Graveyard        0x3d5f560ef4fd09015bdd203a0e65d9aa94d96480
+BRAWLTimelock    0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761
+ArenaOptOut      0x60985c8426855d21F34a12d5e10892784aACD212
+LP pair          0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c
+
+🔒 team lock countdown: https://baseicbrawlers.com/lock
+
+━━━━━━━━━━━━━━━━━━━━━
+⚠️ SCAM SURVIVAL
+━━━━━━━━━━━━━━━━━━━━━
+
+• we do NOT DM you first. EVER.
+• only the CAs in this pinned message are real. anything else is fake.
+• admins will never ask for your seed phrase.
+• if anyone DMs you claiming to be the dev: block + report.
+
+⚔️ MINT. FIGHT. SURVIVE. ⚔️

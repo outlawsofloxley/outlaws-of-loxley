@@ -1,12 +1,12 @@
 $BRAWL holders, the receipt:
 
-100k fixed supply, owner renounced.
+100k fixed, owner renounced.
 
-🔒 20% locked (team vault, 6mo vest, no admin)
-🏟 20% in burned LP (LP tokens at 0xdead, unpullable)
-⚙ 20% keeper float (game ops, recycles thru duels)
-👤 10% dev (no lock, every move public on basescan)
+🔒 20% locked (team vault, 6mo vest)
+🏟 20% in burned LP (unpullable)
+⚙ 20% keeper float (game ops)
+👤 10% dev (no lock, public on basescan)
 
-= 31% actually in circulation.
+= 31% actually circulating.
 
 docs.baseicbrawlers.com/key-holders

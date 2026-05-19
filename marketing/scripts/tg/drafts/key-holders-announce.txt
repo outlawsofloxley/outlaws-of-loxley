@@ -1,16 +1,16 @@
-🧾 $BRAWL holders — explained before the FUD starts
+🧾 $BRAWL holders, explained before the FUD starts
 
 100,000 fixed supply. owner renounced. no more $BRAWL can ever exist.
 
 if you've seen the top-holders chart and worried about 4 wallets at 10-20% each, here's what each one is:
 
-🔒 20,000 — team vault (6mo linear vest, beneficiary immutable, no admin)
+🔒 20,000, team vault (6mo linear vest, beneficiary immutable, no admin)
    0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761
-🏟️ ~19,700 — aerodrome LP (LP tokens burned to 0xdead, can't be pulled)
+🏟️ ~19,700, aerodrome LP (LP tokens burned to 0xdead, can't be pulled)
    0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c
-⚙️ ~19,500 — keeper (game ops, stake float for 10 house brawlers, recycles)
+⚙️ ~19,500, keeper (game ops, stake float for 10 house brawlers, recycles)
    0x613794Dc02cc1a9f29Fbbdc8C5A82d08162bc04E
-👤 ~10,100 — dev wallet (ops, marketing, future season prizes)
+👤 ~10,100, dev wallet (ops, marketing, future season prizes)
    0x5b1A749cc7bF1dE8ecA505769BD34Ba65f456805
 
 ~69% locked, burned, or operational. ~31% in players' hands.

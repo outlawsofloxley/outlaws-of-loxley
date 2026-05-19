@@ -1,35 +1,41 @@
-# ⚔ Open beta is live — come break the game
+# ⚔ BASEic BRAWLERS, live on Base mainnet
 
-We're shipped on **Base Sepolia testnet** so you can stress-test everything before mainnet. Mint, fight, get rekt, resurrect, list — none of it costs real money. **0.0001 testnet ETH per mint.** Faucet below.
+2,000 pixel-art warriors + 1 King, fighting on-chain on @base. real game, real $BRAWL, real consequences.
+
+🌐 https://baseicbrawlers.com
+📖 https://docs.baseicbrawlers.com
+📈 https://dexscreener.com/base/0xf99F374AC9479BC8E224d5E56e3e815B6cc48e3c
 
 ## The pitch
-Pixel-art warriors. Stat-based duels. ELO ladder. Stake **$BRAWL** on every fight, winner takes the pot. Lose three in a row and your brawler **dies** — pay ETH to drag them out of the graveyard, or leave them. **2,000 supply + 1 King** (1/1, dev-only).
 
-## What works right now
-- ⚔ Mint at https://baseicbrawlers.com — every mint ships **50 BRAWL** (founders 1-100 get **70**)
-- 🥊 Pick a fight — duels resolve in seconds with a full combat log
-- 🏆 Climb the ladder — top of the board posts daily in #leaderboard
-- 🪦 Lose 3 straight → death → ETH-priced resurrect (founders get one free)
-- 🛒 List or snipe on the in-app marketplace (5% fee)
-- 🎰 Every paid mint has a 1-in-2000 lottery roll for a free bonus brawler. Real luck
+stake $BRAWL or ETH on duels. winner takes the pot. 3 losses in a row = your NFT dies. resurrect with ETH or leave them in the graveyard.
 
-## Mainnet preview
-Pricing scales as the drop fills:
-- **1-50**: $20 (founder)  ·  **51-100**: $25 (founder)
-- **101-500**: $30  ·  **501-1000**: $35
-- **1001-1500**: $40  ·  **1501-2000**: $50
+## What works now
 
-Founder perks (1-100): 25% off duel stakes, free first resurrect, +20 BRAWL bonus, gold/cyan ★ FOUNDER badge. Founders pay tier-1 prices — they don't mint free, the perks are the privilege.
+⚔ mint at /mint, 6 tiers $20 to $50 in ETH or USDC
+🥊 fight in the arena, ~$1 per duel
+🏆 climb the leaderboard
+🪦 die at 3 straight losses, resurrect with ETH (founders 1-100 get one free)
+🛒 buy/sell brawlers on the in-app marketplace (7.5% fee)
 
-LP seeded on **Aerodrome** day one and locked on **Unicrypt for 6 months**. Renounce 24-48h after liquidity settles.
+## Trust receipts
 
-## Get in
-1. Skim **#rules**
-2. Tap **⚔** in **#verify**
-3. Mint, fight, watch the kills land in **#duels**
+🔒 LP burned (LP tokens at 0xdead, can't be pulled)
+🚫 $BRAWL ownership renounced
+🪙 20k team vault locked 6mo (immutable beneficiary), countdown: https://baseicbrawlers.com/lock
+🧾 Full holder breakdown: https://docs.baseicbrawlers.com/key-holders (~31% circulating, ~69% locked/burned/operational)
+✅ all 9 contracts verified on basescan
 
-Need testnet ETH? https://www.alchemy.com/faucets/base-sepolia
+## Arena update (2026-05-19)
 
-We post launch updates and contract addresses here, never in DMs. Mods don't DM first. Anyone offering a "free mint" or asking for a seed phrase is a scammer.
+per-brawler control just shipped on /duel. own multiple brawlers? opt each one in or out individually with checkboxes. on-chain, other players' clients honour it. default is 1 fight at a time, you auto-exit after each duel. "revoke approval" for the nuclear exit.
+
+## Getting in
+
+1. read #rules
+2. tap ⚔ in #verify to unlock the server
+3. mint, fight, watch kills land in #duels
+
+we never DM first. anyone offering "free mint" or asking for a seed phrase is a scammer. report and block.
 
 GM, brawlers.

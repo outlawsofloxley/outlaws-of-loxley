@@ -11,14 +11,15 @@ before the FUD starts: here's what each of those wallets actually is.
 ===
 TWEET 2 (the breakdown):
 
-🔒 20,000 BRAWL — team vault
+🔒 20,000 BRAWL, team vault.
+
 locked in our own timelock. 6mo linear vest, beneficiary immutable, no admin function, no escape hatch. 40-line contract, verified on basescan.
 
 0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761
 ===
 TWEET 3 (the LP):
 
-🏟 ~19,700 BRAWL — aerodrome LP
+🏟 ~19,700 BRAWL, aerodrome LP.
 
 the LP tokens that represent ownership of this pool were burned to 0xdead at launch. nobody can ever pull this liquidity. swap fees compound back into the pool forever.
 
@@ -26,10 +27,10 @@ the LP tokens that represent ownership of this pool were burned to 0xdead at lau
 ===
 TWEET 4 (the keeper + dev):
 
-⚙ ~19,500 BRAWL — keeper
+⚙ ~19,500 BRAWL, keeper.
 game ops. stake float for the 10 house brawlers. recycles thru duels.
 
-👤 ~10,100 BRAWL — dev
+👤 ~10,100 BRAWL, dev.
 ongoing dev, marketing, future season prizes. no on-chain lock. trust-based. every move public on basescan.
 ===
 TWEET 5 (the math):
