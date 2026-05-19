@@ -95,6 +95,15 @@ const WIPE_GRAVEYARD_ON_STARTUP = /^(1|true|yes)$/i.test(process.env.WIPE_GRAVEY
 const WIPE_DUELS_ON_STARTUP = /^(1|true|yes)$/i.test(process.env.WIPE_DUELS_ON_STARTUP || '');
 const WIPE_MARKETPLACE_ON_STARTUP = /^(1|true|yes)$/i.test(process.env.WIPE_MARKETPLACE_ON_STARTUP || '');
 
+// Pushover notifications for each new Brawler mint (opt-in via env).
+// Polls Brawlers Transfer events where from = 0x0 (mint signature) and
+// fires a Pushover push for each. No-op if either key is unset, so the
+// repo stays neutral and the feature only activates on hosts with creds.
+const PUSHOVER_USER_KEY = process.env.PUSHOVER_USER_KEY || '';
+const PUSHOVER_APP_TOKEN = process.env.PUSHOVER_APP_TOKEN || '';
+const PUSHOVER_ENABLED = !!(PUSHOVER_USER_KEY && PUSHOVER_APP_TOKEN);
+const MINT_POLL_SEC = Number(process.env.MINT_POLL_SEC || '45');
+
 if (!TOKEN) { console.error('FATAL: DISCORD_BOT_TOKEN not set.'); process.exit(1); }
 if (!GUILD_ID) { console.error('FATAL: DISCORD_GUILD_ID not set.'); process.exit(1); }
 
@@ -144,6 +153,11 @@ const seenDeathTokens = new Set();
 // Marketplace sales dedup by tx_hash:log_index.
 const seenSaleKeys = new Set();
 let marketplaceLastBlock = null;
+
+// Mint watcher state. Brawlers contract Transfer events where from=0x0
+// indicate a fresh mint. seenMintKeys dedupes across overlapping polls.
+const seenMintKeys = new Set();
+let mintLastBlock = null;
 function duelKey(d) { return `${d.tx_hash}:${d.log_index}`; }
 
 // Leaderboard repost tracking — fingerprint of the top-N positions and
@@ -771,6 +785,113 @@ async function pollMarketplaceSales() {
   marketplaceLastBlock = head;
 }
 
+// ─── Pushover mint notifications ─────────────────────────────────
+// Watches Brawlers Transfer events with from=0x0 (mint signature) and
+// fires a Pushover push per new mint. Opt-in via PUSHOVER_USER_KEY +
+// PUSHOVER_APP_TOKEN env vars; no-op if either is unset, so this stays
+// inert on any host that doesn't want it.
+//
+// Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+// keccak256 = 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+const TRANSFER_TOPIC0 = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const ZERO_TOPIC = '0x0000000000000000000000000000000000000000000000000000000000000000';
+const BRAWLERS_ADDRESS = (process.env.BRAWLERS_ADDRESS || '').toLowerCase();
+
+async function pushoverNotify(title, message, urlExtra) {
+  if (!PUSHOVER_ENABLED) return;
+  try {
+    const body = {
+      token: PUSHOVER_APP_TOKEN,
+      user: PUSHOVER_USER_KEY,
+      title,
+      message,
+      priority: 0,
+    };
+    if (urlExtra?.url) body.url = urlExtra.url;
+    if (urlExtra?.url_title) body.url_title = urlExtra.url_title;
+    const res = await fetch('https://api.pushover.net/1/messages.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      console.error('pushover: HTTP', res.status, await res.text().catch(() => ''));
+    }
+  } catch (e) {
+    console.error('pushover: send error:', e.message);
+  }
+}
+
+async function pollBrawlerMints() {
+  if (!PUSHOVER_ENABLED || !BRAWLERS_ADDRESS) return;
+  let head;
+  try {
+    head = parseInt(await rpcCall('eth_blockNumber', []), 16);
+  } catch (e) {
+    console.error('mint poll: head fetch error:', e.message);
+    return;
+  }
+  if (mintLastBlock === null) {
+    // First poll: watermark to current head minus a small buffer.
+    mintLastBlock = Math.max(0, head - 50);
+    console.log(`  mint watermark set at block ${mintLastBlock} (pushover ${PUSHOVER_ENABLED ? 'ON' : 'OFF'})`);
+    return;
+  }
+  if (head <= mintLastBlock) return;
+  let logs;
+  try {
+    logs = await rpcCall('eth_getLogs', [{
+      address: BRAWLERS_ADDRESS,
+      fromBlock: '0x' + (mintLastBlock + 1).toString(16),
+      toBlock: '0x' + head.toString(16),
+      // Filter to Transfer from = 0x0 (mints only). topics[2] (to) is left
+      // wildcard so any recipient lands.
+      topics: [TRANSFER_TOPIC0, ZERO_TOPIC],
+    }]);
+  } catch (e) {
+    console.error('mint poll: getLogs error:', e.message);
+    return;
+  }
+  for (const log of logs || []) {
+    const key = `${log.transactionHash}:${log.logIndex}`;
+    if (seenMintKeys.has(key)) continue;
+    seenMintKeys.add(key);
+    try {
+      const tokenId = parseInt(log.topics[3], 16);
+      const to = paddedAddress(log.topics[2]);
+      const blockNumber = parseInt(log.blockNumber, 16);
+      // Best-effort metadata fetch; if it fails we still notify with the
+      // minimum useful info (tokenId + minter + tx hash).
+      let rarity = '';
+      let weapon = '';
+      try {
+        const meta = await getMetadata(tokenId);
+        const attrMap = Object.fromEntries((meta?.attributes || []).map((a) => [a.trait_type, a.value]));
+        rarity = attrMap.Rarity || '';
+        weapon = attrMap.Weapon || '';
+      } catch { /* metadata may not be live yet for fresh mints */ }
+      const lines = [
+        `Brawler #${tokenId}${rarity ? ` (${rarity})` : ''}`,
+        weapon ? `Weapon: ${weapon}` : null,
+        `Minter: ${shortAddr(to)}`,
+        `Block: ${blockNumber}`,
+      ].filter(Boolean);
+      await pushoverNotify(
+        '⚔ New Brawler minted',
+        lines.join('\n'),
+        {
+          url: `${API_BASE}/brawler/${tokenId}`,
+          url_title: 'View brawler',
+        },
+      );
+      console.log(`pushover: mint #${tokenId} → ${shortAddr(to)} (block ${blockNumber})`);
+    } catch (e) {
+      console.error(`mint notify #${log.topics[3]}:`, e.message);
+    }
+  }
+  mintLastBlock = head;
+}
+
 async function postLeaderboard() {
   if (!leaderboardChannelId) return false;
   try {
@@ -1008,6 +1129,12 @@ client.once(Events.ClientReady, async (c) => {
     setInterval(() => { void pollMarketplaceSales(); }, Math.max(15, MARKETPLACE_POLL_SEC) * 1000);
     // Run once immediately so the watermark sets without waiting a full poll cycle.
     void pollMarketplaceSales();
+  }
+
+  if (PUSHOVER_ENABLED && BRAWLERS_ADDRESS) {
+    setInterval(() => { void pollBrawlerMints(); }, Math.max(20, MINT_POLL_SEC) * 1000);
+    void pollBrawlerMints(); // watermark immediately
+    console.log(`  pushover mint notifier ENABLED (poll every ${MINT_POLL_SEC}s)`);
   }
 
   if (LEADERBOARD_ON_STARTUP) void postLeaderboard();
