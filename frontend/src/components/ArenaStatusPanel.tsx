@@ -1,27 +1,27 @@
 'use client';
 
 /**
- * ArenaStatusPanel — owner-level "are you in the arena" status with explicit
- * entry, top-up, and exit controls.
+ * ArenaStatusPanel — owner-level $BRAWL approval controls + per-brawler
+ * arena opt-out toggles.
  *
- * Why: prior to this, the duel page approved MAX_UINT256 BRAWL on first
- * approval, so a single approval put the user in the arena permanently
- * until death or 0 balance. Players reported feeling stuck — and could lose
- * stacks of $BRAWL or get their brawler graveyarded while AFK.
+ * Two layers of state determine "is this brawler in the arena":
+ *   1. Owner-level: BRAWL allowance + balance >= fightCost (otherwise the
+ *      duel reverts). This panel exposes 1 / 5 / 10 / ∞ "fights to approve"
+ *      choices and a "leave arena (revoke allowance)" button.
+ *   2. Per-brawler: ArenaOptOut.optedOut(tokenId) (on-chain, advisory). Each
+ *      brawler card has a toggle that calls setOptOut on the contract.
  *
- * Model: "in arena" == allowance(owner, router/duel) >= fightCost AND
- * balance(owner) >= fightCost AND owner has at least one alive brawler.
- * Approving fightCost * N means "queue N fights, then auto-exit". Approving
- * 0 means "leave arena now". MAX is preserved as an opt-in for power users.
+ * Both layers are necessary for the UX Darren asked for: he wants to
+ * top-up allowance for multiple fights but exclude SPECIFIC brawlers
+ * (e.g. one on a 2-loss streak that he doesn't want graveyarded).
  *
- * House brawlers belong to the keeper wallet which keeps unlimited allowance
- * forever — this panel only shows for the connected user, so house behaviour
- * is unchanged.
+ * House brawlers are NEVER shown here — this panel is per-connected-user.
+ * Keepers have their own infinite-allowance set-and-forget pattern.
  */
 import { useEffect, useState } from 'react';
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { formatUnits } from 'viem';
-import { BRAWL_ABI } from '@/lib/abi';
+import { BRAWL_ABI, ARENA_OPTOUT_ABI } from '@/lib/abi';
 
 type FightsChoice = 1 | 5 | 10 | 'max';
 const MAX_UINT256 = (1n << 256n) - 1n;
@@ -30,32 +30,45 @@ function fmtBrawl(wei: bigint): string {
   return Number(formatUnits(wei, 18)).toFixed(2);
 }
 
+interface BrawlerRow {
+  tokenId: number;
+  name: string;
+  isOptedOut: boolean;
+}
+
 interface ArenaStatusPanelProps {
   brawlAddress: `0x${string}`;
   approveTarget: `0x${string}`;
+  arenaOptOutAddress: `0x${string}` | null;
   chainId: number;
   fightCost: bigint | undefined;
   myAllowance: bigint | undefined;
   myBalance: bigint | undefined;
-  myAliveBrawlerNames: string[];
-  myAliveBrawlerInArenaNames: string[];
+  /** Alive brawlers the connected wallet owns, with their current opt-out
+   *  flag (read from chain via ArenaOptOut.optedOutMany). */
+  myBrawlers: BrawlerRow[];
   onApproveMined: () => void;
+  onOptOutMined: () => void;
 }
 
 export function ArenaStatusPanel({
   brawlAddress,
   approveTarget,
+  arenaOptOutAddress,
   chainId,
   fightCost,
   myAllowance,
   myBalance,
-  myAliveBrawlerNames,
-  myAliveBrawlerInArenaNames,
+  myBrawlers,
   onApproveMined,
+  onOptOutMined,
 }: ArenaStatusPanelProps) {
   const [choice, setChoice] = useState<FightsChoice>(1);
-  const [lastAction, setLastAction] = useState<'enter' | 'leave' | null>(null);
+  const [lastAction, setLastAction] = useState<'enter' | 'leave' | 'optout' | null>(null);
+  const [pendingTokenId, setPendingTokenId] = useState<number | null>(null);
 
+  // Single useWriteContract for both approve + setOptOut — they share the
+  // same lifecycle pattern (write → wait → refetch parent reads).
   const {
     writeContractAsync,
     data: txHash,
@@ -67,15 +80,15 @@ export function ArenaStatusPanel({
     hash: txHash,
   });
 
-  // When the approve tx mines, refresh parent reads so the panel re-renders
-  // with the new allowance value, then clear our local "last action" flag.
   useEffect(() => {
     if (isSuccess) {
-      onApproveMined();
+      if (lastAction === 'optout') onOptOutMined();
+      else onApproveMined();
       setLastAction(null);
+      setPendingTokenId(null);
       reset();
     }
-  }, [isSuccess, onApproveMined, reset]);
+  }, [isSuccess, lastAction, onApproveMined, onOptOutMined, reset]);
 
   const fightsRemaining =
     fightCost && fightCost > 0n && myAllowance !== undefined
@@ -90,15 +103,13 @@ export function ArenaStatusPanel({
   const effectiveFights = Math.min(fightsRemaining, fightsAffordable);
   const allowanceOk = fightsRemaining >= 1;
   const balanceOk = fightsAffordable >= 1;
-  const inArena = allowanceOk && balanceOk && myAliveBrawlerInArenaNames.length > 0;
-  const noBrawlersAlive = myAliveBrawlerNames.length === 0;
+  const optedInBrawlers = myBrawlers.filter((b) => !b.isOptedOut);
+  const inArena = allowanceOk && balanceOk && optedInBrawlers.length > 0;
+  const noBrawlersAlive = myBrawlers.length === 0;
   const busy = isPending || isMining;
 
-  const enter = async () => {
-    if (!fightCost || fightCost === 0n) return;
-    const amount =
-      choice === 'max' ? MAX_UINT256 : fightCost * BigInt(choice);
-    setLastAction('enter');
+  const approveAmount = async (amount: bigint) => {
+    setLastAction(amount === 0n ? 'leave' : 'enter');
     try {
       await writeContractAsync({
         abi: BRAWL_ABI,
@@ -112,18 +123,29 @@ export function ArenaStatusPanel({
     }
   };
 
-  const leave = async () => {
-    setLastAction('leave');
+  const enter = async () => {
+    if (!fightCost || fightCost === 0n) return;
+    const amount = choice === 'max' ? MAX_UINT256 : fightCost * BigInt(choice);
+    await approveAmount(amount);
+  };
+
+  const leave = () => approveAmount(0n);
+
+  const toggleOptOut = async (tokenId: number, currentlyOut: boolean) => {
+    if (!arenaOptOutAddress) return;
+    setLastAction('optout');
+    setPendingTokenId(tokenId);
     try {
       await writeContractAsync({
-        abi: BRAWL_ABI,
-        address: brawlAddress,
+        abi: ARENA_OPTOUT_ABI,
+        address: arenaOptOutAddress,
         chainId,
-        functionName: 'approve',
-        args: [approveTarget, 0n],
+        functionName: 'setOptOut',
+        args: [BigInt(tokenId), !currentlyOut],
       });
     } catch {
       setLastAction(null);
+      setPendingTokenId(null);
     }
   };
 
@@ -151,9 +173,9 @@ export function ArenaStatusPanel({
     );
   }
 
-  // Render
   return (
     <div className="brawl-card p-4 space-y-3">
+      {/* Header line — owner-level status */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="brawl-header text-sm text-brawl-orange">
           Your arena status
@@ -180,15 +202,9 @@ export function ArenaStatusPanel({
         )}
       </div>
 
-      {/* In-arena: show details + leave button */}
+      {/* Allowance + balance breakdown when in arena */}
       {inArena && (
         <div className="text-sm text-brawl-text-dim space-y-1">
-          <div>
-            brawlers in arena:{' '}
-            <span className="text-brawl-text">
-              {myAliveBrawlerInArenaNames.join(', ')}
-            </span>
-          </div>
           {fightsRemaining !== Infinity && (
             <div>
               $BRAWL allowance: {fmtBrawl(myAllowance)} (covers {fightsRemaining} fight
@@ -202,15 +218,13 @@ export function ArenaStatusPanel({
         </div>
       )}
 
-      {/* Allowance > balance warning */}
+      {/* Warnings */}
       {inArena && fightsAffordable < fightsRemaining && fightsRemaining !== Infinity && (
         <div className="text-sm text-brawl-orange">
           ⚠ approval covers {fightsRemaining} fights but you only have $BRAWL for{' '}
           {fightsAffordable}. you'll auto-exit when balance runs out.
         </div>
       )}
-
-      {/* Allowance ok but balance too low */}
       {allowanceOk && !balanceOk && (
         <div className="text-sm text-brawl-orange">
           ⚠ approved to fight but $BRAWL balance is below the fight cost ({fmtBrawl(fightCost)}).
@@ -218,8 +232,8 @@ export function ArenaStatusPanel({
         </div>
       )}
 
-      {/* Action row */}
-      <div className="flex flex-wrap gap-2 items-center">
+      {/* Owner-level action row */}
+      <div className="flex flex-wrap gap-2 items-center pt-1 border-t border-brawl-border">
         <div className="flex items-center gap-2">
           <label
             htmlFor="fights-choice"
@@ -249,12 +263,8 @@ export function ArenaStatusPanel({
             className="brawl-btn brawl-btn-primary text-sm px-3 py-1.5 disabled:opacity-50"
           >
             {busy && lastAction === 'enter'
-              ? isMining
-                ? 'confirming…'
-                : 'sign…'
-              : inArena
-                ? 'top up'
-                : 'enter arena'}
+              ? isMining ? 'confirming…' : 'sign…'
+              : inArena ? 'top up' : 'enter arena'}
           </button>
         </div>
 
@@ -264,25 +274,70 @@ export function ArenaStatusPanel({
             onClick={leave}
             disabled={busy}
             className="text-sm text-brawl-text-faint hover:text-brawl-orange font-mono px-2 py-1 border border-brawl-border disabled:opacity-50"
-            title="revoke $BRAWL approval, exit the arena"
+            title="revoke $BRAWL approval, exit the arena (affects all your brawlers)"
           >
             {busy && lastAction === 'leave'
-              ? isMining
-                ? 'confirming…'
-                : 'sign…'
-              : 'leave arena'}
+              ? isMining ? 'confirming…' : 'sign…'
+              : 'revoke approval (all)'}
           </button>
         )}
       </div>
 
-      {/* Help line — default behaviour transparency */}
-      <div className="text-xs text-brawl-text-faint font-mono">
+      {/* Per-brawler opt-out toggles */}
+      {arenaOptOutAddress ? (
+        <div className="pt-1 border-t border-brawl-border space-y-2">
+          <div className="text-sm brawl-header text-brawl-text">
+            per-brawler in/out
+          </div>
+          <div className="space-y-1.5">
+            {myBrawlers.map((b) => {
+              const isThisPending = pendingTokenId === b.tokenId && busy;
+              return (
+                <label
+                  key={b.tokenId}
+                  className={`flex items-center gap-2 text-sm font-mono cursor-pointer hover:bg-brawl-panel/60 px-1 py-0.5 ${
+                    isThisPending ? 'opacity-60' : ''
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={!b.isOptedOut}
+                    disabled={busy}
+                    onChange={() => void toggleOptOut(b.tokenId, b.isOptedOut)}
+                    className="accent-brawl-orange"
+                  />
+                  <span className="text-brawl-text">
+                    {b.name}{' '}
+                    <span className="text-brawl-text-faint">#{b.tokenId}</span>
+                  </span>
+                  {b.isOptedOut && (
+                    <span className="text-xs text-brawl-text-faint">
+                      [out of arena]
+                    </span>
+                  )}
+                  {isThisPending && (
+                    <span className="text-xs text-brawl-orange">
+                      {isMining ? 'confirming…' : 'sign…'}
+                    </span>
+                  )}
+                </label>
+              );
+            })}
+          </div>
+          <div className="text-xs text-brawl-text-faint font-mono">
+            untick to keep a brawler out of the arena. on-chain (advisory) —
+            other players' clients honour the flag too.
+          </div>
+        </div>
+      ) : null}
+
+      {/* Default-behaviour explanation */}
+      <div className="text-xs text-brawl-text-faint font-mono pt-1 border-t border-brawl-border">
         each duel consumes one fight worth of $BRAWL allowance. you auto-exit when
-        allowance hits 0, or when $BRAWL balance drops below the fight cost, or
-        when your brawler dies. choose ∞ to stay until you leave manually.
+        allowance hits 0, when $BRAWL balance drops below the fight cost, or when
+        a brawler dies. choose ∞ to stay until you leave manually.
       </div>
 
-      {/* Error surfacing */}
       {error && (
         <div className="text-xs text-brawl-red font-mono">
           {error instanceof Error ? error.message : String(error)}

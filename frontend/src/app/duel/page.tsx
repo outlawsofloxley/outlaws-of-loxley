@@ -31,7 +31,7 @@ import { useHouseWhitelist } from '@/hooks/useHouseWhitelist';
 import { useMarketListings } from '@/hooks/useMarketListings';
 import type { Brawler as UIBrawler } from '@/hooks/useBrawler';
 import { PixelAvatar } from '@/components/PixelAvatar';
-import { BRAWL_ABI, DUEL_ABI, DUEL_ROUTER_ABI, BRAWLERS_ABI } from '@/lib/abi';
+import { BRAWL_ABI, DUEL_ABI, DUEL_ROUTER_ABI, BRAWLERS_ABI, ARENA_OPTOUT_ABI } from '@/lib/abi';
 import { requireEnv } from '@/lib/env';
 import { WrongChainPrompt } from '@/components/WrongChainPrompt';
 import type { CombatEvent } from '@/core/types';
@@ -298,9 +298,40 @@ export default function DuelPage() {
     return ready;
   }, [allowanceReads, balanceReads, uniqueOwners, fightCost]);
 
+  // Per-brawler ArenaOptOut: owners can opt individual brawlers out of the
+  // arena regardless of allowance. Read the flag for every alive brawler in
+  // a single batch (optedOutMany), then exclude opted-out tokens from the
+  // duel-ready pool. Null env → feature disabled, defaults to all-in.
+  const aliveTokenIds = useMemo(
+    () => aliveBrawlers.map((br) => BigInt(br.tokenId)),
+    [aliveBrawlers],
+  );
+  const { data: optedOutFlags, refetch: refetchOptedOut } = useReadContract({
+    abi: ARENA_OPTOUT_ABI,
+    address: env.arenaOptOutAddress ?? undefined,
+    functionName: 'optedOutMany',
+    args: aliveTokenIds.length > 0 ? [aliveTokenIds] : undefined,
+    chainId: env.chainId,
+    query: { enabled: !!env.arenaOptOutAddress && aliveTokenIds.length > 0 },
+  });
+  const optedOutTokenIds = useMemo<Set<number>>(() => {
+    const s = new Set<number>();
+    if (!optedOutFlags || !Array.isArray(optedOutFlags)) return s;
+    for (let i = 0; i < aliveBrawlers.length; i++) {
+      if ((optedOutFlags as readonly boolean[])[i]) {
+        s.add(aliveBrawlers[i]!.tokenId);
+      }
+    }
+    return s;
+  }, [optedOutFlags, aliveBrawlers]);
+
   const duelReadyCandidates = useMemo(() => {
-    return aliveBrawlers.filter((br) => duelReadyOwners.has(br.owner.toLowerCase()));
-  }, [aliveBrawlers, duelReadyOwners]);
+    return aliveBrawlers.filter(
+      (br) =>
+        duelReadyOwners.has(br.owner.toLowerCase()) &&
+        !optedOutTokenIds.has(br.tokenId),
+    );
+  }, [aliveBrawlers, duelReadyOwners, optedOutTokenIds]);
 
   const a = aId !== null ? aliveBrawlers.find((br) => br.tokenId === aId) ?? null : null;
   const b = bId !== null ? aliveBrawlers.find((br) => br.tokenId === bId) ?? null : null;
@@ -581,24 +612,30 @@ export default function DuelPage() {
 
               {/* Connected user's arena slot: status + explicit entry / top-up / leave.
                   Replaces the old "approve infinite BRAWL once and stay forever"
-                  behaviour with a per-fight allowance model. */}
+                  behaviour with a per-fight allowance model PLUS per-brawler
+                  opt-out via the ArenaOptOut contract. */}
               {isConnected && rightChain && address && (
                 <ArenaStatusPanel
                   brawlAddress={env.brawlAddress}
                   approveTarget={allowanceTarget}
+                  arenaOptOutAddress={env.arenaOptOutAddress}
                   chainId={env.chainId}
                   fightCost={fightCost}
                   myAllowance={myAllowanceToTarget as bigint | undefined}
                   myBalance={myBrawlBalance as bigint | undefined}
-                  myAliveBrawlerNames={mine.map((br) => br.name)}
-                  myAliveBrawlerInArenaNames={mine
-                    .filter((br) => duelReadyOwners.has(br.owner.toLowerCase()))
-                    .map((br) => br.name)}
+                  myBrawlers={mine.map((br) => ({
+                    tokenId: br.tokenId,
+                    name: br.name,
+                    isOptedOut: optedOutTokenIds.has(br.tokenId),
+                  }))}
                   onApproveMined={() => {
                     void refetchMyAllowance();
                     void refetchMyBalance();
                     void refetchAllowanceReads();
                     void refetchBalanceReads();
+                  }}
+                  onOptOutMined={() => {
+                    void refetchOptedOut();
                   }}
                 />
               )}

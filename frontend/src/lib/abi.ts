@@ -314,3 +314,14 @@ export const AERODROME_PAIR_ABI = parseAbi([
   'function token0() view returns (address)',
   'function token1() view returns (address)',
 ]);
+
+// ArenaOptOut, per-brawler opt-out of the duel arena. Owner-gated writes,
+// public reads. Frontends filter optedOut brawlers from the duel candidate pool.
+export const ARENA_OPTOUT_ABI = parseAbi([
+  'function brawlers() view returns (address)',
+  'function optedOut(uint256) view returns (bool)',
+  'function optedOutMany(uint256[]) view returns (bool[])',
+  'function setOptOut(uint256 tokenId, bool flag)',
+  'function setOptOutBatch(uint256[] tokenIds, bool flag)',
+  'event ArenaOptOutSet(uint256 indexed tokenId, address indexed setter, bool optedOut)',
+]);

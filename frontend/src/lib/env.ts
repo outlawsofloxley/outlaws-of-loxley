@@ -33,6 +33,11 @@ export const envRaw = {
   /** BRAWLTimelock deployment, holds the team-vault BRAWL with linear vest.
    *  Null pre-deploy; the /lock page degrades to a "not deployed yet" notice. */
   brawlTimelockAddress: process.env.NEXT_PUBLIC_BRAWL_TIMELOCK_ADDRESS,
+  /** ArenaOptOut contract, per-brawler arena opt-out flag. When set, the
+   *  duel page filters opted-out brawlers from the candidate pool and
+   *  surfaces per-brawler toggles in the arena status panel. Null = falls
+   *  back to allowance-only filtering (everyone in-or-out per owner). */
+  arenaOptOutAddress: process.env.NEXT_PUBLIC_ARENA_OPTOUT_ADDRESS,
 } as const;
 
 function isHex40(s: string): s is `0x${string}` {
@@ -97,6 +102,10 @@ export type EnvValidation =
          *  a countdown + verifiable on-chain data; when null, /lock shows
          *  a "lock contract not deployed yet" placeholder. */
         brawlTimelockAddress: `0x${string}` | null;
+        /** ArenaOptOut contract address. When set, the duel page reads
+         *  per-brawler opt-out flags and surfaces toggles. When null,
+         *  arena membership is computed from BRAWL allowance only. */
+        arenaOptOutAddress: `0x${string}` | null;
       };
     }
   | { ok: false; errors: string[] };
@@ -165,6 +174,7 @@ export function validateEnv(): EnvValidation {
   const brawlPairAddress = tryOptional(envRaw.brawlPairAddress);
   const aerodromeRouterAddress = tryOptional(envRaw.aerodromeRouterAddress);
   const brawlTimelockAddress = tryOptional(envRaw.brawlTimelockAddress);
+  const arenaOptOutAddress = tryOptional(envRaw.arenaOptOutAddress);
 
   // Optional: WalletConnect cloud project id. WalletConnect IDs are 32-char
   // hex (no 0x prefix). If unset/blank, the picker simply omits the
@@ -195,6 +205,7 @@ export function validateEnv(): EnvValidation {
       aerodromeRouterAddress,
       walletConnectProjectId,
       brawlTimelockAddress,
+      arenaOptOutAddress,
     },
   };
 }
