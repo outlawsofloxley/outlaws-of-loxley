@@ -37,6 +37,7 @@ import { WrongChainPrompt } from '@/components/WrongChainPrompt';
 import type { CombatEvent } from '@/core/types';
 import { DuelAnimation } from '@/components/DuelAnimation';
 import { ArenaLineup } from '@/components/ArenaLineup';
+import { ArenaStatusPanel } from '@/components/ArenaStatusPanel';
 import { rarityFromWeight } from '@/lib/rarity';
 import { isHouseBrawler } from '@/lib/house';
 import { TxLink } from '@/components/TxLink';
@@ -211,6 +212,26 @@ export default function DuelPage() {
     fightCost !== undefined &&
     ((typeof myRouterBrawlAllowance === 'bigint' && myRouterBrawlAllowance < fightCost) ||
       myRouterNftApproval === false);
+
+  // Connected-wallet BRAWL allowance + balance, addressed against whichever
+  // submit target is active (router when configured, Duel in legacy mode).
+  // Feeds ArenaStatusPanel so the user can see/manage their own arena slot.
+  const { data: myAllowanceToTarget, refetch: refetchMyAllowance } = useReadContract({
+    abi: BRAWL_ABI,
+    address: env.brawlAddress,
+    functionName: 'allowance',
+    args: address ? [address, allowanceTarget] : undefined,
+    chainId: env.chainId,
+    query: { enabled: !!address },
+  });
+  const { data: myBrawlBalance, refetch: refetchMyBalance } = useReadContract({
+    abi: BRAWL_ABI,
+    address: env.brawlAddress,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    chainId: env.chainId,
+    query: { enabled: !!address },
+  });
   const { data: devShareRouterData } = useReadContract({
     abi: DUEL_ROUTER_ABI,
     address: env.duelRouterAddress ?? undefined,
@@ -233,7 +254,7 @@ export default function DuelPage() {
     return [...set];
   }, [aliveBrawlers]);
 
-  const { data: allowanceReads } = useReadContracts({
+  const { data: allowanceReads, refetch: refetchAllowanceReads } = useReadContracts({
     contracts: uniqueOwners.map((owner) => ({
       abi: BRAWL_ABI,
       address: env.brawlAddress,
@@ -244,18 +265,38 @@ export default function DuelPage() {
     query: { enabled: uniqueOwners.length > 0 },
   });
 
+  // Parallel balance reads. A user with infinite allowance but zero $BRAWL
+  // looks "duel-ready" by allowance alone, but the fight reverts at the
+  // transfer step. Filter both here so the matchmaker never picks a
+  // guaranteed-revert opponent.
+  const { data: balanceReads, refetch: refetchBalanceReads } = useReadContracts({
+    contracts: uniqueOwners.map((owner) => ({
+      abi: BRAWL_ABI,
+      address: env.brawlAddress,
+      functionName: 'balanceOf' as const,
+      args: [owner as `0x${string}`] as const,
+      chainId: env.chainId,
+    })),
+    query: { enabled: uniqueOwners.length > 0 },
+  });
+
   const duelReadyOwners = useMemo<Set<string>>(() => {
     const ready = new Set<string>();
-    if (!allowanceReads || fightCost === undefined) return ready;
+    if (!allowanceReads || !balanceReads || fightCost === undefined) return ready;
     for (let i = 0; i < uniqueOwners.length; i++) {
       const owner = uniqueOwners[i]!;
-      const row = allowanceReads[i];
-      if (!row || row.status !== 'success') continue;
-      const allowance = row.result as bigint;
-      if (allowance >= fightCost) ready.add(owner);
+      const allowanceRow = allowanceReads[i];
+      const balanceRow = balanceReads[i];
+      if (!allowanceRow || allowanceRow.status !== 'success') continue;
+      if (!balanceRow || balanceRow.status !== 'success') continue;
+      const allowance = allowanceRow.result as bigint;
+      const balance = balanceRow.result as bigint;
+      // Both gates must pass: allowance lets the contract pull BRAWL,
+      // balance lets the pull actually succeed.
+      if (allowance >= fightCost && balance >= fightCost) ready.add(owner);
     }
     return ready;
-  }, [allowanceReads, uniqueOwners, fightCost]);
+  }, [allowanceReads, balanceReads, uniqueOwners, fightCost]);
 
   const duelReadyCandidates = useMemo(() => {
     return aliveBrawlers.filter((br) => duelReadyOwners.has(br.owner.toLowerCase()));
@@ -537,6 +578,30 @@ export default function DuelPage() {
               )}
 
               {a !== null && b !== null && !sameSelected && <Matchup a={a} b={b} />}
+
+              {/* Connected user's arena slot: status + explicit entry / top-up / leave.
+                  Replaces the old "approve infinite BRAWL once and stay forever"
+                  behaviour with a per-fight allowance model. */}
+              {isConnected && rightChain && address && (
+                <ArenaStatusPanel
+                  brawlAddress={env.brawlAddress}
+                  approveTarget={allowanceTarget}
+                  chainId={env.chainId}
+                  fightCost={fightCost}
+                  myAllowance={myAllowanceToTarget as bigint | undefined}
+                  myBalance={myBrawlBalance as bigint | undefined}
+                  myAliveBrawlerNames={mine.map((br) => br.name)}
+                  myAliveBrawlerInArenaNames={mine
+                    .filter((br) => duelReadyOwners.has(br.owner.toLowerCase()))
+                    .map((br) => br.name)}
+                  onApproveMined={() => {
+                    void refetchMyAllowance();
+                    void refetchMyBalance();
+                    void refetchAllowanceReads();
+                    void refetchBalanceReads();
+                  }}
+                />
+              )}
 
               {/* Who's paid their entry and is sitting in the arena right now. */}
               <ArenaLineup
@@ -1065,15 +1130,24 @@ function ReviewPanel({
 
   const doApprove = async () => {
     setLastThrow(null);
+    if (fightCost === undefined) {
+      setLastThrow('fightCost not loaded — refresh and try again.');
+      return;
+    }
     try {
       // Approve BRAWL for the active submit target (router when configured,
       // Duel in legacy mode).
+      //
+      // We approve EXACTLY one fight's worth so the user auto-exits the arena
+      // after this duel (matchmaker filters owners by allowance >= fightCost).
+      // For multi-fight queuing or "stay forever" mode, the user uses the
+      // ArenaStatusPanel above which exposes 1 / 5 / 10 / ∞ choices explicitly.
       await approveWriteAsync({
         abi: BRAWL_ABI,
         address: env.brawlAddress,
         chainId: env.chainId,
         functionName: 'approve',
-        args: [submitTarget, (1n << 256n) - 1n],
+        args: [submitTarget, fightCost],
       });
     } catch (e) {
       setLastThrow(e instanceof Error ? `${e.name}: ${e.message}` : String(e));

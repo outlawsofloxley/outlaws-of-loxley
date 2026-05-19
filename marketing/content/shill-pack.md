@@ -37,23 +37,45 @@ When someone tweets about NFT utility:
 When someone tweets about a memecoin getting rugged:
 > "Or you could mint a BASEic Brawler, LP locked 6mo, ownership renounceable, 110+ Foundry tests. The chart is just a side effect of a working game."
 
-## Hashtags (use sparingly, max 2-3 per post)
+## Hashtags (use sparingly, max 2 per own-post, 0 in replies)
 
-Primary:
+Authoritative kit lives in `x-campaign-playbook.md`. Quick version:
+
+Always:
 - `#BASEicBrawlers` (own brand)
 - `#Base` (chain)
-- `#OnchainGames`
+- `#OnchainGaming` (note: NOT `#OnchainGames` — the singular tag is the active one)
 
-Situational:
-- `#NFTGaming`
-- `#PFPgame`
-- `#Aerodrome` (when posting LP / chart)
-- `#OnchainSummer` (Base ecosystem campaigns)
+Seasonal / contextual:
+- `#OnchainSummer` (Coinbase Jun-Aug 2026 campaign — huge visibility window)
+- `#BuildOnBase` (own-posts about shipping)
+- `#OnchainSocial` (Farcaster-adjacent, fits community posts)
+- `#PixelArt` (art-reveal own-posts only)
+- `#Web3Gaming` (corporate-flavoured but alive)
 
 Don't use:
-- ❌ `#100x` `#1000x` `#moonshot`, degen-brain hashtags hurt brand
-- ❌ `#Shillzone` `#Pump`, same
-- ❌ Generic `#NFT` `#crypto`, too noisy, no signal
+- ❌ `#GameFi` — dead (93% of GameFi projects failed per Caladan Apr 2026)
+- ❌ `#P2E` — dead + toxic, '22 cope
+- ❌ `#NFTGaming` — dying, only when post is purely mechanic-led
+- ❌ `#PFPgame` — dead, low search volume
+- ❌ `#NFT` / `#crypto` — too noisy
+- ❌ `#100x` / `#1000x` / `#moonshot` — degen-brain, hurts brand
+- ❌ `#Shillzone` / `#Pump` — same
+
+**Hard rule:** zero hashtags in replies (= bot flag in X 2026 algo). Hashtags work in own-posts only.
+
+## Cashtags ($)
+
+X's Smart Cashtags went GA April 2026 — `$BRAWL` now resolves to a live chart on hover. But 2+ stacked cashtags is the new "ticker spam" flag.
+
+- `$BRAWL` — always in own-posts, optional in replies
+- `$ETH` — own-posts when fight-cost-in-ETH is the topic
+- `$BASE` — own-posts about ecosystem positioning
+- `$AERO` — when LP/Aerodrome is the topic (e.g. replying under @AerodromeFi)
+- `$BRETT` / `$DEGEN` — rare, only when reply is inside that coin's tribe; tourist-trap otherwise
+- ❌ `$BTC` / `$VIRTUAL` — avoid, wrong audience
+
+**Hard rule:** max 2 cashtags per post. Own-posts: `$BRAWL` + 1 contextual. Replies: 0-1.
 
 ## Banner / image captions (for art posts)
 
