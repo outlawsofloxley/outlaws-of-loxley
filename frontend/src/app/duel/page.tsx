@@ -675,7 +675,7 @@ export default function DuelPage() {
                           BRAWL{' '}
                           {fightCost !== undefined && (
                             <span className="text-brawl-text-faint text-xs">
-                              (~{formatUnits(fightCost, 18)})
+                              (~{fmtBrawl(fightCost)})
                             </span>
                           )}
                         </button>
