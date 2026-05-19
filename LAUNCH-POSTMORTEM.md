@@ -329,4 +329,89 @@ Don't just learn from mistakes. Things to copy verbatim into the next project:
 
 ---
 
-*Written 2026-05-18, ~16h post-launch. Next project should reference this doc + the `LAUNCH-PLAYBOOK.md` together as the launch-day pair.*
+## J. Day-2 to week-1 post-launch checklist (added 2026-05-19)
+
+Captured the day AFTER launch from real user issues + marketing prep we should
+have done earlier. If we run this play again, these go in the launch-week
+runbook, not in the "we'll get to it" pile.
+
+### Within 1 hour of going live
+
+- [ ] **Submit Blockaid false-positive form** (`https://report.blockaid.io/` → "Mistake" path). Fresh contracts get flagged as "deceptive request" by MetaMask within minutes. 24-72h turnaround for de-flag, so file BEFORE the first user reports the red banner. Image captcha → headed-mode playwright with human pause is the realistic path (see `marketing/scripts/x/submit-blockaid-mistake.mjs`).
+- [ ] **Submit ChainPatrol dispute** (`https://app.chainpatrol.io/dispute`). Separate reputation feed, also reaches MetaMask. No captcha, fully scriptable.
+- [ ] **Fire the in-wallet "Report an issue"** from a real mint attempt on your own MetaMask. Submits live transaction context to Blockaid's ML retraining, more weight than the form alone.
+- [ ] **Refresh the AI helper bot's system prompt with mainnet reality**. Anything claiming Sepolia, UNCX lock, or pre-launch numbers will gaslight your community. Edit `prompt.txt`, scp, `docker compose up -d` (NOT `restart` — see K2).
+- [ ] **Discord channel routing guard**. Build a small `post-update.mjs` helper that hard-blocks freeform posts to bot-only event channels (`#duels`, `#graveyard`, `#leaderboard`, `#marketplace`). One accidental cross-post pollutes the curated feed.
+
+### Within 24h
+
+- [ ] **List $TOKEN on CoinGecko** (`Request Form → New Coin/Token Listing → Fast Pass`, 24h SLA). Requires an active DEX pair. Token-info reputation signal helps Blockaid + downstream scanners.
+- [ ] **Submit to Base ecosystem registry** (`https://forms.gle/hJhc2PqfAsQp86YL8`). Need a 192×192 icon. Backlink from base.org boosts domain reputation.
+- [ ] **Update Basescan token info** for $TOKEN (logo, socials, project description). Free, eventual review.
+- [ ] **Verify all contracts on Etherscan V2 endpoint** (`https://api.etherscan.io/v2/api?chainid=X`). V1 is deprecated — old `--verify` flows fail silently. New contracts: `forge verify-contract --verifier-url https://api.etherscan.io/v2/api?chainid=8453 ...`
+- [ ] **Round every formatUnits in the UI**. Default 18-decimal display turns into a wall ("72.7198385571958403 BRAWL"). Wrap in `Number(formatUnits(x, 18)).toFixed(2)` everywhere — grep for `formatUnits(.*,\s*18)` and audit each call site.
+
+### Within 1 week — marketing infrastructure
+
+These should ideally be drafted PRE-launch, not after. If they get bumped to post-launch, do them all in week 1.
+
+- [ ] **TG group target list** (degen / gem hunters / leverage rooms, NOT chain-maxi rooms — they ban shills on sight). Per-group: link, member count, vibe, shill rules. Verify each link before targeting.
+- [ ] **TG soft-shill templates** in BOTH polished and chitter-chatter (drop-in-convo) formats. Aussie degen voice > polished marketing copy. Lead with mechanic, not chart.
+- [ ] **X campaign playbook**: ranked KOL list (5 bullseye + 20 tier 2-3), cashtag/hashtag kit (max 2 cashtags/post, max 2 hashtags/own-post, ZERO hashtags in replies = bot flag), post-type taxonomy with reply triggers.
+- [ ] **X reply kit**: 8-10 archetype-keyed reply templates (Base growth tweet, "NFTs are dead", new launch announce, GameFi take, etc.). Each pre-vetted for voice + length + link strategy.
+- [ ] **Live reply candidates** drafted under specific recent KOL tweets (URLs + drafted reply text). Stale within 24h, but proves the playbook works.
+- [ ] **Verify EVERY KOL handle** via authenticated Playwright session — WebFetch + Nitter both return 402/empty in 2026. Cookies from your real X session in `marketing/scripts/x/.session.json`.
+- [ ] **Strip dead hashtags from any inherited playbook**. As of 2026-05: `#GameFi`, `#P2E`, `#NFTGaming`, `#PFPgame` are dead. `#OnchainSummer` is huge Jun-Aug per Coinbase campaign. Recheck before each campaign.
+- [ ] **DM auto-reply on personal account** for the inbound "we can promo your project" wave. Triggered by keyword (`promo|shill|promotion|advertise|marketing`), fires once per sender, polite "drop your business case + recent campaign results" canned reply.
+
+### Within 1 week — UX bugs that hit real users
+
+- [ ] **Arena listing is per-NFT, not per-wallet, from day 1.** Approval-as-listing is elegant but groups all of an owner's brawlers together. Day-1 deploy of a tiny `ArenaOptOut` (or equivalent) contract avoids the painful retrofit. See K1.
+- [ ] **Default approval to 1× fightCost, not MAX_UINT256.** Users who approve-once-and-walk-away end up at graveyard risk or losing stacks to opportunistic opponents. Expose 1 / 5 / 10 / ∞ as explicit choices, default 1.
+- [ ] **Matchmaker filters by BOTH allowance AND balance**, not allowance alone. Allowance-only = silent reverts when opponent's wallet is broke.
+- [ ] **"Leave arena" button** that revokes approval (`approve(spender, 0)`). Without it, users with old MAX approvals can't safely exit.
+
+---
+
+## K. Patterns to copy verbatim (added 2026-05-19)
+
+### K1. Tiny pure-state companion contracts
+
+`ArenaOptOut.sol` (40 LOC, 17 tests, ~$0.02 gas to deploy) is the template for adding state to a LIVE system without modifying deployed contracts:
+
+- Owner-gated via the underlying NFT's `ownerOf` (no auth state in the new contract)
+- `setOptOut(tokenId, flag)` + `setOptOutBatch` for gas-efficient multi-token flips
+- `optedOutMany(tokenIds[])` for batch frontend reads (single RPC for N brawlers)
+- Event per token for indexer ergonomics
+- No funds, no ownership, no upgrade path. Pure state. Risk surface ≈ 0.
+- Advisory by design: live contracts don't consult it. Official frontend filters. Bad-actor custom UIs ignored.
+
+Pattern reuses for any per-NFT toggle you wish you had at launch (visibility, opt-out, custom badges, etc).
+
+### K2. `docker compose restart` does NOT re-read .env
+
+Burned an hour on this. After `sed`-ing a flag in `.env`, restart reuses the cached env from when the container was first `up`'d. You need `docker compose up -d` (recreates the container) for env changes to take effect. Document this in every userbot / keeper deploy runbook.
+
+### K3. Headed-mode Playwright with human-pause for captcha forms
+
+Blockaid's false-positive form has an image captcha (no Cloudflare turnstile, no easy bypass). The pattern that works:
+1. Headed browser
+2. Autofill every field except captcha
+3. Pause on a readline prompt: "type captcha, click Next, press ENTER here"
+4. Continue + screenshot post-submit
+
+10 seconds of human attention for the captcha, full automation for everything else. Avoids OCR / 2Captcha API costs / fragility.
+
+### K4. "Allowance as listing" is elegant but per-OWNER
+
+For any "is this NFT entered into [pool]" decision, the cheapest implementation is "owner has approved enough TOKEN to the spender contract". Zero new state. But: if an owner has N NFTs, the approval is shared across all of them. There's no way to express "NFT #5 is in, NFT #6 is out" with allowance alone — you need a per-NFT bit somewhere (K1 pattern).
+
+Decide at design time: is the "in the pool" decision per-wallet or per-NFT? If per-NFT, build the K1 contract from day 1. Retrofitting after launch is doable (we did it) but causes confused users and a Vercel redeploy in the middle of a marketing push.
+
+### K5. Refresh AI helper-bot prompts on launch day, not "later"
+
+Our userbot's `prompt.txt` said LP was Unicrypt-locked + Sepolia + had a +20 BRAWL airdrop bonus. All three were wrong post-launch. If we'd flipped `LISTENER_ONLY=false` without refreshing the prompt, the bot would have authoritatively lied to community members. Make "refresh prompt with current contract state" a launch-day checklist item, not a week-2 cleanup.
+
+---
+
+*Written 2026-05-18, ~16h post-launch. Sections J + K added 2026-05-19 from day-2 work. Next project should reference this doc + the `LAUNCH-PLAYBOOK.md` together as the launch-day pair.*
