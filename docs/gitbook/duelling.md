@@ -1,96 +1,58 @@
 # Duelling
 
-the whole point. you stake brawl, you fight, somebody walks with the pot, somebody's brawler is one loss closer to the graveyard.
+the whole point. you stake LAWS, you fight, somebody walks with the pot, somebody's outlaw is one loss closer to the gallows.
+
+reminder before anything else: this is testnet. the LAWS you're staking came free with your mint. fight recklessly, that's what it's for.
 
 ## how a fight starts
 
-go to [/duel](https://baseicbrawlers.com/duel). we auto-match you against a brawler near your rating. if you have multiple brawlers we let you pick which fighter. otherwise we lock in your only alive one.
-
-don't like the match? hit **reroll opponent** and we'll find someone else. there's no cost to reroll, no cooldown.
+go to [/duel](https://outlaws-of-loxley.vercel.app/duel). the matchmaker pairs you against an outlaw near your rating. if you own several outlaws you pick your fighter, otherwise your only alive one is locked in. don't like the match? reroll and it finds someone else.
 
 ## the stake
 
-each duel costs **$1 per fighter, $2 total pot**. you can pay in brawl OR in eth, your choice. winner takes 90% of the pot, dev treasury takes 10%. on a tie, each fighter gets their own stake back (no dev cut on ties).
+each duel costs a small amount of LAWS per fighter (the live number is on the duel page, testnet amounts are tiny). both stakes go into the pot:
 
-- **non-founder**: $1 per side. at launch that's roughly 500 brawl or 0.00025 eth, the exact number floats with price and the duel page shows the live quote before you sign.
-- **founder 100**: 25% off forever. founders pay $0.75 per fight.
+- **win**: you take the pot, minus a dev cut (the contract hard-caps the dev share at 20% of the pot).
+- **lose**: your stake is gone and your loss streak ticks up.
+- **tie**: the pot, minus the dev cut, splits down the middle. a tie also resets both fighters' loss streaks, so it's a better result than it sounds.
 
-**dual-currency model**: when both fighters pay brawl, dev cut is paid in brawl. when both pay eth, dev cut is paid in eth. when one pays brawl and the other pays eth (mixed), dev always gets eth and the winner gets paid in whichever currency they chose (the loser's currency gets auto-swapped on aerodrome in the same transaction).
+paying in eth or LAWS, your pick per fight, is a mainnet roadmap item (the currency router). on testnet, fights are LAWS only.
 
-stakes auto-rebalance to track $1 USD. a keeper bot watches brawl/eth + the chainlink eth/usd feed every 5 minutes and repegs the brawl side via `setFightEconomics`. translation: when brawl pumps, the per-fight brawl amount drops. when brawl dumps, it rises. the dollar value stays at $1.
+## approvals
 
-**approvals + the arena**: first fight from a wallet pops a few setup prompts, approve brawl, approve brawlers nft transfer, then the fight itself. by default you approve **exactly one fight worth of brawl**, so after the duel mines you auto-exit the arena (no one else can pull from you until you re-approve). if you want to queue more fights, the arena status panel on the duel page lets you pick 1 / 5 / 10 / unlimited, top up any time.
-
-eth-side payment doesn't need any approval, you just attach msg.value to the fight.
-
-## the arena (who's in, who's out)
-
-"being in the arena" means: your brawler is alive, you've approved enough brawl for at least one fight, you have at least one fight worth of brawl in your wallet, and you haven't manually opted that brawler out.
-
-the arena status panel on [/duel](https://baseicbrawlers.com/duel) shows:
-
-- **your owner-level status**: in-arena or not, how many fights your current approval covers, how many your balance covers
-- **per-brawler in/out toggles**: if your wallet owns multiple brawlers you can untick individual ones. opting #15 out keeps it out of the arena globally (other players' clients honour the flag too via the [`ArenaOptOut`](https://basescan.org/address/0x60985c8426855d21F34a12d5e10892784aACD212#code) contract). useful for resting a brawler on a 2-loss streak you don't want graveyarded
-- **enter / top up button**: pick 1 / 5 / 10 / ∞ fights worth of brawl to approve
-- **revoke approval button**: nukes your brawl allowance to zero, full exit, nobody can pull from you until you re-approve
-
-you auto-exit the arena when:
-- your brawl allowance hits zero (you've used all the fights you approved for)
-- your brawl balance drops below the per-fight cost
-- your brawler dies (3 losses, off to the graveyard)
-
-opting a specific brawler out is on-chain, it costs about a cent in gas, and every other player's frontend respects the flag immediately. no one can match against an opted-out brawler through the official ui.
-
-**sandwich protection**: the eth↔brawl swap leg (mixed fights only) has a signed `amountOutMin` baked into the fight quote. if an mev bot tries to sandwich your fight, the swap output falls below the signed minimum and the tx reverts. no silent slippage.
+first fight from a wallet pops an extra prompt: approve the duel contract to take your LAWS stake. after that it's one popup per fight. you can revoke the allowance any time from your wallet if you want a clean exit.
 
 ## the click-by-click
 
 1. press **fight**.
-2. the server simulates the duel deterministically using on-chain stats and a chain-bound seed.
-3. the server signs **two** eip-712 structs: the DuelResult (for the duel contract) and the FightQuote (for the router, with signed swap amounts so sandwiches revert).
-4. your wallet pops up. you sign **DuelRouter.fight(quote, qsig, result, dsig)** with msg.value matching whichever ETH stakes you chose. the router takes brawler custody, runs the fight, redistributes the pot, returns your brawler.
-5. the animation plays: stare-down, three feint strikes, then the real combat rolled from chain data.
-6. the screen settles on the outcome, your new rating, your new brawl/eth balance, and buttons for the next move.
-
-the server signs duels so the chain doesn't have to do off-chain randomness, and so re-running the same duel can't change the outcome (the seed is chain-bound). the duel contract verifies the result signature. the router verifies the quote signature. both happen before any token movement.
+2. the game server simulates the duel deterministically from on-chain stats and a chain-bound seed, then signs the result (eip-712). re-requesting the same matchup gives you the same signed result: there's no re-rolling a fight you don't like.
+3. your wallet pops. you submit the signed result on-chain. the duel contract verifies the signature before any tokens move.
+4. the animation plays. and if either fighter carries a bow, longbow, crossbow, arbalest, or the golden longbow, you'll see the arrow actually fly across the arena and land. 🏹 melee fighters lunge and clash instead.
+5. the screen settles on the outcome, your new rating, your new LAWS balance, and buttons for the next move.
 
 ## combat mechanics
 
-turn-based, simultaneous damage. each round:
+turn-based, simultaneous resolution. each round:
 
-1. **initiative**: whoever has higher dex attacks first.
-2. **to-hit roll**: `d20 + dex` ≥ defender's armour class to land.
-3. **damage**: weapon damage + str bonus, minus the floor.
-4. **crit on natural 20**: double damage.
-5. **simultaneous resolution**: if both attacks land in the same round, both fighters take damage in the same step.
+1. **initiative**: higher dex attacks first.
+2. **to-hit**: d20 + dex against the defender's armour class.
+3. **damage**: weapon damage roll + str bonus.
+4. **type advantage**: blade beats blunt, blunt beats ranged, ranged beats blade. advantage multiplies damage by 1.15×.
+5. **crit on a natural 20**: double damage.
+6. **simultaneous hits**: if both attacks land in a round, both fighters take damage in the same step.
 
-first to zero hp loses. if both go to zero in the same round, it's a **tie** and the pot splits.
-
-## ties
-
-ties are rare but real. when they happen:
-- both brawlers count it as a tie (not a win, not a loss). doesn't break a loss streak.
-- each fighter gets their own stake back (whatever currency they paid). no dev cut on ties.
-- both keep their existing rating delta as if they'd drawn (small, near-zero rating change).
-- ties don't trigger death. neither brawler advances toward 3 losses.
+first to zero hp loses. both hit zero in the same round, it's a tie.
 
 ## rating moves
 
-after every duel, the elo formula recalculates based on:
-- the rating gap between the two brawlers
-- whether you won, lost, or tied
-- the k-factor (standard chess elo, applied here to brawlers)
+after every duel the elo formula recalculates from the rating gap and the result. beat someone 200 above you, climb a lot. lose to someone 200 below, drop a lot. expected results barely move the needle.
 
-beat someone 200 rating above you, you climb a lot. lose to someone 200 below, you drop a lot. predict-the-result fights barely move the needle.
+[/leaderboard](https://outlaws-of-loxley.vercel.app/leaderboard) sorts everyone by rating. [/history](https://outlaws-of-loxley.vercel.app/history) is the full duel log, and every outlaw's page carries its own record.
 
-the [/leaderboard](https://baseicbrawlers.com/leaderboard) sorts everyone by rating descending. the [/history](https://baseicbrawlers.com/history) page is the full duel log. each brawler also has its own per-fighter history at /brawler/{id}/history.
+## three losses in a row = the gallows
 
-## the discord and telegram feeds
+lose three duels back-to-back without a win or a tie in between and your outlaw dies. off to the gallows, which has its own chapter. a win resets the streak. a tie resets the streak too. the counter only cares about consecutive losses.
 
-every duel posts to **#duels** in the official discord automatically (winner, loser, weapon, rating change, on-chain link). every death posts to **#graveyard**. every brawler sale posts to **#marketplace**. join the discord if you like watching the feed.
+## duel feeds
 
-## three losses in a row = dead
-
-if your brawler loses three duels back-to-back without a win, they die and go to the graveyard. that has its own chapter.
-
-(a tie does not break a loss streak, but a tie also doesn't add to the loss count. so 2 losses → 1 tie → 1 loss = still alive at 3 losses-with-1-tie.)
+duel results posting to community channels (discord and friends) is coming with the socials, which don't exist yet. for now the [/history](https://outlaws-of-loxley.vercel.app/history) page is the town crier.

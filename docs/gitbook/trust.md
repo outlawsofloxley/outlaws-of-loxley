@@ -1,87 +1,52 @@
 # Trust signals
 
-i'm one person building this. that's the charm and the limit. so let's be specific about what i can and can't do to your money once you've minted.
+i'm one person building this. that's the charm and the limit. this chapter is the unsexy part: what's actually true today, what's contract-enforced, and what's a promise about mainnet rather than a fact about now. read it anyway.
 
-this chapter is the unsexy part. read it anyway.
+## the biggest trust signal: it's testnet
 
-## the brawl token: ownership renounced
+there is no real money in this game yet. full stop.
 
-the brawl ERC-20 launched with two safety nets:
+- the game runs on **robinhood chain testnet** (chain id 46630). mainnet (chain id 4663) has nothing deployed.
+- mint prices are micro amounts of faucet eth. LAWS is airdropped free with every mint. none of it has value, none of it can be sold for value, and that's by design.
+- **$LAWS the real token does not exist yet.** the testnet LAWS contract is a stand-in for playtesting. no LP, no trading, no price.
+- nobody can lose money on outlaws of loxley today, which makes this the easiest "is it a rug" question i'll ever answer: there's nothing to rug.
 
-- **1% max wallet**: no single wallet can hold more than 1,000 brawl (1% of 100k supply).
-- **0.5% max tx**: no single trade can move more than 500 brawl.
+if anyone offers to sell you $LAWS or a loxley nft for real money right now, they are scamming you. there is nothing to buy.
 
-these were anti-sniper limits. block 0 of trading is bot territory. the limits stopped any one bot from front-running everyone and dumping into the pool.
+## what's contract-enforced today
 
-**shortly after the deploy** (once the launch volatility settles), the dev will call `renounceOwnership()` on the brawl contract. from that point on:
-- nobody can change the limits ever again
-- nobody can mint new brawl
-- nobody can blacklist or whitelist anyone
-- nobody can pause trading
+the testnet contracts already carry the guardrails that mainnet will ship with. these aren't promises, they're bytecode:
 
-the token becomes a true fixed-supply ERC-20 with zero admin functions. verify on basescan: `owner()` returns the zero address.
+- **rarity pre-commit**: the full 2,000-slot rarity order is shuffled from a master seed at deploy and hash-committed on-chain (`initialRarityHash`). nobody re-rolls it after the fact.
+- **dev rarity cap**: dev mints can only roll common or uncommon. the dev cannot pull a rare, legendary, epic, or the public-drop equivalent of a king.
+- **fully pvp**: no dev-owned house fighters in the arena, every opponent is a real player.
+- **marketplace fee cap**: the sale fee is hard-capped at 10% in the contract. the dev can tune it below that, never above.
+- **duel dev-cut cap**: the dev share of any fight pot is hard-capped at 20%.
+- **signed results**: every duel result is signed by the game server and verified on-chain before any tokens move. re-requesting a matchup returns the same signed result, so outcomes can't be re-rolled.
+- **listing lockout**: a listed outlaw can't duel, so a fighter can't be sold out from under a buyer mid-match.
 
-## LP burned to 0xdead
+## what's promised for mainnet (per the roadmap, no dates)
 
-at launch, the brawl/eth liquidity pool was seeded on aerodrome v2 and **the LP tokens were sent straight to `0x000...dEaD`**. permanent. the LP can never be pulled, full stop. no lock to renew, no unlock date, no "what happens later" question.
+when the game graduates to robinhood chain mainnet, the plan is the same launch shape that keeps a token honest:
 
-verify on-chain: the LP token contract for the brawl/eth aerodrome pair shows `0x000...dEaD` holding the entire LP supply (or close to it, modulo any swap fees that accrue back into the pool and don't tokenize). that address has no private key. nobody can withdraw.
+- **$LAWS launches with a fixed supply** through a launchpad, as a plain ERC-20 with zero admin functions from block one: no minting more, no blacklists, no pausing trades, nothing to renounce because there was never a key.
+- **LP pooled and locked at creation**: the launchpad puts the entire supply into the DEX pool the moment the token exists and locks the LP in its locker. the dev never touches the liquidity, so the dev can't pull it.
+- **any dev buy happens in the open** at launch, on the same terms as everyone else, wallet disclosed in the receipts.
+- **contracts verified on blockscout** so anyone can read exactly what they do.
+- **keeper bots** pegging fight and cut-down costs to usd targets.
+- **founder perks** for the first 100 mainnet mints.
 
-## game contracts stay dev-controlled (intentionally)
+none of that exists yet. it's written here so you can hold me to it later, not so you treat it as done.
 
-the **duel**, **duelrouter**, **mintdrop**, **graveyard**, **marketplace**, and **brawlers** contracts stay owned by the dev wallet. that's deliberate, and it's separate from the brawl-token renouncement.
+## what stays dev-controlled at mainnet (intentionally)
 
-these are *game* contracts. they need ongoing tuning:
-- **fight cost** calibration as brawl/eth prices move (the keeper bot repegs to $1 USD automatically)
-- **resurrect cost** calibration (the keeper bot repegs to $100 base, capped at $500 per single revive)
-- **mint price** tweaks if a tier sells out and the meta needs adjusting
-- **marketplace fee** changes if competitive forces it (currently 7.5%, hard-capped at 10% in the contract)
-- **pause / unpause** if a bug appears (escape hatch)
-
-what these contracts can NOT do:
-- mint brawl (locked off behind the renounced ERC-20)
-- drain the LP (burned to `0xdead`, no key, no recovery)
-- take user funds beyond the documented fight stakes, mint prices, marketplace fees, and resurrect costs
-- transfer your nfts without your approval
-
-the difference between **game tuning** and **rug capability** matters. you should know which is which.
-
-## per-revive cap
-
-even with a high-rarity king at 10+ wins, the resurrection formula (`base × tierMult × (10+wins)/100`) is **capped at $500 per single revive** by `Graveyard.resurrectionCap` (default 0.125 ETH). this stops the late-game from pricing out players entirely. the cap is dev-settable and the resurrect-cost-keeper bot mirrors it to USD as ETH price drifts, so $500 stays $500.
-
-## no presale, no vc round, team tokens locked
-
-100,000 brawl supply, transparent split:
-
-- **initial LP**: 50,000 brawl + ~$200 eth, paired on Aerodrome v2 and the LP token burned to `0xdead`. permanent. no team unlock, no rug path.
-- **team vault**: 20,000 brawl locked in our own `BRAWLTimelock` contract at [`0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761`](https://basescan.org/address/0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761#code). 6-month linear vest, no cliff, immutable beneficiary = dev wallet. no admin function, no owner, no escape hatch. anyone can call `release()` to push the vested portion to the beneficiary. live countdown + on-chain stats at [baseicbrawlers.com/lock](https://baseicbrawlers.com/lock).
-- **auto-fight keeper wallet**: 20,000 brawl held by the keeper EOA. used as the per-fight stake float for the 10 house brawlers + as fightCost dust. recycles through duels (winner gets the pot back), doesn't deplete.
-- **dev / ops / season prizes**: 10,000 brawl on the dev wallet. ops budget for infra, future seasons, partnerships. no contract enforcement on this slice, trust-based.
-- **MintDrop airdrop pool**: 0 brawl. the per-mint and founder airdrop bonuses were both dropped at launch to keep allocation lean. founders keep the free first revive + 25% fight discount + free Tier-1 mint; players don't get BRAWL on mint.
-
-that's 100,000 brawl total. no presale, no team cliff hidden anywhere. 70% of supply is either burned (LP) or locked (team vault) at launch. the remaining 30% is auto-fight float + ops budget.
-
-this isn't a token where the team holds half. there's no vesting cliff to fear. there's also no "team's gonna sell" clock, because there isn't a team in the institutional sense. just me.
-
-> see also: [**key holders**](key-holders.md), the full address-by-address breakdown of every large $BRAWL wallet, what it does, and what each one can / can't move.
-
-## what you should keep an eye on
-
-- **basescan** the brawl token contract: confirm `owner()` returns `0x0`.
-- **the LP burn address** on basescan: `0x000000000000000000000000000000000000dEaD` holding the brawl/eth pair tokens. anyone can verify.
-- **the team-lock contract**: visit [baseicbrawlers.com/lock](https://baseicbrawlers.com/lock) for the live countdown, or read the [80-line source on basescan](https://basescan.org/address/0xdD4Fda3AED746E81481d58958e6E8c6D2e7cC761#code).
-- **the dev wallet** on basescan: any large brawl transfer out is worth a question (note: the 20k team allocation has already left the dev wallet for the timelock, that transfer is the expected one).
-- **#announcements** in discord for upgrades or major changes.
-
-if i ever do something sketchy, the on-chain receipts will be public within seconds. that's the only enforcement i can really offer. but it's better than nothing, and it's better than most projects.
+the game contracts (duel, mint, gallows, marketplace) will stay dev-owned even after the token is renounced. they need ongoing tuning: fight costs, cut-down costs, fees within their hard caps, and a pause switch as a bug escape-hatch. the difference between **game tuning** and **rug capability** is the whole design: the caps live in the bytecode, the tuning happens under them.
 
 ## scope, honestly
 
-this is a small solo build. that's the appeal. it's also the constraint.
+- **no paid security audit.** the solidity test suite covers the core flows and passes clean, but a test suite is not an audit.
+- **solo dev, single wallet.** there's no team, no multisig yet, no support desk.
+- **testnet addresses churn.** contracts get redeployed as the game changes. never trust a loxley address from anywhere except the site itself: [outlaws-of-loxley.vercel.app](https://outlaws-of-loxley.vercel.app).
+- **assume testnet progress resets.** mints, ratings, and records are playtest data.
 
-- there's no paid security audit. solidity tests cover the core flows (duel signing, mint hash, marketplace approvals, resurrection math). they're not the same as a paid audit.
-- there's no team to escalate to if i get hit by a bus. the dev wallet is one EOA. a 2-of-3 gnosis safe migration is on the roadmap.
-- there's no rapid response to discord drama. if you have a real bug, post in #bug-reports with repro steps. i'll get to it.
-
-basically don't put more in than you can lose. that's true of every crypto thing. it's especially true here.
+when there's real money involved, this page gets rewritten with addresses, receipts, and on-chain proof for every claim. today the honest version is shorter: it's a testnet game, come play it for free. 🏹

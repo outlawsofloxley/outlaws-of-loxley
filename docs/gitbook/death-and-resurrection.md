@@ -1,73 +1,53 @@
-# Death and resurrection 💀 🪦
+# The gallows 💀 🪦
 
-three losses in a row, your brawler dies. not a euphemism, not a debuff. dead. can't fight, can't earn brawl. shows up in the [/graveyard](https://baseicbrawlers.com/graveyard) until you pay to bring them back.
+three losses in a row and your outlaw hangs. not a euphemism, not a debuff. dead. can't fight, can't earn. they swing at [/gallows](https://outlaws-of-loxley.vercel.app/gallows) until somebody pays to cut them down.
 
-if you don't want to pay, you don't have to. the brawler stays dead forever. you can sell, transfer, or just leave them in your wallet as a tombstone.
+and it doesn't have to be you. **anyone can pay the cut-down price on any hanged outlaw.** rescue a mate's fighter, rescue a stranger's, or leave yours up there as a warning to the others.
 
-## when does the death happen
+## when does the hanging happen
 
-after the third consecutive loss is confirmed on-chain, the duel contract flips your brawler's `isDead` flag to true and emits a `BrawlerDied` event. the discord bot sees the event and posts a death notice in **#graveyard** within seconds.
+after the third consecutive loss is confirmed on-chain, the duel contract flips the outlaw's dead flag. the streak only counts consecutive losses:
 
-a tie does not break a loss streak. it also doesn't count as a loss. so:
+- l, l, l → gallows
+- l, l, w, l → alive (the win reset the streak)
+- l, l, t, l → alive (a tie resets the streak too)
+- l, l → alive, but one bad afternoon away
 
-- l, l, l → dead
-- l, l, t, l → dead (3 losses with a tie in the middle)
-- l, l, w, l → not dead (the win reset the streak)
-- l, l, t → not dead (no third loss yet)
+## the cut-down cost
 
-## the resurrection cost formula
-
-paid in eth. scales by rarity tier and how many wins your brawler has racked up:
+paid in testnet eth (so, free in any real sense, grab it from the faucet). the formula scales with rarity tier and win record:
 
 ```
-cost = base × tierMult / 10 × (10 + wins) / 10
+cost = base × tierMult × (10 + wins) / 100
 ```
 
 where:
-- **base** is the dev-set base cost in eth, calibrated to $100 USD. a keeper bot watches chainlink eth/usd and repegs the base every 5 minutes via `setResurrectionCost`, so $100 stays $100 regardless of eth price.
-- **tierMult** is:
-  - common: 1×
-  - uncommon: 1.5×
-  - rare: 2.5×
-  - legendary: 4×
-  - epic: 7×
-  - king: 15×
-- **wins** is your brawler's total recorded wins.
 
-a few worked examples (the duel page shows the live number for your specific brawler before you click):
+- **base** is the dev-set base cost. on testnet it's a micro amount, the live number for your outlaw shows before you click.
+- **tierMult** by rarity: common 1×, uncommon 1.5×, rare 2.5×, legendary 4×, epic 7×, king 15×.
+- **wins** is the outlaw's career wins. every win adds 10% of the tier cost. proven fighters cost more to save, which is how it should be.
 
-- a fresh common at 0 wins: ~$100
-- an uncommon with 3 wins: ~$200
-- a legendary with 5 wins: **$500** (cap)
-- an epic with 10 wins: **$500** (cap)
-- a king at any wins: **$500** (cap)
+there's also a dev-set **cap** on any single cut-down, so a many-win epic can't compound into something absurd.
 
-**hard cap: $500 per revive.** every cost the formula above produces is clamped at $500 (=`Graveyard.resurrectionCap`). the resurrect-cost-keeper bot mirrors this cap to USD as eth/usd drifts, so it stays at $500 regardless of ETH price. the dev can adjust the cap from the dashboard. so even a maxed-out king with twenty wins still costs $500, not the formula's three-grand worst case. it keeps the late game survivable.
+## cutting down
 
-founders (slots 1-100) get **the first resurrection free.** doesn't matter when it happens, doesn't expire. the second one onward costs full price (capped).
+open the hanged outlaw's page, or click their card at the gallows, hit **resurrect**. one wallet popup, testnet eth deducted, the dead flag flips off, and they walk again.
 
-## resurrecting
+## what carries over
 
-go to your brawler's detail page (or the graveyard, click their card), hit **resurrect**. one wallet popup, eth deducted, the `isDead` flag flips back to false, the brawler is alive again.
+- **rating**: stays where it was. dying doesn't reset elo, but the three losses already dragged it down.
+- **wins / losses / ties**: stay on the record. nothing is erased.
+- **the loss streak**: resets to zero. next loss is a fresh first, not a fourth.
+- **stats, weapon, name, art**: unchanged. a cut-down is not a re-roll.
 
-resurrection eth goes to the dev treasury. it doesn't go back into the LP, it doesn't get burned, it doesn't get auto-converted. it sits as eth.
+it's the same outlaw, back from the rope, owing a favour to whoever paid.
 
-## what carries over after resurrection
+## mainnet note
 
-- **rating**: stays exactly where it was. dying doesn't reset the elo, but the three losses already dragged it down.
-- **wins / losses / ties**: stay on record. losses are not erased.
-- **the loss streak counter**: this resets to zero. so the next loss is a fresh start, not the fourth.
-- **stats, weapon, level**: unchanged. resurrection is not a re-roll.
-- **founder perks**: still active. founders only get one free resurrect though, used or unused on the first death.
-
-## what doesn't carry over
-
-nothing else, really. it's the same brawler, just walked back from the dead with a debt to whoever paid.
+at mainnet, cut-down costs will be real money, usd-pegged by keeper bots, and the first 100 minted outlaws are planned to carry one free cut-down as a founder perk. none of that is live yet: see the **roadmap**.
 
 ## why this exists
 
-the death rule is the difference between "tap to fight" and "decide whether to fight". if you could lose forever and just keep trying, brawl would be worth nothing and rating would be meaningless. mortality makes the rating ladder real.
+permadeath-unless-rescued is the difference between "tap to fight" and "decide whether to fight". if losing cost nothing, the rating ladder would mean nothing. mortality makes the leaderboard real, and the gallows makes for a better story than a respawn button.
 
-it also forces a question every player has to answer at some point: **is my brawler good enough to keep gambling on, or am i throwing eth into a hole?**
-
-if the answer's the second one, the kindest thing you can do is let them rest. or sell them as a graveyard brawler to someone who wants the project.
+on testnet, though? die freely. that's what it's for.

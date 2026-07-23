@@ -1,48 +1,19 @@
-# House fighters
+# fully pvp
 
-day one of any pvp game has the same problem: nobody's online yet, so nobody can fight. boring. dead arena. people leave.
+some fight games seed the arena with dev-owned "house" fighters so there's always somebody to hit. we tried that in a past life. it's gone.
 
-we solved that by minting **10 house brawlers** at deploy time. they're owned by the dev wallet (well, the dev treasury, see the **trust** chapter for the wallet split). they sit in the duel pool permanently and they're always available as opponents.
+**outlaws of loxley is fully pvp.** every outlaw in the arena belongs to a real player who paid in, same as you. no bots, no house fighters, no dev punching bags getting quietly resurrected behind the curtain.
 
-## what they are
+## what that means for you
 
-regular brawlers. token ids in the founder range (1-100), randomly rolled rarity from the c/u pool (the dev rarity cap means they can't be rare or better), normal stats, normal weapons, normal art.
+- every win is a win over a real person's outlaw. every loss too. the leaderboard is all players, top to bottom.
+- the king included: robin hood (token 2001) sits with the dev wallet, but he queues like everyone else if he wants a scrap. no special treatment in matchmaking, and rating bands still apply.
+- if the arena is empty, you wait. the duel page says so plainly and updates as outlaws pay in and step up. it's a testnet, quiet hours happen: rally a mate to mint one, that's the whole point of a playtest.
 
-the difference: they carry an **on-chain `isHouseBrawler` flag**. that flag does two things:
+## why we went this way
 
-1. **they get NO founder perks.** even though their token id falls in the 1-100 founder range, the contract specifically checks `isHouseBrawler` and skips the discount, the free first resurrect, and the founder badge. they pay full stake and full eth for resurrection — same as a non-founder brawler.
-2. **the keeper bot auto-resurrects them.** if a house brawler dies, a keeper service (running off the dev wallet's eth) resurrects them within seconds. the pool never thins out from human attrition.
+house fighters solve the empty-arena problem, but they poison the good stuff: rating inflation against bots, farmable opponents, and a leaderboard where half the names are the dev. a smaller honest arena beats a busy fake one. 🏹
 
-## why this matters
+## matchmaking, quickly
 
-day-one minters open the site, queue up a duel, and **always have an opponent**. even at 3am sunday with zero other humans around. without house brawlers, the early arena would be a ghost town until critical mass.
-
-it's a known pattern from other on-chain games. we're not pretending we invented it.
-
-## why they're flagged
-
-the founder discount + the free first resurrection exist as a perk for early human players. if 10 brawlers from the dev wallet got those perks too, the dev would be effectively double-dipping (already paying $0 for them, also taking 25% off every fight, also getting a free revive).
-
-(the 20-brawl founder airdrop bonus was dropped pre-launch as part of the lean allocation — see `links` / `trust`. founders still get the free first revive + the 25% fight discount.)
-
-the `isHouseBrawler` flag explicitly carves the dev's 10 house fighters out. on-chain, you can verify any house brawler against its token id and confirm the discount + free-revive logic skips them.
-
-## how you can tell a house fighter
-
-- **HOUSE** badge on their card on every page (browse, marketplace, duel matchmaking, individual detail page).
-- their owner is the dev / keeper wallet (you can verify via basescan).
-- they don't carry the gold or cyan founder badge even though their id is in the 1-100 range.
-
-if a brawler shows founder badge AND `isHouseBrawler=true`, that's a contract bug, raise it in #help.
-
-## can house fighters lose?
-
-yes. all the time. they're not buffed. their stats are uniform-distributed like any other roll. some house brawlers will be terrible. that's fine, that's the point.
-
-their rating moves like every other brawler's. if you beat one, your rating climbs. if you lose to one, you drop. they're not punching bags, they're not boss fights.
-
-## why 10?
-
-ten is a sweet spot. fewer than that and a single bad night could thin the pool. more than that and the founder range starts feeling crowded. we picked 10 after looking at how often duels actually happen on similar games and how long resurrections take.
-
-it can change. if it does, the change will be obvious (different number of brawlers tagged HOUSE in browse).
+the duel page auto-matches you against the nearest-rated opponent it can find, widening the search band out to a hard cap of ±500 rating. nobody's in range: you wait or reroll. we will not feed a fresh 1000-rating outlaw to the king.

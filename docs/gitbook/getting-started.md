@@ -1,41 +1,40 @@
 # Getting started
 
-three steps. wallet, eth, connect. once you've done this once it'll take you 30 seconds next time.
+three steps. wallet, testnet eth, connect. and because this is testnet, every step is free. worst case you lose ten minutes, not money.
 
 ## 1. set up a wallet
 
-click **connect wallet** at the top right of any page on baseicbrawlers.com. you'll get a picker with these options:
+click **connect wallet** at the top right of any page on [outlaws-of-loxley.vercel.app](https://outlaws-of-loxley.vercel.app). you'll get a picker:
 
-- **browser wallets**: anything that announces itself via eip-6963. metamask, rabby, brave wallet, frame, phantom, rainbow, binance wallet. each shows up in the picker by name with its own icon. pick the one you have installed.
-- **coinbase wallet**: covers two paths in one click. if you have the coinbase wallet extension or app, it uses that. if you don't, it spins up a smart wallet (passkey-based, nothing to install, opens in a new tab). good for first-timers.
-- **walletconnect**: qr code or deeplink for any mobile wallet. rainbow mobile, trust, binance mobile, metamask mobile, hundreds of others. scan with your phone, you're in.
+- **browser wallets**: anything that announces itself via eip-6963. metamask, rabby, brave wallet, rainbow, phantom, and friends. each shows up by name with its own icon. pick the one you have installed.
+- **walletconnect**: qr code or deeplink for mobile wallets. scan with your phone, you're in.
 
-if you're on mobile chrome or safari with no wallet at all, the picker also shows an **open in metamask** deeplink that bounces you into metamask's in-app browser.
+if you've never had a wallet: install metamask, write your seed phrase on paper, come back. testnet is the ideal place to make your first-wallet mistakes.
 
-## 2. add base to your wallet
+## 2. add robinhood chain testnet
 
-if your wallet doesn't already know about base, the connect flow will offer to add it for you. one click:
+the connect flow offers to add the network for you, one click. if you'd rather do it by hand:
 
-**base mainnet**
-- network name: base
-- rpc: https://mainnet.base.org
-- chain id: 8453
+**robinhood chain testnet**
+- network name: robinhood chain testnet
+- rpc: https://rpc.testnet.chain.robinhood.com
+- chain id: 46630
 - currency: ETH
-- explorer: https://basescan.org
+- explorer: https://explorer.testnet.chain.robinhood.com
 
-if you connect on the wrong network, the site auto-prompts a switch one time per connect. reject it and the manual switch button stays visible.
+connect on the wrong network and the site prompts a switch. mainnet robinhood chain (chain id 4663) exists but the game is **not** deployed there yet. testnet only for now.
 
-## 3. get some eth
+## 3. get some testnet eth
 
-you need eth on base to mint and pay gas. cheapest paths:
+everything on-chain needs a little testnet eth for gas and the micro mint price. it's free:
 
-- bridge eth from ethereum mainnet via [bridge.base.org](https://bridge.base.org). a few dollars in gas, a couple of minutes.
-- if you're on coinbase exchange already, withdraw eth straight to your base address from the coinbase app. no bridge needed, no fee.
+- hit the faucet: https://faucet.testnet.chain.robinhood.com
+- it has a browser bot-check, so it may make you prove you're a human. you are, probably.
 
-mint prices are $20-$50 in eth-equivalent depending on which slot you grab. duels cost pennies of gas.
+mint prices on testnet are deliberately tiny, a rounding error of test eth. every mint also airdrops **50 LAWS** into your wallet so you can start duelling straight away. no dex, no swap, no buying anything.
 
 ## you're connected. what next?
 
-- want to mint? go to **/mint**. read the **minting** chapter first if you want to know what you're paying for.
-- already minted somewhere else? **/me** shows your roster.
-- just looking? **/browse** is the full 2,000-brawler grid. **/leaderboard** is the rating ladder.
+- want to mint? go to [/mint](https://outlaws-of-loxley.vercel.app/mint). read the **minting** chapter first if you want to know what you're getting.
+- already minted? [/me](https://outlaws-of-loxley.vercel.app/me) shows your roster.
+- just looking? [/browse](https://outlaws-of-loxley.vercel.app/browse) is the full 2,000-outlaw grid, [/leaderboard](https://outlaws-of-loxley.vercel.app/leaderboard) is the rating ladder, and [/gallows](https://outlaws-of-loxley.vercel.app/gallows) is where the unlucky ones hang. 🪦

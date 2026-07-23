@@ -2,76 +2,44 @@
 
 things i'd tell a friend before their first duel.
 
-## farm easy wins early
+## it's testnet. be reckless.
 
-the matchmaker pairs you with brawlers near your rating. at rating 1,000 (everyone's starting point), the pool is huge and average. early wins are cheap to find.
+the usual advice for on-chain games is "don't risk what you can't lose". here you can't lose anything, so invert it: fight everything, die stupidly, test every button. the whole point of this phase is finding out what's fun and what's broken. an outlaw at the gallows on testnet is a data point, not a tragedy.
 
-don't pick fights above you until your brawl/eth stack is deep enough to absorb a couple of losses. if you're at rating 1,000 with one fight's worth ($1) of brawl or eth left, losing it is the same as quitting. top up before you tilt-fight.
+## learn the triangle before your first fight ⚔️
 
-## watch the combat log
+blade beats blunt, blunt beats ranged, ranged beats blade, 1.15× damage to the one holding the advantage. the matchmaker shows you the opponent's weapon before you commit. a close fight tips on this. an unwinnable fight is still unwinnable, but at least you'll know why.
 
-when you lose, scroll back through the combat log on the result screen. work out **why** you lost.
+## read the combat log when you lose
 
-was it bad rolls? sometimes you just whiff three crit checks in a row and there's nothing to learn. annoying but real.
+work out **why** you lost.
 
-was your dex too low? your opponent went first every round and that compounded. that's a structural problem with the brawler, not bad luck.
+- bad rolls? sometimes you whiff three checks in a row and there's nothing to learn. annoying but real.
+- low dex? your opponent went first every round and it compounded. that's structural, not unlucky.
+- outgunned? a dagger against an arbalest with similar stats loses more often than not. weapon rarity is real.
 
-was your weapon underpowered? a knife brawler against a shotgun brawler with similar stats will lose more often than not. weapon rarity is real.
+different problems, different fixes (fight softer matchups, sell, retire them to the art collection), and the log tells you which one you have.
 
-these are different problems with different fixes (re-roll, sell, retire to art piece) and the log tells you which one you have.
+## damage floor beats damage ceiling
 
-## don't die
+a high-str outlaw with a modest weapon grinds down a low-str outlaw with a scary one more often than people expect. minimum damage lands every hit. maximum damage lands occasionally. in long fights, the floor wins.
 
-resurrection costs real eth. rating drops with every loss. if your brawler is on a two-loss streak and the third loss would put them in the graveyard at common-tier price ($100), maybe the right play is **stop dueling for the day**.
+## respect the streak
 
-you don't have to fight just because you can. a brawler at 2 losses with a high rating is more valuable alive than dead.
+two losses in a row means the next one is the rope. even on testnet it's worth practising the discipline: rest the outlaw, fight a different one, or accept the risk with open eyes. mainnet you will thank testnet you for the habit.
 
-## batch mint if you're going big
+## a tie is a reset
 
-20 mints in one tx costs one gas fee. on base that's pennies, but if you're going to spend $400+ minting anyway, you might as well do it in a single tx and get the bulk bonus brawlers.
+ties split the pot and **reset the loss streak** for both fighters. if you're sitting on two losses, a tie is genuinely a good result. take the draw and walk away.
 
-reminder of the bulk discount:
-- 5 mints → 6 brawlers
-- 10 mints → 13 brawlers  
-- 20 mints → 27 brawlers
+## mint in fives
 
-best $/brawler is the 20-pack. always.
-
-## don't shill your own brawler
-
-every project has the guy who puts his rating-1500 common brawler in #general every two minutes. don't be that guy. nobody likes that guy.
-
-share when something interesting happens (hit a king, killed a legendary, won 5 in a row). don't share every win.
-
-## trust the matchmaker
-
-the matchmaker uses rating, alive status, and a randomness factor. it's not biased toward house fighters, it's not biased toward founders. if you keep getting matched with the same opponent, that's because they're the only person at your rating online right now. reroll until something feels right.
-
-## understand your weapon's range
-
-your weapon decides:
-- **min damage**: what you do on a low roll.
-- **max damage**: what you do on a high roll.
-- **speed**: affects to-hit and crit chance.
-
-a knife with a high str brawler beats a sledgehammer with a low str brawler more often than people think. damage *floor* matters more than damage *ceiling* in long fights.
-
-## sell early if it's not for you
-
-a common at rating 950 with 0 wins isn't worthless. someone wants it. list them at $10-15 (not $30) and you'll find a buyer. better $10 in your wallet than a brawler you never click.
-
-## play around the keeper rebalance
-
-the fight cost in brawl recalculates every 5 minutes. if you can see the brawl/eth chart, brawl-side fights are cheapest right after a brawl pump and most expensive right after a dump. eth-side stays pegged to chainlink so it doesn't drift mid-block. doesn't move much, but it's free alpha if you're already watching.
-
-## talk in #strategy, not #duels
-
-#duels is bot-only auto-posts of duel outcomes. you can't talk there. talk goes in **#strategy** or **#general** in discord. trash-talk goes in **#strategy** too, keep it about brawlers, not at people.
+the bulk bonus starts at 5 mints (+1 free) and scales to 20 (+7 free). testnet prices are tiny either way, but the bonus outlaws are full rolls, and more rolls means more chances at the top of the rarity ladder.
 
 ## the king is not for you
 
-unless you're the dev wallet. don't grind toward fighting the king. if you cross paths with him in matchmaking it's a curiosity, not a goal.
+token id 2001, all 18s, rating 2,000, golden longbow. if you cross paths with robin in the matchmaker it's a story, not a strategy. bring a blunt weapon and a sense of humour.
 
-## save your seed phrase. lose your seed, lose your brawlers.
+## save your seed phrase anyway
 
-self-custody rule. write it down on paper, store it offline, never paste it anywhere. nobody at baseicbrawlers will ever ask. anyone who asks is a scammer.
+it's testnet, but the wallet habits are real. write the seed down on paper, store it offline, never paste it anywhere. nobody from loxley will ever ask for it. anyone who asks is a scammer, on every network, forever.

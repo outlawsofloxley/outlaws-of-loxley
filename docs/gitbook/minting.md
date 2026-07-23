@@ -1,88 +1,63 @@
 # Minting
 
-go to [/mint](https://baseicbrawlers.com/mint), pick how many you want (1, 2, 5, 10, or 20 in one tx), pay in eth, usdc, or usdt on base. brawler lands in your wallet a few seconds later.
+go to [/mint](https://outlaws-of-loxley.vercel.app/mint), pick how many you want, pay a micro test price in testnet eth. your outlaw lands in your wallet a few seconds later, along with **50 LAWS airdropped per mint** so you can go straight to the arena.
 
-## the tiers
+## testnet pricing, in full
 
-mint price scales as the drop fills. cheapest at the front, most expensive at the back.
+prices right now are deliberately tiny test amounts. they're not listed here because they're not the point and they'll change: the current numbers are on the mint page itself. what matters is that nothing on testnet costs real money. the real mint, with real pricing and founder perks for the first 100, is a mainnet thing (see the **roadmap**).
 
-| slot range | price | flag |
-|---|---|---|
-| 1-50 | $20 | founder 50 (gold badge) |
-| 51-100 | $25 | founder 100 (cyan badge) |
-| 101-500 | $30 | |
-| 501-1000 | $35 | |
-| 1001-1500 | $40 | |
-| 1501-2000 | $50 | |
+## bulk bonus
 
-the $20 slots are the cheapest moment in the project's life. they never come back. once tier 1 sells out it's $25, then $30, all the way up.
+mint in bulk, get free outlaws in the same transaction:
 
-mint money goes 100% to the dev wallet. no LP siphon, no buy/sell tax, no inventory hold.
+- **5** → +1 bonus = 6 outlaws for the price of 5
+- **10** → +3 bonus = 13 outlaws for the price of 10
+- **20** → +7 bonus = 27 outlaws for the price of 20
 
-## founder perks (slots 1-100)
-
-token ids 1-100 carry founder status forever. doesn't matter who owns them later, the perks stick to the brawler:
-
-- **25% off every duel stake.** non-founders pay $1 per fight (in brawl or eth, their pick), founders pay $0.75. forever.
-- **first resurrection free.** your first death doesn't cost eth. only the first.
-- **founder badge** on every card. gold for slots 1-50, cyan for 51-100. the gold ones are the trophy case.
-
-founders pay the cheapest tier prices ($20 / $25). they don't mint free. the perks are the privilege.
-
-## bulk discount
-
-mint more, get free brawlers in the same tx:
-
-- **5** → +1 bonus = 6 brawlers for the price of 5
-- **10** → +3 bonus = 13 brawlers for the price of 10
-- **20** → +7 bonus = 27 brawlers for the price of 20
-
-the bonus brawlers are full citizens. same rarity roll, same combat behaviour, fully tradeable.
+bonus outlaws are full citizens. same rarity roll, same combat behaviour, fully tradeable.
 
 ## lottery roll
 
-every paid mint has a **1-in-2,000** chance of dropping a free bonus brawler in the same transaction. random, on-chain, no signup. if you've ever wanted a real lottery, it's right there in the mint flow.
+every paid mint has a **1-in-2,000** chance of dropping an extra free outlaw in the same transaction. random, on-chain, no signup. it's a testnet lottery for testnet stakes, but a free outlaw is a free outlaw.
 
 ## what you get
 
-every brawler is rolled fresh on mint:
+every outlaw is rolled fresh on mint:
 
-- a procedurally generated name (first + last, e.g. "knox tanaka")
+- an on-chain name like **"Bandit of Blyth"**, medieval firsts and bynames, rolled from the name pools baked into the contract
 - six d&d-style stats (str / dex / con / int / wis / cha)
-- a weapon, drawn from the rarity table
-- 32×24 deterministic pixel art (same token id always renders the same)
+- a weapon from the sherwood catalogue, drawn by rarity
+- deterministic 32×44 pixel art (same token id always renders the same archer)
 - a starting elo rating of 1,000
-- a starting level of 1, 0 wins / 0 losses
+- 0 wins, 0 losses, and a whole life ahead of them
 
-## the rarity table
+## the rarity ladder
 
-2,000 brawlers in the drop, plus 1 king for the dev:
+2,000 outlaws in the drop, plus 1 king above them all:
 
-| rarity | count | weapon examples |
+| rarity | count | weapons |
 |---|---|---|
-| common | 1,240 | knife, baseball bat, crowbar |
-| uncommon | 500 | machete, pistol |
-| rare | 200 | shotgun, sledgehammer |
-| legendary | 40 | flaming sword, electric axe |
-| epic | 20 | bazooka, rail gun |
-| king (1/1) | 1 | kingsblade |
+| common | 1,240 | dagger, quarterstaff, mace |
+| uncommon | 500 | sword, hunting bow |
+| rare | 200 | crossbow, flail |
+| legendary | 40 | flaming sword, war axe |
+| epic | 20 | longbow, arbalest |
+| king (1/1) | 1 | golden longbow |
 
-epic is rarer than legendary in this drop. yes, that's intentional.
+yes, epic sits **above** legendary here. 20 epics versus 40 legendaries. the longbow is the rarest thing in sherwood short of robin himself, which feels right.
 
 ## how the rarity is shuffled
 
-rarity isn't picked at the moment you mint. the entire 2,000-slot order is **pre-committed** at deploy time using chainlink vrf. the on-chain `initialRarityHash()` proves the shuffle existed before any mint happened.
+the entire 2,000-slot rarity order is shuffled from a master seed when the contract deploys, and the result is hash-committed on-chain as `initialRarityHash`. nobody re-rolls it afterwards, the dev included. what slot you mint is what you get.
 
-anyone can re-derive the shuffle from the master seed and verify their roll. nobody, including the dev, can pre-compute who pulls a king.
+one extra guardrail: **dev mints are capped to common and uncommon**. when the dev wallet mints the contract skips any rare-or-better slot. the dev cannot pull a rare, a legendary, an epic, or anything shiny from the public drop. it's in the bytecode, not in a promise.
 
-## the dev wallet rarity cap
+## the king (token id 2001)
 
-the contract hard-caps dev mints to **common and uncommon only**. when the dev wallet mints (e.g. for the 10 house brawlers seeded at deploy, see the **house fighters** chapter), the rarity-pick logic skips any rare-or-better slot and lands on c/u.
+robin himself. one 1-of-1, mintable only by the dev wallet, never part of the public 2,000. all six stats at 18, starting rating 2,000, level 10, and the **golden longbow**, the only one in existence. ranged type, so blunt weapons have the edge on him, if you can survive long enough to swing.
 
-translation: the dev cannot pull a rare, legendary, epic, or king on a public mint. it's an anti-rug signal baked into the bytecode.
+if you meet him in the arena, expect an arrow. 🏹
 
-## the king (token id #2001)
+## will my testnet outlaws carry over to mainnet?
 
-one 1-of-1, mintable only by the dev wallet, never appears in the public drop. all stats at 18, starting rating 2,000, level 10, wields the kingsblade (50-100 damage), sits on a diamond-blue background.
-
-if you meet him in the arena, expect to lose. if you beat him, expect the internet to talk about it for days.
+assume not. testnet contracts get torn down and redeployed as the game changes, and mainnet will be a fresh deploy with a fresh mint. testnet is for finding the fun (and the bugs) before anything is worth anything.
